@@ -155,8 +155,8 @@ namespace xrt
             {
                 MessageHeader& head = headers[i];
                 Box srcBox = Box(PMacc::PitchedBox<ValueType, SIMDIM > (
-                                                               fullData.get(),
-                                                               Space(0, head.nodeSize.y() * i),
+                                                               fullData.get() + nodeSize.productOfComponents() * i,
+                                                               Space(),
                                                                head.nodeSize,
                                                                head.nodeSize.x() * sizeof (ValueType)
                                                                ));
@@ -174,8 +174,8 @@ namespace xrt
             {
                 for (int x = 0; x < srcSize.x(); ++x)
                 {
-                    dst(Space(y + offsetToSimNull.y(), x + offsetToSimNull.x())) =
-                        src(Space(nodeGuardCells.y() + y, nodeGuardCells.x() + x));
+                    dst(Space(x + offsetToSimNull.x(), y + offsetToSimNull.y())) =
+                        src(Space(nodeGuardCells.x() + x, nodeGuardCells.y() + y));
                 }
             }
         }
