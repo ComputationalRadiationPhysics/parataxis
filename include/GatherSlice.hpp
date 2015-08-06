@@ -92,7 +92,9 @@ namespace xrt
             {
                 MPI_Comm_rank(comm, &mpiRank);
                 isMPICommInitialized = true;
-            }
+            }else
+                return false;
+
             isMaster = mpiRank == 0;
 
             /* Collect message headers to master rank */
@@ -102,12 +104,15 @@ namespace xrt
             MPI_CHECK(MPI_Gather(&tmpHeader, sizeof(MessageHeader), MPI_CHAR,
                                  headers.get(), sizeof(MessageHeader), MPI_CHAR, 0, comm));
 
+            if(!isMaster)
+                return false;
+
             for(int i=0; i<numRanks; ++i)
             {
                 if(headers[i].nodeSize != nodeSize)
                     throw std::runtime_error("NodeSizes must be the same on all nodes");
             }
-            return isMaster;
+            return true;
         }
 
         template<class Box >
