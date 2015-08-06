@@ -140,19 +140,10 @@ FOREACH(file ${CFG_Files})
     configure_file(${file} "${CMAKE_INSTALL_PREFIX}/${file}")
 ENDFOREACH()
 
-SET(COPY_ON_INSTALL "submit/bash" CACHE LIST "folder which copied on install to install path" )
+set(PICONGPU_SRC_DIR "${PICONGPU_ROOT}/src/picongpu/")
+INSTALL(DIRECTORY "${PICONGPU_SRC_DIR}submit" DESTINATION ${CMAKE_INSTALL_PREFIX})
 
+INSTALL(FILES "${PICONGPU_SRC_DIR}submit/submitAction.sh"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/submit/"
+        PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE)
 
-#copy all subfolders (defined in: COPY_ON_INSTALL) to install folder
-FOREACH(dir ${COPY_ON_INSTALL})
-  #if source not exists than copy
-  IF(NOT EXISTS "${CMAKE_INSTALL_PREFIX}/${dir}")
-      #copy importend subfolders from extension path (default picongpu parameter)
-      IF(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/")
-        INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${dir}/."
-          DESTINATION "${CMAKE_INSTALL_PREFIX}/${dir}"
-          PATTERN .svn EXCLUDE
-        )
-      ENDIF()
-  ENDIF()
-ENDFOREACH()
