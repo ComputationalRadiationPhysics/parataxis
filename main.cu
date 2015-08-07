@@ -53,29 +53,43 @@ int main( int argc, char **argv )
 
 
     /* fill periodic with 0 */
-    while ( periodic.size() < xrt::SIMDIM )
+    while ( periodic.size() < xrt::simDim )
         periodic.push_back(false);
 
     /* check on correct number of devices. fill with default value 1 for missing dimensions */
-    if ( devices.size() > xrt::SIMDIM )
-        std::cerr << "Invalid number of devices.\nUse [-d dx=1 dy=1 dz=1]" << std::endl;
-    else
-        while ( devices.size() < xrt::SIMDIM )
-            devices.push_back(1);
-
-    /* check on correct grid size. fill with default grid size value 1 for missing 3. dimension */
-    if ( gridSize.size() != xrt::SIMDIM )
+    while ( devices.size() < xrt::simDim )
+        devices.push_back(1);
+    for(unsigned i=xrt::simDim; i<devices.size(); ++i)
     {
-        std::cerr << "Invalid or missing grid size.\nUse -g width height [depth=1]" << std::endl;
-        MPI_CHECK( MPI_Finalize() );
-        return 0;
+        if(devices[i] != 1)
+            std::cerr << devices[i] << " devices for dimension " << (i+1) << " were requested "
+                      << " but simulation has only " << xrt::simDim << " dimensions. Ignored!" << std::endl;
+    }
+
+
+    /* check on correct grid size. fill with default grid size value 1 for missing dimension */
+    while ( gridSize.size() < xrt::simDim )
+        gridSize.push_back(1);
+    for(unsigned i=xrt::simDim; i<gridSize.size(); ++i)
+    {
+        if(gridSize[i] != 1)
+        {
+            std::cerr << "A grid size of " << devices[i] << " for dimension " << (i+1) << " was requested "
+                      << " but simulation has only " << xrt::simDim << " dimensions." << std::endl;
+            MPI_CHECK( MPI_Finalize() );
+            return 0;
+        }
     }
 
 
     /* after checking all input values, copy into DataSpace Datatype */
-    Space gpus( devices[0], devices[1] );
-    Space grid( gridSize[0], gridSize[1] );
-    Space endless( periodic[0], periodic[1] );
+    Space gpus, grid, endless;
+    for(unsigned i=0; i<xrt::simDim; ++i)
+    {
+        gpus[i] = devices[i];
+        grid[i] = gridSize[i];
+        endless[i] = periodic[i];
+    }
 
     {
         /* start simulation

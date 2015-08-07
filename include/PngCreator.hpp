@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "xrtTypes.hpp"
 #include <pngwriter.h>
 #include <sstream>
 
@@ -8,8 +8,8 @@ namespace xrt
 {
     struct PngCreator
     {
-        template<class DBox>
-        void operator() (uint32_t currentStep, DBox data, Space dataSize)
+        template<class DBox, class T_Space>
+        void operator() (uint32_t currentStep, DBox data, T_Space dataSize)
         {
             std::stringstream fileName;
             fileName << "xrt_";
@@ -22,7 +22,7 @@ namespace xrt
             {
                 for (int x = 0; x < dataSize.x(); ++x)
                 {
-                    float p = data(Space(x, y));
+                    float p = data(Space2D(x, y));
                     png.plot(x + 1, dataSize.y() - y, p, p, p);
                 }
             }

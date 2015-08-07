@@ -17,7 +17,6 @@ namespace xrt {
 
     class Simulation
     {
-        typedef PMacc::MappingDescription<SIMDIM, PMacc::math::CT::Int< SC_SIZE, SC_SIZE > > MappingDesc;
         const int32_t steps;
         Space gridSize, devices, periodic;
 
@@ -55,8 +54,8 @@ namespace xrt {
             field.init(MappingDesc(layout.getDataSpace(), 1, 1));
             densityBuf.reset(new Buffer(layout, false));
 
-            Space guardingCells(1, 1);
-            for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<DIM2>::value; ++i)
+            auto guardingCells(Space::create(1));
+            for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<simDim>::value; ++i)
             {
                 densityBuf->addExchange(PMacc::GUARD, PMacc::Mask(i), guardingCells, CommTag::BUFF);
             }

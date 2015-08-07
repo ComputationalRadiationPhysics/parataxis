@@ -38,6 +38,7 @@ namespace xrt
     struct GatherSlice
     {
         using ValueType = T_ValueType;
+        using Box2D = PMacc::DataBox< PMacc::PitchedBox<ValueType, 2> >;
 
         GatherSlice() : isMaster(false), numRanks(0), filteredData(nullptr), fullData(nullptr), isMPICommInitialized(false)
         {}
@@ -116,25 +117,27 @@ namespace xrt
         }
 
         template<class Box >
-        Box operator()(Box data)
+        Box2D operator()(Box data)
         {
             static_assert(std::is_same<typename Box::ValueType, ValueType>::value, "Wrong type");
 
+            const size_t numElements = nodeSize[0] * nodeSize[1];
             if (!fullData && isMaster)
-                fullData.reset(new ValueType[nodeSize.productOfComponents() * numRanks]);
+                fullData.reset(new ValueType[numElements * numRanks]);
 
-            const size_t elementsCount = nodeSize.productOfComponents() * sizeof (ValueType);
+            const size_t sizeElements = numElements * sizeof (ValueType);
 
-            MPI_CHECK(MPI_Gather(data.getPointer(), elementsCount, MPI_CHAR,
-                                 fullData.get(), elementsCount, MPI_CHAR,
+            auto reducedBox = data.reduceZ(png::outputZSlice);
+            MPI_CHECK(MPI_Gather(reducedBox.getPointer(), sizeElements, MPI_CHAR,
+                                 fullData.get(), sizeElements, MPI_CHAR,
                                  0, comm));
 
             if(!isMaster)
             {
-                return Box(PMacc::PitchedBox<ValueType, SIMDIM > (
+                return Box2D(PMacc::PitchedBox<ValueType, 2 > (
                             nullptr,
-                            Space(),
-                            simSize,
+                            Space2D(),
+                            Space2D(simSize.x(), simSize.y()),
                             simSize.x() * sizeof (ValueType)
                         ));
             }
@@ -143,10 +146,10 @@ namespace xrt
                 filteredData.reset(new ValueType[simSize.productOfComponents()]);
 
             /*create box with valid memory*/
-            Box dstBox = Box(PMacc::PitchedBox<ValueType, SIMDIM > (
+            auto dstBox = Box2D(PMacc::PitchedBox<ValueType, 2 > (
                                                        filteredData.get(),
-                                                       Space(),
-                                                       simSize,
+                                                       Space2D(),
+                                                       Space2D(simSize.x(), simSize.y()),
                                                        simSize.x() * sizeof (ValueType)
                                                        ));
 
@@ -154,10 +157,10 @@ namespace xrt
             for (int i = 0; i < numRanks; ++i)
             {
                 MessageHeader& head = headers[i];
-                Box srcBox = Box(PMacc::PitchedBox<ValueType, SIMDIM > (
+                auto srcBox = Box2D(PMacc::PitchedBox<ValueType, 2 > (
                                                                fullData.get() + nodeSize.productOfComponents() * i,
-                                                               Space(),
-                                                               head.nodeSize,
+                                                               Space2D(),
+                                                               Space2D(head.nodeSize.x(), head.nodeSize.y()),
                                                                head.nodeSize.x() * sizeof (ValueType)
                                                                ));
 
@@ -174,8 +177,8 @@ namespace xrt
             {
                 for (int x = 0; x < srcSize.x(); ++x)
                 {
-                    dst(Space(x + offsetToSimNull.x(), y + offsetToSimNull.y())) =
-                        src(Space(nodeGuardCells.x() + x, nodeGuardCells.y() + y));
+                    dst(Space2D(x + offsetToSimNull.x(), y + offsetToSimNull.y())) =
+                        src(Space2D(nodeGuardCells.x() + x, nodeGuardCells.y() + y));
                 }
             }
         }

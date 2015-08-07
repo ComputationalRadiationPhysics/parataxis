@@ -1,0 +1,7 @@
+#pragma once
+
+namespace xrt {
+
+    constexpr unsigned simDim = 3;
+
+}  // namespace xrt

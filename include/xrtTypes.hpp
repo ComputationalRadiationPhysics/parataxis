@@ -1,5 +1,7 @@
 #pragma once
 
+#include "param.loader"
+
 #include <types.h>
 #include <dimensions/DataSpace.hpp>
 #include <memory/buffers/GridBuffer.hpp>
@@ -7,15 +9,14 @@
 
 namespace xrt {
 
-    constexpr unsigned SIMDIM = DIM2;
-    constexpr unsigned SC_SIZE = 16; /* arbitrarily chosen SuperCellSize! */
     typedef float Prec;
-    typedef PMacc::Environment<SIMDIM> Environment;
-    typedef PMacc::DataSpace<SIMDIM> Space;
-    typedef PMacc::GridController<SIMDIM> GC;
-    typedef PMacc::GridBuffer< Prec, SIMDIM > Buffer;
-    typedef PMacc::GridLayout<SIMDIM> GridLayout;
-    typedef PMacc::SubGrid<SIMDIM> SubGrid;
+    typedef PMacc::Environment<simDim> Environment;
+    typedef PMacc::DataSpace<simDim> Space;
+    typedef PMacc::DataSpace<2> Space2D;
+    typedef PMacc::GridController<simDim> GC;
+    typedef PMacc::GridBuffer< Prec, simDim > Buffer;
+    typedef PMacc::GridLayout<simDim> GridLayout;
+    typedef PMacc::SubGrid<simDim> SubGrid;
 
     enum CommTag
     {
