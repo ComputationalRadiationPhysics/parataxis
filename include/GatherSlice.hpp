@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
+#include "ReduceZ.hpp"
 
 #include <mappings/simulation/GridController.hpp>
 #include <memory/boxes/PitchedBox.hpp>
@@ -127,7 +128,7 @@ namespace xrt
 
             const size_t sizeElements = numElements * sizeof (ValueType);
 
-            auto reducedBox = data.reduceZ(png::outputZSlice);
+            auto reducedBox = ReduceZ<simDim>::get(data, png::outputZSlice);
             MPI_CHECK(MPI_Gather(reducedBox.getPointer(), sizeElements, MPI_CHAR,
                                  fullData.get(), sizeElements, MPI_CHAR,
                                  0, comm));
