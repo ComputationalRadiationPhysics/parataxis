@@ -1,0 +1,10 @@
+#pragma once
+
+#include "generators.hpp"
+
+namespace xrt {
+
+    /* Functor instance used to initialize the density field */
+    generators::Line<precisionXRT::precisionType, 0> densityFieldInitializer(50);
+
+}  // namespace xrt

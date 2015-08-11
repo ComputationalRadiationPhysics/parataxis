@@ -1,0 +1,19 @@
+#pragma once
+
+#include <identifier/alias.hpp>
+#include <identifier/value_identifier.hpp>
+#include <particles/Identifier.hpp>
+
+namespace xrt {
+
+    /** relative (to cell origin) in-cell position of a particle
+     * With this definition we not define any type like float3,double3,...
+     * This is only a name without a specialization
+     */
+    alias(position);
+    /** specialization for the relative in-cell position */
+    value_identifier(floatD_X, position_pic, floatD_X::create(0.));
+    /** momentum at timestep t */
+    value_identifier(float3_X, momentum, float3_X::create(0.));
+
+}  // namespace xrt

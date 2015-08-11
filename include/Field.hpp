@@ -46,7 +46,7 @@ namespace xrt {
         void createDensityDistribution(T_Box&& writeBox, T_Generator&& generator)
         {
             PMacc::AreaMapping < PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(mapping);
-            __cudaKernel(::xrt::kernel::createDensityDistribution)
+            __cudaKernel(kernel::createDensityDistribution)
                     (mapper.getGridDim(), MappingDesc::SuperCellSize::toRT().toDim3())
                     (
                      writeBox,

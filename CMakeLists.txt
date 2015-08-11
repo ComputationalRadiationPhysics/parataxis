@@ -13,7 +13,7 @@ ENDIF(VAMPIR_ENABLE)
 
 # Projekt name
 project (XRayTracing)
-
+SET(LIBS m)
 
 SET(PICONGPU_ROOT ~/picongpu CACHE PATH "Path to picongpu base directory")
 #set helper pathes to find libraries and packages
@@ -30,6 +30,7 @@ INCLUDE_DIRECTORIES(include)
 ## MPI ##
 FIND_PACKAGE(MPI REQUIRED)
 INCLUDE_DIRECTORIES(${MPI_CXX_INCLUDE_PATH})
+list(APPEND LIBS ${MPI_CXX_LIBRARIES})
 
 ## CUDA ##
 FIND_PACKAGE(CUDA REQUIRED)
@@ -45,7 +46,7 @@ IF(CUDA_SHOW_REGISTER)
 ENDIF(CUDA_SHOW_REGISTER)
 
 IF(CUDA_KEEP_FILES)
-    MAKE_DIRECTORY("${PROJECT_BINARY_DIR}/nvcc_tmp")
+    FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/nvcc_tmp")
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --keep --keep-dir "nvcc_tmp")
 ENDIF(CUDA_KEEP_FILES)
 
@@ -71,12 +72,25 @@ find_package(PNGwriter REQUIRED)
 
 include_directories(SYSTEM ${PNGwriter_INCLUDE_DIRS})
 add_definitions(${PNGwriter_DEFINITIONS})
-
+list(APPEND LIBS ${PNGwriter_LIBRARIES})
 
 ## Boost ##
-FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options regex system)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options regex system filesystem)
 INCLUDE_DIRECTORIES(AFTER ${Boost_INCLUDE_DIRS})
 LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
+list(APPEND LIBS ${Boost_LIBRARIES})
+ADD_DEFINITIONS(-DBOOST_RESULT_OF_USE_TR1)
+
+## MallocMC ##
+SET(MALLOCMC_ROOT "${PICONGPU_ROOT}/thirdParty/mallocMC" CACHE PATH "Path to MallocMC")
+FIND_PACKAGE(mallocMC REQUIRED)
+include_directories(SYSTEM ${mallocMC_INCLUDE_DIRS})
+add_definitions(${mallocMC_DEFINITIONS})
+list(APPEND LIBS ${mallocMC_LIBRARIES})
+
+## XRT ##
+set(XRT_VERBOSE "1" CACHE STRING "Set verbosity level for XRT")
+add_definitions(-DXRT_VERBOSE_LVL=${XRT_VERBOSE})
 
 
 ################################################################################
@@ -120,17 +134,11 @@ cuda_add_executable(${PROJECT_NAME}
     ${SRCFILES}
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 11 )
-set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD_REQUIRED ON )
-
 IF(VAMPIR_ENABLE)
     SET(LIBS vt-hyb ${LIBS} )
 ENDIF(VAMPIR_ENABLE)
 
-target_link_libraries(${PROJECT_NAME} m)
-target_link_libraries(${PROJECT_NAME} ${MPI_CXX_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${PNGwriter_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 ###install section###
 INSTALL(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)

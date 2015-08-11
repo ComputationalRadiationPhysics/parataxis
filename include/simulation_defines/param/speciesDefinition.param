@@ -1,0 +1,42 @@
+#pragma once
+
+#include "simulation_defines.hpp"
+#include "particles/Particles.hpp"
+#include <compileTime/conversion/MakeSeq.hpp>
+#include <particles/ParticleDescription.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/string.hpp>
+
+namespace xrt {
+
+    /*########################### define particle attributes #####################*/
+
+    /** describe attributes of a particle*/
+    typedef PMacc::MakeSeq<
+            position<position_pic>,
+            momentum
+    >::type DefaultParticleAttributes;
+
+    typedef PMacc::MakeSeq<
+            DefaultParticleAttributes
+    >::type DefaultAttributesSeq;
+
+    /*########################### end particle attributes ########################*/
+
+    /*########################### define species #################################*/
+
+    typedef bmpl::vector<
+            /* Nothing yet */
+    > ParticleFlagsPhotons;
+
+    /*define species electrons*/
+    typedef Particles<
+        PMacc::ParticleDescription<
+            bmpl::string<'p'>,
+            SuperCellSize,
+            DefaultAttributesSeq,
+            ParticleFlagsPhotons
+        >
+    > PIC_Photons;
+
+}  // namespace xrt

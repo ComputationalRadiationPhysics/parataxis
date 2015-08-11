@@ -2,77 +2,204 @@
 
 #include "xrtTypes.hpp"
 
+#include "convertToSpace.hpp"
+//#include "particles/ParticlesFunctors.hpp"
+#include "particles/Particles.tpp"
+
 #include "Field.hpp"
 #include "GatherSlice.hpp"
 #include "PngCreator.hpp"
 #include "generators.hpp"
+#include "debug/LogLevels.hpp"
 
+#include <particles/memory/buffers/MallocMCBuffer.hpp>
+#include <simulationControl/SimulationHelper.hpp>
 #include <dimensions/DataSpace.hpp>
 #include <mappings/kernel/MappingDescription.hpp>
 #include <traits/NumberOfExchanges.hpp>
+#include <compileTime/conversion/TypeToPointerPair.hpp>
+#include <debug/VerboseLog.hpp>
 
+#include <boost/program_options.hpp>
 #include <memory>
+#include <vector>
 
 namespace xrt {
 
-    class Simulation
+    namespace po   = boost::program_options;
+
+    class Simulation: public PMacc::SimulationHelper<simDim>
     {
-        const int32_t steps;
-        Space gridSize, devices, periodic;
+        using Parent = PMacc::SimulationHelper<simDim>;
+
+        bool isMaster;
+        PMacc::MallocMCBuffer *mallocMCBuffer;
+
+        PIC_Photons* particleStorage;
+
+        std::vector<unsigned> gridSize, devices, periodic;
+
+        /* Only valid after pluginLoad */
+        MappingDesc cellDescription;
 
         Field<MappingDesc> field;
         std::unique_ptr<Buffer> densityBuf;
         GatherSlice<typename Buffer::DataBoxType::ValueType> gather;
-        bool isMaster;
 
     public:
 
-        Simulation(int32_t steps, Space gridSize, Space devices, Space periodic) :
-            steps(steps), gridSize(gridSize), isMaster(false)
-        {
-            /* Set up device mappings and create streams etc. */
-            Environment::get().initDevices(devices, periodic);
-
-            /* Divide grid evenly among devices */
-            Space localGridSize(gridSize / devices);
-            /* Set up environment (subGrid and singletons) with this size */
-            GC& gc = Environment::get().GridController();
-            Environment::get().initGrids( gridSize, localGridSize, gc.getPosition() * localGridSize);
-        }
-
-        ~Simulation()
+        Simulation() :
+            isMaster(false), particleStorage(nullptr)
         {}
 
-        void init()
+        virtual ~Simulation()
         {
-            /* Get our grid */
-            const SubGrid& subGrid = Environment::get().SubGrid();
-            /* Our layout is the subGrid with guard cells as big as one super cell */
-            GridLayout layout( subGrid.getLocalDomain().size, MappingDesc::SuperCellSize::toRT());
+            mallocMC::finalizeHeap();
+        }
 
-            /* Create our field with 1 border and 1 guard super cell */
-            field.init(MappingDesc(layout.getDataSpace(), 1, 1));
-            densityBuf.reset(new Buffer(layout, false));
+        virtual void notify(uint32_t currentStep)
+        {}
+
+        virtual void pluginRegisterHelp(po::options_description& desc)
+        {
+            SimulationHelper<simDim>::pluginRegisterHelp(desc);
+            desc.add_options()
+                ("devices,d", po::value<std::vector<uint32_t> > (&devices)->multitoken(), "number of devices in each dimension")
+
+                ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid")
+
+                ("periodic", po::value<std::vector<uint32_t> > (&periodic)->multitoken(),
+                 "specifying whether the grid is periodic (1) or not (0) in each dimension, default: no periodic dimensions");
+        }
+
+        virtual std::string pluginGetName() const
+        {
+            return "X-Ray Tracing";
+        }
+
+        virtual uint32_t init()
+        {
+            densityBuf.reset(new Buffer(cellDescription.getGridLayout()));
 
             auto guardingCells(Space::create(1));
             for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<simDim>::value; ++i)
             {
-                densityBuf->addExchange(PMacc::GUARD, PMacc::Mask(i), guardingCells, CommTag::BUFF);
+                densityBuf->addExchange(PMacc::GUARD, PMacc::Mask(i), guardingCells, static_cast<uint32_t>(CommTag::BUFF));
             }
 
-            isMaster = gather.init(MessageHeader(gridSize, layout, subGrid.getLocalDomain().offset), true);
-            field.createDensityDistribution(densityBuf->getDeviceBuffer().getDataBox(), generators::Line<float, 0>(50));
+            auto& subGrid = Environment::get().SubGrid();
+            isMaster = gather.init(MessageHeader(subGrid.getGlobalDomain().size, cellDescription.getGridLayout(), subGrid.getLocalDomain().offset), true);
+
+            /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
+            initMallocMC();
+
+            /* ... and allocate the particles (which uses mallocMC) */
+            particleStorage = new PIC_Photons(cellDescription, PIC_Photons::FrameType::getName());
+
+            size_t freeGpuMem(0);
+            Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
+            PMacc::log< XRTLogLvl::MEMORY > ("free mem after all mem is allocated %1% MiB") % (freeGpuMem / MiB);
+
+            if (this->restartRequested)
+                std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
+
+            field.init(cellDescription);
+            field.createDensityDistribution(densityBuf->getDeviceBuffer().getDataBox(), densityFieldInitializer);
+
+            return 0;
         }
 
-        void start()
+        virtual void movingWindowCheck(uint32_t currentStep){}
+
+        /**
+         * Run one simulation step.
+         *
+         * @param currentStep iteration number of the current step
+         */
+        virtual void runOneStep(uint32_t currentStep)
         {
+            /* Only do this for 1st timestep */
+            if(currentStep)
+                return;
             /* gather::operator() gathers all the buffers and assembles those to  *
              * a complete picture discarding the guards.                          */
             densityBuf->deviceToHost();
             auto picture = gather(densityBuf->getHostBuffer().getDataBox());
             if (isMaster){
                 PngCreator png;
-                png(0, picture, gridSize);
+                png(0, picture, Environment::get().SubGrid().getGlobalDomain().size);
+            }
+        }
+
+    protected:
+        virtual void pluginLoad()
+        {
+            Space periodic  = convertToSpace(this->periodic, true, "");
+            Space devices   = convertToSpace(this->devices, 1, "devices (-d)");
+            Space gridSize  = convertToSpace(this->gridSize, 1, "grid (-g)");
+
+            /* Set up device mappings and create streams etc. */
+            Environment::get().initDevices(devices, periodic);
+
+            /* Divide grid evenly among devices */
+            GC& gc = Environment::get().GridController();
+            Space localGridSize(gridSize / devices);
+            Space localGridOffset(gc.getPosition() * localGridSize);
+            /* Set up environment (subGrid and singletons) with this size */
+            Environment::get().initGrids( gridSize, localGridSize, localGridOffset);
+            PMacc::log< XRTLogLvl::DOMAINS > ("rank %1%; local size %2%; local offset %3%;") %
+                    gc.getPosition().toString() % localGridSize.toString() % localGridOffset.toString();
+
+            Parent::pluginLoad();
+
+            /* Our layout is the subGrid with guard cells as big as one super cell */
+            GridLayout layout(localGridSize, MappingDesc::SuperCellSize::toRT());
+            /* Create with 1 border and 1 guard super cell */
+            cellDescription = MappingDesc(layout.getDataSpace(), 1, 1);
+            checkGridConfiguration(gridSize, layout);
+        }
+
+        virtual void pluginUnload()
+        {
+
+            Parent::pluginUnload();
+
+            __delete(mallocMCBuffer);
+            __delete(particleStorage);
+        }
+
+        void initMallocMC()
+        {
+            size_t freeGpuMem(0);
+            Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
+            freeGpuMem -= reservedGPUMemorySize;
+
+            if( Environment::get().EnvMemoryInfo().isSharedMemoryPool() )
+            {
+                freeGpuMem /= 2;
+                PMacc::log< XRTLogLvl::MEMORY > ("Shared RAM between GPU and host detected - using only half of the 'device' memory.");
+            }
+            else
+                PMacc::log< XRTLogLvl::MEMORY > ("RAM is NOT shared between GPU and host.");
+
+            // initializing the heap for particles
+            mallocMC::initHeap(freeGpuMem);
+            this->mallocMCBuffer = new PMacc::MallocMCBuffer();
+        }
+
+    private:
+        void checkGridConfiguration(Space globalGridSize, GridLayout layout)
+        {
+            for(unsigned i=0; i<simDim; ++i)
+            {
+                // global size must be a divisor of supercell size
+                // note: this is redundant, while using the local condition below
+                assert(globalGridSize[i] % MappingDesc::SuperCellSize::toRT()[i] == 0);
+                // local size must be a divisor of supercell size
+                assert(layout.getDataSpaceWithoutGuarding()[i] % MappingDesc::SuperCellSize::toRT()[i] == 0);
+                // local size must be at least 3 superCells (1x core + 2x border)
+                // note: size of border = guard_size (in superCells)
+                assert(layout.getDataSpaceWithoutGuarding()[i] / MappingDesc::SuperCellSize::toRT()[i] >= 3);
             }
         }
     };

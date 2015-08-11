@@ -1,0 +1,32 @@
+#pragma once
+
+#include <math/Vector.hpp>
+#include <mappings/kernel/MappingDescription.hpp>
+
+namespace xrt {
+
+    constexpr uint32_t KiB = 1024;
+    constexpr uint32_t MiB = 1024 * KiB;
+
+    /* We have to hold back 350MiB for GPU-internal operations:
+     *   - random number generator
+     *   - reduces
+     *   - ...
+     */
+    const size_t reservedGPUMemorySize = 350 * MiB;
+
+    using SuperCellSize = typename PMacc::math::CT::make_Int< simDim, 16 >::type; /* 16 = arbitrarily chosen SuperCellSize! */
+    using MappingDesc = PMacc::MappingDescription<simDim, SuperCellSize>;
+
+    //! how many bytes for buffer is reserved to communication in one direction
+    namespace exchangeSize {
+
+        constexpr uint32_t X      = 1  * MiB;
+        constexpr uint32_t Y      = 3  * MiB;
+        constexpr uint32_t Z      = 1  * MiB;
+        constexpr uint32_t Corner = 8  * KiB;
+        constexpr uint32_t Edges  = 32 * KiB;
+
+    }  // namespace exchangeSize
+
+}  // namespace xrt
