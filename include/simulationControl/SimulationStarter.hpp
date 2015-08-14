@@ -2,9 +2,13 @@
 
 #include "xrtTypes.hpp"
 #include "Simulation.hpp"
+#include "plugins/plugins.hpp"
+#include "plugins/ISimulationPlugin.hpp"
 
 #include <debug/VerboseLog.hpp>
-#include <pluginSystem/IPlugin.hpp>
+#include <algorithms/ForEach.hpp>
+#include <compileTime/conversion/MakeSeq.hpp>
+#include <forward.hpp>
 #include <boost/program_options/options_description.hpp>
 
 namespace xrt{
@@ -13,22 +17,30 @@ namespace xrt{
 
     enum class ArgsErrorCode {SUCCESS, SUCCESS_EXIT, ERROR};
 
-    class SimulationStarter: public PMacc::IPlugin
+    class SimulationStarter
     {
         typedef std::list<po::options_description> BoostOptionsList;
+        BoostOptionsList options;
 
         Simulation simulationClass;
+        std::list<ISimulationPlugin*> plugins;
+
+        template<typename T_Type>
+        struct PushBack
+        {
+
+            template<typename T>
+            void operator()(T& list)
+            {
+                list.push_back(new T_Type());
+            }
+        };
     public:
 
         virtual ~SimulationStarter()
         {}
 
-        virtual std::string pluginGetName() const
-        {
-            return "PIConGPU simulation starter";
-        }
-
-        virtual void start()
+        void start()
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
             pluginConnector.loadPlugins();
@@ -39,7 +51,6 @@ namespace xrt{
         ArgsErrorCode parseConfigs(int argc, char **argv)
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
-            BoostOptionsList options;
 
             po::options_description simDesc(simulationClass.pluginGetName());
             simulationClass.pluginRegisterHelp(simDesc);
@@ -49,34 +60,49 @@ namespace xrt{
             options.insert(options.end(), pluginOptions.begin(), pluginOptions.end());
 
             // parse environment variables, config files and command line
-            return parse(argc, argv, options);
+            return parse(argc, argv);
         }
 
-        /* Some required overrides that are not needed here */
-        virtual void pluginRegisterHelp(po::options_description&)
-        {}
-        void notify(uint32_t)
-        {}
-        virtual void restart(uint32_t, const std::string)
-        {}
-        virtual void checkpoint(uint32_t, const std::string)
-        {}
-    protected:
-
-        void pluginLoad()
+        void load()
         {
             simulationClass.load();
+            loadPlugins();
+            for(auto&& plugin: plugins)
+                plugin->setMappingDesc(simulationClass.getMappingDesc());
         }
 
-        void pluginUnload()
+        void unload()
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
             pluginConnector.unloadPlugins();
             simulationClass.unload();
+            for(auto&& plugin: plugins)
+                __delete(plugin);
+            plugins.clear();
         }
     private:
 
-        void printStartParameters(int argc, char **argv)
+        typedef bmpl::transform<
+                SpeciesPlugins,
+                bmpl::apply1<
+                    bmpl::_1,
+                    PIC_Photons
+                >
+            >::type SpecializedSpeciesPlugins;
+
+        /* create sequence with all plugins*/
+        typedef PMacc::MakeSeq<
+            StandAlonePlugins,
+            SpecializedSpeciesPlugins
+        >::type AllPlugins;
+
+        void loadPlugins()
+        {
+            PMacc::algorithms::forEach::ForEach< AllPlugins, PushBack<bmpl::_1> > pushBack;
+            pushBack(PMacc::forward(plugins));
+        }
+
+        void printStartParameters(int argc, char **argv) const
         {
             std::cout << "Start Parameters: ";
             for (int i = 0; i < argc; ++i)
@@ -86,7 +112,7 @@ namespace xrt{
             std::cout << std::endl;
         }
 
-        ArgsErrorCode parse(int argc, char** argv, const BoostOptionsList& options)
+        ArgsErrorCode parse(int argc, char** argv) const
         {
             try
             {
@@ -97,8 +123,8 @@ namespace xrt{
                     ( "validate", "validate command line parameters and exit" );
 
                 // add all options from plugins
-                for (auto iter = options.begin(); iter != options.end(); ++iter)
-                    desc.add(*iter);
+                for (auto&& option: options)
+                    desc.add(option);
 
                 // parse command line options and config file and store values in vm
                 po::variables_map vm;
