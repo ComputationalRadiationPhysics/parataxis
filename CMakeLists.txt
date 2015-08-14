@@ -121,6 +121,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-std=c++11 -Wall)
 list(APPEND CUDA_NVCC_FLAGS "-std=c++11 -Xcompiler -Wall")
+list(APPEND CUDA_NVCC_FLAGS "--relaxed-constexpr")
 
 IF(VAMPIR_ENABLE)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler=-finstrument-functions,-finstrument-functions-exclude-file-list=stl,-finstrument-functions-exclude-function-list='GPUGrid,execute,allocator,Task,Manager,Transaction,Mask',-pthread )
