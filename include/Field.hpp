@@ -12,8 +12,8 @@ namespace xrt {
 
     namespace kernel
     {
-        template<class T_BoxWriteOnly, class T_Space, class T_Mapping, class T_Generator>
-        __global__ void createDensityDistribution(T_BoxWriteOnly buffWrite, T_Space localDomainOffset, T_Mapping mapper, T_Generator generator)
+        template<class T_BoxWriteOnly, class T_Space, class T_Generator, class T_Mapping>
+        __global__ void createDensityDistribution(T_BoxWriteOnly buffWrite, T_Space localDomainOffset, T_Generator generator, T_Mapping mapper)
         {
             /* get position in local domain in units of SuperCells for this block */
             const Space blockSuperCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
@@ -45,13 +45,12 @@ namespace xrt {
         template<class T_Box, class T_Generator>
         void createDensityDistribution(T_Box&& writeBox, T_Generator&& generator)
         {
-            PMacc::AreaMapping < PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(mapping);
-            __cudaKernel(kernel::createDensityDistribution)
-                    (mapper.getGridDim(), MappingDesc::SuperCellSize::toRT().toDim3())
+            //PMacc::AreaMapping < PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(mapping);
+            __cudaKernelArea(kernel::createDensityDistribution, mapping, PMacc::CORE + PMacc::BORDER)
+                    (MappingDesc::SuperCellSize::toRT().toDim3())
                     (
                      writeBox,
                      Environment::get().SubGrid().getLocalDomain().offset,
-                     mapper,
                      generator);
         }
     };

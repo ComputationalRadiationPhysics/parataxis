@@ -3,7 +3,8 @@
 #include "xrtTypes.hpp"
 
 #include "convertToSpace.hpp"
-//#include "particles/ParticlesFunctors.hpp"
+#include "particles/functors/ConstDistribution.hpp"
+#include "particles/functors/EvenDistPosition.hpp"
 #include "particles/Particles.tpp"
 
 #include "Field.hpp"
@@ -57,10 +58,10 @@ namespace xrt {
             mallocMC::finalizeHeap();
         }
 
-        virtual void notify(uint32_t currentStep)
+        void notify(uint32_t currentStep) override
         {}
 
-        virtual void pluginRegisterHelp(po::options_description& desc)
+        void pluginRegisterHelp(po::options_description& desc) override
         {
             SimulationHelper<simDim>::pluginRegisterHelp(desc);
             desc.add_options()
@@ -72,12 +73,12 @@ namespace xrt {
                  "specifying whether the grid is periodic (1) or not (0) in each dimension, default: no periodic dimensions");
         }
 
-        virtual std::string pluginGetName() const
+        std::string pluginGetName() const override
         {
             return "X-Ray Tracing";
         }
 
-        virtual uint32_t init()
+        uint32_t init() override
         {
             densityBuf.reset(new Buffer(cellDescription.getGridLayout()));
 
@@ -105,18 +106,20 @@ namespace xrt {
 
             field.init(cellDescription);
             field.createDensityDistribution(densityBuf->getDeviceBuffer().getDataBox(), densityFieldInitializer);
+            particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
 
             return 0;
         }
 
-        virtual void movingWindowCheck(uint32_t currentStep){}
+        void movingWindowCheck(uint32_t currentStep) override
+        {}
 
         /**
          * Run one simulation step.
          *
          * @param currentStep iteration number of the current step
          */
-        virtual void runOneStep(uint32_t currentStep)
+        void runOneStep(uint32_t currentStep) override
         {
             /* Only do this for 1st timestep */
             if(currentStep)
@@ -131,8 +134,14 @@ namespace xrt {
             }
         }
 
+        const MappingDesc*
+        getMappingDesc()
+        {
+            return &cellDescription;
+        }
+
     protected:
-        virtual void pluginLoad()
+        void pluginLoad() override
         {
             Space periodic  = convertToSpace(this->periodic, true, "");
             Space devices   = convertToSpace(this->devices, 1, "devices (-d)");
@@ -159,7 +168,7 @@ namespace xrt {
             checkGridConfiguration(gridSize, layout);
         }
 
-        virtual void pluginUnload()
+        void pluginUnload() override
         {
 
             Parent::pluginUnload();

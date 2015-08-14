@@ -1,0 +1,8 @@
+#pragma once
+
+
+/**
+ * lists of plugins to use
+ */
+
+#define ENABLE_PRINT_PARTICLES 1

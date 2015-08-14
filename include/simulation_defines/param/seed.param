@@ -1,0 +1,28 @@
+#pragma once
+
+namespace xrt {
+namespace seeds {
+
+    /** global seed
+     *
+     *  global seed to derive GPU local seeds from
+     *  - vary it to shuffle pseudo random generators for exactly same simulation
+     *  - note: even when kept constant, highly parallel simulations do not ensure
+     *          100% deterministic simulations on the floating point level
+     */
+    struct Global
+    {
+        uint32_t
+        operator()()
+        {
+            return 42;
+        }
+    };
+
+    /**
+     * Seed for particle positions
+     */
+    static constexpr uint32_t position = 854666252;
+
+}  // namespace seeds
+}  // namespace xrt
