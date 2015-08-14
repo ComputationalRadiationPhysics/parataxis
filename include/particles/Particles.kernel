@@ -8,9 +8,10 @@
 #include <dimensions/DataSpaceOperations.hpp>
 
 namespace xrt {
+namespace kernel {
 
     template<class T_MyFrame, class T_OtherFrame, class T_ManipulateFunctor, class Mapping>
-    __global__ void kernelCloneParticles(PMacc::ParticlesBox<T_MyFrame, simDim> myBox, PMacc::ParticlesBox<T_OtherFrame, simDim> otherBox,
+    __global__ void cloneParticles(PMacc::ParticlesBox<T_MyFrame, simDim> myBox, PMacc::ParticlesBox<T_OtherFrame, simDim> otherBox,
                                          T_ManipulateFunctor manipulateFunctor, Mapping mapper)
     {
         using namespace PMacc::particles::operations;
@@ -65,4 +66,5 @@ namespace xrt {
         }
     }
 
+}  // namespace kernel
 }  // namespace xrt

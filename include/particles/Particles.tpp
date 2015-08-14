@@ -2,7 +2,8 @@
 
 #include "Particles.hpp"
 
-#include "Particles.kernel"
+#include "particles/Particles.kernel"
+#include "particles/ParticlesInit.kernel"
 
 #include "debug/LogLevels.hpp"
 
@@ -109,14 +110,30 @@ namespace xrt{
 
     template< typename T_ParticleDescription>
     void Particles<T_ParticleDescription>::syncToDevice()
-    {
-
-    }
+    {}
 
     template<typename T_ParticleDescription>
     void Particles<T_ParticleDescription>::init()
     {
         PMacc::Environment<>::get().DataConnector().registerData( *this );
+    }
+
+    template<typename T_ParticleDescription>
+    template<typename T_DistributionFunctor, typename T_PositionFunctor>
+    void Particles<T_ParticleDescription>::add(T_DistributionFunctor&& distributionFunctor, T_PositionFunctor&& positionFunctor)
+    {
+        PMacc::log< XRTLogLvl::SIM_STATE >("adding particles for species %1%") % FrameType::getName();
+
+        const SubGrid& subGrid = Environment::get().SubGrid();
+        Space totalGpuCellOffset = subGrid.getLocalDomain().offset;
+
+        dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
+        __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::CORE + PMacc::BORDER)
+            (block)
+            ( distributionFunctor, positionFunctor, totalGpuCellOffset, this->particlesBuffer->getDeviceParticleBox() );
+
+
+        this->fillAllGaps();
     }
 
     template<typename T_ParticleDescription>
@@ -133,8 +150,9 @@ namespace xrt{
         dim3 block( PMacc::math::CT::volume<SuperCellSize>::type::value );
 
         PMacc::log< XRTLogLvl::SIM_STATE > ( "clone species %1%" ) % FrameType::getName();
-        __picKernelArea( kernelCloneParticles, this->cellDescription, PMacc::CORE + PMacc::BORDER )
-            (block) ( this->getDeviceParticlesBox(), src.getDeviceParticlesBox(), functor );
+        __cudaKernelArea( kernel::cloneParticles, this->cellDescription, PMacc::CORE + PMacc::BORDER )
+            (block)
+            ( this->getDeviceParticlesBox(), src.getDeviceParticlesBox(), functor );
         this->fillAllGaps();
     }
 
