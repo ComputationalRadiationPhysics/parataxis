@@ -34,7 +34,7 @@ list(APPEND LIBS ${MPI_CXX_LIBRARIES})
 
 ## CUDA ##
 FIND_PACKAGE(CUDA REQUIRED)
-SET(CUDA_ARCH sm_30 CACHE STRING "set GPU architecture" )
+SET(CUDA_ARCH sm_20 CACHE STRING "set GPU architecture" )
 SET(CUDA_MATH --use_fast_math CACHE STRING "use intrinsic GPU math functions" )
 OPTION(CUDA_SHOW_REGISTER "show kernel register and create PTX" OFF)
 OPTION(CUDA_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps. (folder: nvcc_tmp)" OFF)
