@@ -37,14 +37,23 @@ namespace xrt{
         };
     public:
 
+        SimulationStarter()
+        {
+            loadPlugins();
+        }
+
         virtual ~SimulationStarter()
-        {}
+        {
+            for(auto&& plugin: plugins)
+                __delete(plugin);
+            plugins.clear();
+        }
 
         void start()
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
             pluginConnector.loadPlugins();
-            PMacc::log< XRTLogLvl::SIM_STATE > ("Startup");
+            PMacc::log< XRTLogLvl::SIM_STATE >("Startup");
             simulationClass.startSimulation();
         }
 
@@ -65,20 +74,23 @@ namespace xrt{
 
         void load()
         {
+            PMacc::log< XRTLogLvl::SIM_STATE >("Loading simulation");
             simulationClass.load();
-            loadPlugins();
+            PMacc::log< XRTLogLvl::SIM_STATE >("Loading plugins");
+
             for(auto&& plugin: plugins)
                 plugin->setMappingDesc(simulationClass.getMappingDesc());
+            PMacc::log< XRTLogLvl::SIM_STATE >("Loading done");
         }
 
         void unload()
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
+            PMacc::log< XRTLogLvl::SIM_STATE >("Unloading plugins");
             pluginConnector.unloadPlugins();
+            PMacc::log< XRTLogLvl::SIM_STATE >("Unloading simulation");
             simulationClass.unload();
-            for(auto&& plugin: plugins)
-                __delete(plugin);
-            plugins.clear();
+            PMacc::log< XRTLogLvl::SIM_STATE >("Everything unloaded");
         }
     private:
 
