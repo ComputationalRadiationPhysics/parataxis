@@ -14,8 +14,8 @@ int main( int argc, char **argv )
         /* Use nested region to make sure all simulation classes are
          * freed before we call MPI_Finalize
          */
-        xrt::SimulationStarter sim;
-        xrt::ArgsErrorCode parserCode = sim.parseConfigs(argc, argv);
+        xrt::SimulationStarter starter;
+        xrt::ArgsErrorCode parserCode = starter.parseConfigs(argc, argv);
 
         switch(parserCode)
         {
@@ -23,9 +23,9 @@ int main( int argc, char **argv )
                 errorCode = 1;
                 break;
             case xrt::ArgsErrorCode::SUCCESS:
-                sim.load();
-                sim.start();
-                sim.unload();
+                starter.load();
+                starter.start();
+                starter.unload();
                 errorCode = 0;
                 break;
             case xrt::ArgsErrorCode::SUCCESS_EXIT:
