@@ -1,12 +1,31 @@
 #pragma once
 
 #include "xrtTypes.hpp"
+#include "particles/functors/IterateSpecies.hpp"
+#include "particles/functors/CopySpeciesToHost.hpp"
 #include "plugins/ISimulationPlugin.hpp"
+
+#include <particles/memory/buffers/MallocMCBuffer.hpp>
+#include <mappings/kernel/AreaMapping.hpp>
 #include <dataManagement/DataConnector.hpp>
 #include <string>
 
 namespace xrt {
 namespace plugins {
+
+    namespace detail {
+
+        struct PrintParticle
+        {
+            template<class T_Particle>
+            void
+            operator()(const Space globalIdx, T_Particle&& particle)
+            {
+                std::cout << "Particle " << globalIdx << ": " << particle[position_] << "\n";
+            }
+        };
+
+    }  // namespace detail
 
     template<class T_ParticlesType>
     class PrintParticles : public ISimulationPlugin
@@ -49,7 +68,24 @@ namespace plugins {
         {
             PMacc::DataConnector &dc = Environment::get().DataConnector();
 
-            ParticlesType* particles = &(dc.getData<ParticlesType>(ParticlesType::FrameType::getName(), true));
+            /* synchronizes the MallocMCBuffer to the host side */
+            PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName());
+            //particles::functors::CopySpeciesToHost<PIC_Photons>()();
+
+            int particlesCount = 0;
+            auto& particles = dc.getData<PIC_Photons>(PIC_Photons::FrameType::getName());
+            const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
+            PMacc::AreaMapping< PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(*cellDescription_);
+            particles::functors::IterateSpecies<PIC_Photons>()(
+                    particlesCount,
+                    particles.getHostParticlesBox(mallocMCBuffer.getOffset()),
+                    localOffset,
+                    mapper,
+                    detail::PrintParticle()
+                    );
+
+            dc.releaseData(PIC_Photons::FrameType::getName());
+            dc.releaseData(PMacc::MallocMCBuffer::getName());
         }
 
         void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override

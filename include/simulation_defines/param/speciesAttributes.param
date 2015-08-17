@@ -11,6 +11,7 @@ namespace xrt {
      * This is only a name without a specialization
      */
     alias(position);
+
     /** specialization for the relative in-cell position */
     value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** momentum at timestep t */
