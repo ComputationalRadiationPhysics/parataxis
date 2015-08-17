@@ -106,6 +106,7 @@ namespace xrt {
 
             field.init(cellDescription);
             field.createDensityDistribution(densityBuf->getDeviceBuffer().getDataBox(), densityFieldInitializer);
+            particleStorage->init();
             particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
 
             return 0;
