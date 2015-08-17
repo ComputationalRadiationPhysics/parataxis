@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "particles/functors/IterateSpecies.hpp"
 #include "particles/functors/CopySpeciesToHost.hpp"
+#include "particles/filters/IndexFilter.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -41,6 +42,8 @@ namespace plugins {
 
         std::string analyzerName;
         std::string analyzerPrefix;
+        std::vector<unsigned> idxOffset;
+        std::vector<unsigned> idxSize;
 
     public:
         PrintParticles():
@@ -57,8 +60,10 @@ namespace plugins {
         void pluginRegisterHelp(po::options_description& desc) override
         {
             desc.add_options()
-                ((analyzerPrefix + ".period").c_str(),
-                 po::value<uint32_t > (&notifyFrequency), "enable analyzer [for each n-th step]");
+                ((analyzerPrefix + ".period").c_str(), po::value<uint32_t >(&notifyFrequency), "enable analyzer [for each n-th step]")
+                ((analyzerPrefix + ".offset").c_str(), po::value<std::vector<uint32_t> >(&idxOffset)->multitoken(), "Print only particles of cells with idx greater than this")
+                ((analyzerPrefix + ".size").c_str(), po::value<std::vector<uint32_t> >(&idxSize)->multitoken(), "Print only particles of that many cells (in each dimension)")
+                ;
         }
 
         std::string pluginGetName() const override
@@ -79,11 +84,18 @@ namespace plugins {
             auto& particles = dc.getData<PIC_Photons>(PIC_Photons::FrameType::getName());
             const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
             PMacc::AreaMapping< PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(*cellDescription_);
+            Space idxOff, idxSz;
+            for(unsigned i = 0; i<simDim; ++i)
+            {
+                idxOff[i] = idxOffset[i];
+                idxSz[i]  = idxSize[i];
+            }
             particles::functors::IterateSpecies<PIC_Photons>()(
                     particlesCount,
                     particles.getHostParticlesBox(mallocMCBuffer.getOffset()),
                     localOffset,
                     mapper,
+                    particles::filters::IndexFilter(idxOff, idxSz),
                     detail::PrintParticle()
                     );
 
@@ -101,6 +113,21 @@ namespace plugins {
         void pluginLoad() override
         {
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
+            if(idxOffset.empty() && idxSize.empty())
+            {
+                // Use an area from the center as the default
+                auto& subGrid = Environment::get().SubGrid();
+                Space offset = subGrid.getTotalDomain().offset + subGrid.getTotalDomain().size / 2;
+                for(unsigned i = 0; i<simDim; ++i)
+                {
+                    idxOffset.push_back(offset[i]);
+                    idxSize.push_back(5);
+                }
+                idxOffset[0] = subGrid.getTotalDomain().offset[0];
+                idxSize[0] = subGrid.getTotalDomain().size[0];
+            }
+            idxOffset.resize(simDim);
+            idxSize.resize(simDim, 1);
         }
     };
 
