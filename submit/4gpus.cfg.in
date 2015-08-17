@@ -34,21 +34,21 @@
 
 TBG_wallTime="1:00:00"
 
-TBG_gpu_x=1
-TBG_gpu_y=1
+TBG_gpu_x=2
+TBG_gpu_y=2
 TBG_gpu_z=1
 
 TBG_gridSize="-g 256 256 256"
 TBG_steps="-s 200"
 TBG_periodic="-p 1 1 1"
 
-TBG_PROGRAM="./${PROJECT_NAME} !TBG_programParams"
+TBG_program="${PROJECT_NAME}"
 
 #################################
 ## Section: Optional Variables ##
 #################################
 
-TBG_plugins="--p_position.period 20"     
+TBG_plugins="--p_position.period 20"  
 
 #################################
 ## Section: Program Parameters ##

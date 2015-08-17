@@ -143,11 +143,15 @@ target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 ###install section###
 INSTALL(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit" DESTINATION ${CMAKE_INSTALL_PREFIX})
+INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        PATTERN *.in EXCLUDE)
 
-file(GLOB CFG_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "submit/*.cfg")
+file(GLOB CFG_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "submit/*.cfg.in")
 FOREACH(file ${CFG_Files})
-    configure_file(${file} "${CMAKE_INSTALL_PREFIX}/${file}")
+    get_filename_component(fileNoExt ${file} NAME_WE)
+    message(STATUS ${fileNoExt})
+    configure_file(${file} "submit/${fileNoExt}.cfg")
 ENDFOREACH()
 
 INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
