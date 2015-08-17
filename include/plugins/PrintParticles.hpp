@@ -4,10 +4,12 @@
 #include "particles/functors/IterateSpecies.hpp"
 #include "particles/functors/CopySpeciesToHost.hpp"
 #include "plugins/ISimulationPlugin.hpp"
+#include "debug/LogLevels.hpp"
 
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
 #include <dataManagement/DataConnector.hpp>
+#include <debug/VerboseLog.hpp>
 #include <string>
 
 namespace xrt {
@@ -66,6 +68,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
+            PMacc::log< XRTLogLvl::IN_OUT >("Printing particles at timestep %1%") % currentStep;
             PMacc::DataConnector &dc = Environment::get().DataConnector();
 
             /* synchronizes the MallocMCBuffer to the host side */
@@ -86,6 +89,7 @@ namespace plugins {
 
             dc.releaseData(PIC_Photons::FrameType::getName());
             dc.releaseData(PMacc::MallocMCBuffer::getName());
+            PMacc::log< XRTLogLvl::IN_OUT >("%1% particles printed") % particlesCount;
         }
 
         void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
