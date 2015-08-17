@@ -43,7 +43,7 @@ namespace plugins {
     public:
         PrintParticles():
             notifyFrequency(0),
-            analyzerName("PositionsParticles: write position of one particle of a species to std::cout"),
+            analyzerName("PositionsParticles: write position of all particles of a species to std::cout"),
             analyzerPrefix(ParticlesType::FrameType::getName() + std::string("_position"))
         {
             Environment::get().PluginConnector().registerPlugin(this);
