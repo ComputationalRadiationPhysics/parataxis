@@ -142,18 +142,4 @@ namespace xrt{
         ParticlesBaseType::template shiftParticles < PMacc::CORE + PMacc::BORDER > ();
     }
 
-    template< typename T_ParticleDescription>
-    template< typename T_SrcParticleDescription,
-              typename T_ManipulateFunctor>
-    void Particles<T_ParticleDescription>::deviceCloneFrom( Particles< T_SrcParticleDescription> &src, T_ManipulateFunctor& functor )
-    {
-        dim3 block( PMacc::math::CT::volume<SuperCellSize>::type::value );
-
-        PMacc::log< XRTLogLvl::SIM_STATE > ( "clone species %1%" ) % FrameType::getName();
-        __cudaKernelArea( kernel::cloneParticles, this->cellDescription, PMacc::CORE + PMacc::BORDER )
-            (block)
-            ( this->getDeviceParticlesBox(), src.getDeviceParticlesBox(), functor );
-        this->fillAllGaps();
-    }
-
 } // namespace xrt

@@ -39,10 +39,6 @@ namespace xrt{
 
         void update(uint32_t currentStep);
 
-        template< typename T_SrcParticleDescription,
-                  typename T_ManipulateFunctor>
-        void deviceCloneFrom(Particles<T_SrcParticleDescription> &src, T_ManipulateFunctor& manipulateFunctor);
-
         virtual PMacc::SimulationDataId getUniqueId();
 
         /** sync device data to host
