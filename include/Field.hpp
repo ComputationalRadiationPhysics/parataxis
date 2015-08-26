@@ -5,6 +5,7 @@
 #include <dimensions/DataSpaceOperations.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
 #include <eventSystem/EventSystem.hpp>
+#include <dataManagement/ISimulationData.hpp>
 
 #include "types.h"
 
@@ -30,29 +31,60 @@ namespace xrt {
         }
     }
 
-    template<class T_MappingDesc>
-    class Field
+    class Field: PMacc::ISimulationData
     {
-        using MappingDesc = T_MappingDesc;
+        MappingDesc cellDescription;
+        std::unique_ptr<Buffer> buffer;
 
-        MappingDesc mapping;
     public:
-        void init(const MappingDesc & desc)
+
+        Field(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridLayout()))
         {
-            mapping = desc;
+            auto guardingCells(Space::create(1));
+            for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<simDim>::value; ++i)
+            {
+                buffer->addExchange(PMacc::GUARD, PMacc::Mask(i), guardingCells, static_cast<uint32_t>(CommTag::BUFF));
+            }
         }
 
-        template<class T_Box, class T_Generator>
-        void createDensityDistribution(T_Box&& writeBox, T_Generator&& generator)
+        static std::string
+        getName()
+        {
+            return "Field";
+        }
+
+        PMacc::SimulationDataId getUniqueId() override
+        {
+            return getName();
+        }
+
+        void synchronize() override
+        {
+            buffer->deviceToHost();
+        }
+
+        void init()
+        {
+            Environment::get().DataConnector().registerData(*this);
+        }
+
+        template<class T_Generator>
+        void createDensityDistribution(T_Generator&& generator)
         {
             //PMacc::AreaMapping < PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(mapping);
-            __cudaKernelArea(kernel::createDensityDistribution, mapping, PMacc::CORE + PMacc::BORDER)
+            __cudaKernelArea(kernel::createDensityDistribution, cellDescription, PMacc::CORE + PMacc::BORDER)
                     (MappingDesc::SuperCellSize::toRT().toDim3())
-                    (
-                     writeBox,
+                    (buffer->getDeviceBuffer().getDataBox(),
                      Environment::get().SubGrid().getLocalDomain().offset,
                      generator);
         }
+
+        typename Buffer::DataBoxType
+        getHostDataBox()
+        {
+            return buffer->getHostBuffer().getDataBox();
+        }
+
     };
 
 }  // namespace xrt

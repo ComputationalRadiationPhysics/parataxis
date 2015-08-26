@@ -1,4 +1,3 @@
 #pragma once
 
-#include <simulation_defines/param/Png.param>
 #include <simulation_defines/param/initialDensity.param>

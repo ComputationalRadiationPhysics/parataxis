@@ -5,8 +5,6 @@
 namespace xrt
 {
 
-    typedef precisionXRT::precisionType float_X;
-
     namespace precision32Bit
     {
         typedef float float_X;
@@ -27,6 +25,8 @@ namespace xrt
         typedef ::PMacc::math::Vector<float_X, simDim> floatD_X;
     }
 
+    typedef precisionXRT::float_X float_X;
+
     typedef precision32Bit::float_X float_32;
     typedef precision64Bit::float_X float_64;
 
@@ -46,9 +46,9 @@ namespace xrt
     typedef precision64Bit::float3_X float3_64;
     typedef precision64Bit::floatD_X floatD_64;
 
-    typedef precisionSqrt::precisionType sqrt_X;
-    typedef precisionExp::precisionType exp_X;
+    typedef precisionSqrt::float_X sqrt_X;
+    typedef precisionExp::float_X exp_X;
     //trigonometric functions
-    typedef precisionTrigonometric::precisionType trigo_X;
+    typedef precisionTrigonometric::float_X trigo_X;
 
 } //namespace picongpu

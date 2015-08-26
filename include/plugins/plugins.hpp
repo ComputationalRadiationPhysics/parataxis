@@ -2,6 +2,7 @@
 
 #include "simulation_defines.hpp"
 #include "plugins/PrintParticles.hpp"
+#include "plugins/PrintField.hpp"
 #include <boost/mpl/vector.hpp>
 
 namespace xrt {
@@ -16,5 +17,12 @@ namespace xrt {
             plugins::PrintParticles<bmpl::_1>
 #endif
     > SpeciesPlugins;
+
+    /* field plugins (with placeholder replaced by field) */
+    typedef bmpl::vector<
+#if ENABLE_PRINT_Field
+            plugins::PrintParticles<bmpl::_1>
+#endif
+    > FieldPlugins;
 
 }  // namespace xrt

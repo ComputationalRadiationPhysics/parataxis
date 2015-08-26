@@ -8,8 +8,6 @@
 #include "particles/Particles.tpp"
 
 #include "Field.hpp"
-#include "GatherSlice.hpp"
-#include "PngCreator.hpp"
 #include "generators.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -20,6 +18,7 @@
 #include <traits/NumberOfExchanges.hpp>
 #include <compileTime/conversion/TypeToPointerPair.hpp>
 #include <debug/VerboseLog.hpp>
+#include <eventSystem/EventSystem.hpp>
 
 #include <boost/program_options.hpp>
 #include <memory>
@@ -33,7 +32,6 @@ namespace xrt {
     {
         using Parent = PMacc::SimulationHelper<simDim>;
 
-        bool isMaster;
         PMacc::MallocMCBuffer *mallocMCBuffer;
 
         PIC_Photons* particleStorage;
@@ -43,14 +41,12 @@ namespace xrt {
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
 
-        Field<MappingDesc> field;
-        std::unique_ptr<Buffer> densityBuf;
-        GatherSlice<typename Buffer::DataBoxType::ValueType> gather;
+        std::unique_ptr<Field> densityField;
 
     public:
 
         Simulation() :
-            isMaster(false), particleStorage(nullptr)
+            particleStorage(nullptr)
         {}
 
         virtual ~Simulation()
@@ -80,16 +76,7 @@ namespace xrt {
 
         uint32_t init() override
         {
-            densityBuf.reset(new Buffer(cellDescription.getGridLayout()));
-
-            auto guardingCells(Space::create(1));
-            for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<simDim>::value; ++i)
-            {
-                densityBuf->addExchange(PMacc::GUARD, PMacc::Mask(i), guardingCells, static_cast<uint32_t>(CommTag::BUFF));
-            }
-
-            auto& subGrid = Environment::get().SubGrid();
-            isMaster = gather.init(MessageHeader(subGrid.getGlobalDomain().size, cellDescription.getGridLayout(), subGrid.getLocalDomain().offset), true);
+            densityField.reset(new Field(cellDescription));
 
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
@@ -104,9 +91,10 @@ namespace xrt {
             if (this->restartRequested)
                 std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
-            field.init(cellDescription);
-            field.createDensityDistribution(densityBuf->getDeviceBuffer().getDataBox(), densityFieldInitializer);
+            densityField->init();
             particleStorage->init();
+
+            densityField->createDensityDistribution(densityFieldInitializer);
             particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
 
             return 0;
@@ -122,17 +110,11 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
-            /* Only do this for 1st timestep */
-            if(currentStep)
-                return;
-            /* gather::operator() gathers all the buffers and assembles those to  *
-             * a complete picture discarding the guards.                          */
-            densityBuf->deviceToHost();
-            auto picture = gather(densityBuf->getHostBuffer().getDataBox());
-            if (isMaster){
-                PngCreator png;
-                png(0, picture, Environment::get().SubGrid().getGlobalDomain().size);
-            }
+            __startTransaction(__getTransactionEvent());
+            particleStorage->update(currentStep);
+            PMacc::EventTask commEvt = particleStorage->asyncCommunication(__getTransactionEvent());
+            PMacc::EventTask updateEvt = __endTransaction();
+            __setTransactionEvent(commEvt + updateEvt);
         }
 
         const MappingDesc*

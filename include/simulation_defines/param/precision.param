@@ -3,13 +3,7 @@
 
 namespace xrt
 {
-
-    namespace precision32Bit {
-        using precisionType = float;
-    }  // namespace precision32Bit
-    namespace precision64Bit {
-        using precisionType = double;
-    }  // namespace precision64Bit
+    namespace precision32Bit{}
 
     /*! Select a precision for the simulation data
      *  - precision32Bit : use 32Bit floating point numbers

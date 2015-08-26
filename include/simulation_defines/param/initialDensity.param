@@ -5,6 +5,6 @@
 namespace xrt {
 
     /* Functor instance used to initialize the density field */
-    generators::Line<precisionXRT::precisionType, 0> densityFieldInitializer(50);
+    generators::Line<precisionXRT::float_X, 0> densityFieldInitializer(50);
 
 }  // namespace xrt

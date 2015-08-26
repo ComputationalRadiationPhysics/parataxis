@@ -4,6 +4,7 @@
 #include "Simulation.hpp"
 #include "plugins/plugins.hpp"
 #include "plugins/ISimulationPlugin.hpp"
+#include "Field.hpp"
 
 #include <debug/VerboseLog.hpp>
 #include <algorithms/ForEach.hpp>
@@ -102,10 +103,19 @@ namespace xrt{
                 >
             >::type SpecializedSpeciesPlugins;
 
+        typedef bmpl::transform<
+                FieldPlugins,
+                bmpl::apply1<
+                    bmpl::_1,
+                    Field
+                >
+            >::type SpecializedFieldPlugins;
+
         /* create sequence with all plugins*/
         typedef PMacc::MakeSeq<
             StandAlonePlugins,
-            SpecializedSpeciesPlugins
+            SpecializedSpeciesPlugins,
+            SpecializedFieldPlugins
         >::type AllPlugins;
 
         void loadPlugins()

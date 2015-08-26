@@ -118,7 +118,7 @@ namespace xrt
         }
 
         template<class Box >
-        Box2D operator()(Box data)
+        Box2D operator()(Box data, unsigned zOffset)
         {
             static_assert(std::is_same<typename Box::ValueType, ValueType>::value, "Wrong type");
 
@@ -128,7 +128,7 @@ namespace xrt
 
             const size_t sizeElements = numElements * sizeof (ValueType);
 
-            auto reducedBox = ReduceZ<simDim>::get(data, png::outputZSlice);
+            auto reducedBox = ReduceZ<simDim>::get(data, zOffset);
             MPI_CHECK(MPI_Gather(reducedBox.getPointer(), sizeElements, MPI_CHAR,
                                  fullData.get(), sizeElements, MPI_CHAR,
                                  0, comm));
