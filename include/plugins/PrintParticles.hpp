@@ -24,7 +24,12 @@ namespace plugins {
             void
             operator()(const Space globalIdx, T_Particle&& particle)
             {
-                std::cout << "Particle " << globalIdx << ": " << particle[position_] << "\n";
+                // Convert global + local position to position in µm
+                floatD_64 pos;
+                for(int i=0; i<simDim; ++i)
+                    pos[i] = (float_64(globalIdx[i]) + particle[position_][i]) * cellSize[i] * UNIT_LENGTH * 1e6;
+
+                std::cout << "Particle " << globalIdx << ": " << particle[position_] << " => " << pos << "[µm]\n";
             }
         };
 
@@ -44,6 +49,8 @@ namespace plugins {
         std::string analyzerPrefix;
         std::vector<unsigned> idxOffset;
         std::vector<unsigned> idxSize;
+
+        Space idxOff, idxSz;
 
     public:
         PrintParticles():
@@ -73,7 +80,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
-            PMacc::log< XRTLogLvl::IN_OUT >("Printing particles at timestep %1%") % currentStep;
+            PMacc::log< XRTLogLvl::IN_OUT >("Printing particles at timestep %1% (%2%ns)") % currentStep % (currentStep * DELTA_T * UNIT_TIME * 1e9);
             PMacc::DataConnector &dc = Environment::get().DataConnector();
 
             /* synchronizes the MallocMCBuffer to the host side */
@@ -84,12 +91,6 @@ namespace plugins {
             auto& particles = dc.getData<PIC_Photons>(PIC_Photons::FrameType::getName());
             const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
             PMacc::AreaMapping< PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(*cellDescription_);
-            Space idxOff, idxSz;
-            for(unsigned i = 0; i<simDim; ++i)
-            {
-                idxOff[i] = idxOffset[i];
-                idxSz[i]  = idxSize[i];
-            }
             particles::functors::IterateSpecies<PIC_Photons>()(
                     particlesCount,
                     particles.getHostParticlesBox(mallocMCBuffer.getOffset()),
@@ -112,6 +113,9 @@ namespace plugins {
     protected:
         void pluginLoad() override
         {
+            if(!notifyFrequency)
+                return;
+
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
             if(idxOffset.empty() && idxSize.empty())
             {
@@ -128,6 +132,12 @@ namespace plugins {
             }
             idxOffset.resize(simDim);
             idxSize.resize(simDim, 1);
+            for(unsigned i = 0; i<simDim; ++i)
+            {
+                idxOff[i] = idxOffset[i];
+                idxSz[i]  = idxSize[i];
+            }
+            PMacc::log< XRTLogLvl::PLUGINS >("Printing particles in range %1% [%2%] every %3% timesteps") % idxOff % idxSz % notifyFrequency;
         }
     };
 
