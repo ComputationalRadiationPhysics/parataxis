@@ -39,7 +39,7 @@ TBG_gpu_y=1
 TBG_gpu_z=1
 
 TBG_gridSize="-g 256 256 256"
-TBG_steps="-s 200"
+TBG_steps="-s 96"
 TBG_periodic="-p 1 1 1"
 
 TBG_program="@PROJECT_NAME@"
@@ -48,7 +48,7 @@ TBG_program="@PROJECT_NAME@"
 ## Section: Optional Variables ##
 #################################
 
-TBG_plugins="--p_position.period 20"     
+TBG_plugins="--p_position.period 24"     
 
 #################################
 ## Section: Program Parameters ##
