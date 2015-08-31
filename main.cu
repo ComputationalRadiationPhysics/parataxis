@@ -31,6 +31,9 @@ int main( int argc, char **argv )
             case xrt::ArgsErrorCode::SUCCESS_EXIT:
                 errorCode = 0;
                 break;
+            default:
+                std::cerr << "Unhandled parser code: " << int(parserCode) << std::endl;
+                errorCode = 99;
         };
     }
 
