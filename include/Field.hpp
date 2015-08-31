@@ -8,6 +8,7 @@
 #include <dataManagement/ISimulationData.hpp>
 
 #include "types.h"
+#include <memory>
 
 namespace xrt {
 
@@ -83,6 +84,12 @@ namespace xrt {
         getHostDataBox()
         {
             return buffer->getHostBuffer().getDataBox();
+        }
+
+        typename Buffer::DataBoxType
+        getDeviceDataBox()
+        {
+            return buffer->getDeviceBuffer().getDataBox();
         }
 
     };

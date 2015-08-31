@@ -1,0 +1,20 @@
+#pragma once
+
+#include <Environment.hpp>
+#include <dimensions/DataSpace.hpp>
+#include <dimensions/GridLayout.hpp>
+#include <mappings/simulation/GridController.hpp>
+#include <mappings/simulation/SubGrid.hpp>
+#include <memory/buffers/GridBuffer.hpp>
+
+namespace xrt {
+
+    typedef PMacc::Environment<simDim> Environment;
+    typedef PMacc::DataSpace<simDim> Space;
+    typedef PMacc::DataSpace<2> Space2D;
+    typedef PMacc::GridLayout<simDim> GridLayout;
+    typedef PMacc::GridController<simDim> GC;
+    typedef PMacc::SubGrid<simDim> SubGrid;
+    typedef PMacc::GridBuffer< float_X, simDim > Buffer;
+
+}  // namespace xrt

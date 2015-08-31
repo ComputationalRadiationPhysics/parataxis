@@ -1,0 +1,20 @@
+#pragma once
+
+namespace xrt {
+namespace SI {
+
+    /** Duration of one timestep
+     *  unit: seconds */
+    constexpr float_64 DELTA_T = 1.39e-16;
+    /** equals X
+     *  unit: meter */
+    constexpr float_64 CELL_WIDTH = 0.1772e-6;
+    /** equals Y - the propagation direction
+     *  unit: meter */
+    constexpr float_64 CELL_HEIGHT = 0.4430e-7;
+    /** equals Z
+     *  unit: meter */
+    constexpr float_64 CELL_DEPTH = CELL_WIDTH;
+
+}  // namespace SI
+}  // namespace xrt

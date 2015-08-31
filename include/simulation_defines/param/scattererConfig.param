@@ -1,0 +1,11 @@
+#pragma once
+
+namespace xrt {
+namespace particles {
+namespace scatterer {
+
+    struct None;
+
+}  // namespace scatterer
+}  // namespace particles
+}  // namespace xrt

@@ -1,0 +1,9 @@
+#pragma once
+
+namespace xrt {
+
+    /* Shortcuts for namespaces
+     */
+    namespace PMaccMath = PMacc::algorithms::math;
+
+}  // namespace xrt

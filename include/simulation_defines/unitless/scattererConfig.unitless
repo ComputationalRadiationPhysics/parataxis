@@ -1,0 +1,16 @@
+#pragma once
+
+#include "particles/functors/NoAlgo.hpp"
+
+namespace xrt {
+namespace particles {
+namespace scatterer {
+
+    struct None
+    {
+        using type = particles::functors::NoAlgo;
+    };
+
+}  // namespace scatterer
+}  // namespace particles
+}  // namespace xrt

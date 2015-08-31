@@ -26,7 +26,7 @@ namespace xrt {
     /*########################### define species #################################*/
 
     typedef bmpl::vector<
-            /* Nothing yet */
+            particlePusher<particles::pusher::Photon>
     > ParticleFlagsPhotons;
 
     /*define species electrons*/

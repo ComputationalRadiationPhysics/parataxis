@@ -2,8 +2,10 @@
 
 #include "Particles.hpp"
 
+#include "particles/functors/NoAlgo.hpp"
 #include "particles/Particles.kernel"
 #include "particles/ParticlesInit.kernel"
+#include "Field.hpp"
 
 #include "debug/LogLevels.hpp"
 
@@ -13,7 +15,11 @@
 #include <mappings/simulation/GridController.hpp>
 #include <traits/GetUniqueTypeId.hpp>
 #include <traits/Resolve.hpp>
+#include <traits/HasFlag.hpp>
+#include <traits/GetFlagType.hpp>
+#include <dimensions/SuperCellDescription.hpp>
 #include <math/Vector.hpp>
+#include <type_traits>
 
 namespace xrt{
 
@@ -74,7 +80,8 @@ namespace xrt{
 
     template<typename T_ParticleDescription>
     Particles<T_ParticleDescription>::Particles( MappingDesc cellDescription, PMacc::SimulationDataId datasetID ) :
-        PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID )
+        PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID ),
+        densityField_(nullptr)
     {
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
@@ -113,8 +120,9 @@ namespace xrt{
     {}
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::init()
+    void Particles<T_ParticleDescription>::init(Field* densityField)
     {
+        densityField_ = densityField;
         PMacc::Environment<>::get().DataConnector().registerData( *this );
     }
 
@@ -139,6 +147,39 @@ namespace xrt{
     template<typename T_ParticleDescription>
     void Particles<T_ParticleDescription>::update(uint32_t )
     {
+        using PMacc::traits::HasFlag;
+        using PMacc::traits::GetFlagType;
+
+        typedef typename HasFlag<FrameType, particlePusher<> >::type hasPusher;
+        typedef typename GetFlagType<FrameType, particlePusher<> >::type FoundPusher;
+        typedef typename HasFlag<FrameType, particleScatterer<> >::type hasScatterer;
+        typedef typename GetFlagType<FrameType, particleScatterer<> >::type FoundScatterer;
+
+        /* if nothing was defined we use NoAlgo as fallback */
+        typedef typename PMacc::traits::Resolve<
+                    typename std::conditional<hasPusher::value, FoundPusher, particles::pusher::None >::type
+                >::type::type SelectedPusher;
+        typedef typename PMacc::traits::Resolve<
+                    typename std::conditional<hasScatterer::value, FoundScatterer, particles::scatterer::None >::type
+                >::type::type SelectedScatterer;
+
+
+        typedef kernel::PushParticlePerFrame<SelectedPusher, SelectedScatterer> FrameSolver;
+
+        typedef PMacc::SuperCellDescription<
+            typename MappingDesc::SuperCellSize/*,
+            LowerMargin,
+            UpperMargin*/
+            > BlockArea;
+
+        dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
+
+        __cudaKernelArea( kernel::moveAndMarkParticles<BlockArea>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
+            (block)
+            ( this->getDeviceParticlesBox(),
+              densityField_->getDeviceDataBox(),
+              FrameSolver()
+              );
         ParticlesBaseType::template shiftParticles < PMacc::CORE + PMacc::BORDER > ();
     }
 

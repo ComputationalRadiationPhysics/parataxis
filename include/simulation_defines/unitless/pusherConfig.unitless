@@ -1,0 +1,22 @@
+#pragma once
+
+#include "particles/functors/NoAlgo.hpp"
+#include "particles/functors/PhotonPusher.hpp"
+
+namespace xrt {
+namespace particles {
+namespace pusher {
+
+    struct None
+    {
+        using type = particles::functors::NoAlgo;
+    };
+
+    struct Photon
+    {
+        using type = particles::functors::PhotonPusher;
+    };
+
+}  // namespace pusher
+}  // namespace particles
+}  // namespace xrt

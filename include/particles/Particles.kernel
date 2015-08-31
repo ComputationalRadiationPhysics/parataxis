@@ -2,15 +2,205 @@
 
 #include "xrtTypes.hpp"
 
-#include <particles/memory/boxes/ParticlesBox.hpp>
-#include <particles/Identifier.hpp>
-#include <dimensions/DataSpace.hpp>
 #include <dimensions/DataSpaceOperations.hpp>
+#include <memory/boxes/CachedBox.hpp>
+#include <nvidia/functors/Assign.hpp>
+#include <mappings/threads/ThreadCollective.hpp>
+#include <particles/Identifier.hpp>
+#include <nvidia/atomic.hpp>
 
 namespace xrt {
 namespace kernel {
 
+    /**
+     * Executes the frameSolver for every particle in the box
+     *
+     * \tparam T_BlockWorkArea \see SuperCellDescription which specifies the work area of each block on the field.
+     *                         Commonly this is equal to 1 SuperCell but can also include a margin for interpolation
+     * \param particleBox Particle box
+     * \param densityField Device box of the field with densities
+     * \param frameSolver Functor that is called with
+     *        (frame, particleIdxInFrame, densityBox [Reduced to block work area], mustShift [Flag in shared mem that must be set if particles left the superCell])
+     * \param mapper Mapping used for kernel launch
+     *
+     */
+    template<class T_BlockWorkArea, class T_ParBox, class T_DensityBox, class T_FrameSolver, class T_Mapping>
+    __global__ void moveAndMarkParticles(T_ParBox particleBox,
+                                         T_DensityBox densityField,
+                                         T_FrameSolver frameSolver,
+                                         T_Mapping mapper)
+    {
+        using BlockWorkArea = T_BlockWorkArea;
+        using DensityBox = T_DensityBox;
+        using FrameType = typename T_ParBox::FrameType;
+        const Space block(mapper.getSuperCellIndex(Space(blockIdx)));
 
+        const Space threadIndex(threadIdx);
+        const int linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
+
+        const Space blockCell = block * SuperCellSize::toRT();
+
+        __shared__ int mustShift;
+        __syncthreads(); /*wait that all shared memory is initialized*/
+
+        if(linearThreadIdx == 0)
+            mustShift = 0;
+
+        bool isValid;
+        FrameType* frame = &particleBox.getLastFrame(block, isValid);
+
+        auto cachedDensityField = PMacc::CachedBox::create<0, typename DensityBox::ValueType>(BlockWorkArea());
+
+        __syncthreads();
+        if(!isValid)
+            return; //end kernel if we have no frames
+
+        PMacc::ThreadCollective<BlockWorkArea> collective(linearThreadIdx);
+        auto shiftedDensityField = densityField.shift(blockCell);
+        PMacc::nvidia::functors::Assign assign;
+        collective(
+                  assign,
+                  cachedDensityField,
+                  shiftedDensityField
+                  );
+        __syncthreads();
+
+        /*move over frames and call frame solver*/
+        PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(block).getSizeLastFrame();
+        while(isValid)
+        {
+            if(linearThreadIdx < particlesInSuperCell)
+            {
+                frameSolver(*frame, linearThreadIdx, cachedDensityField, mustShift);
+            }
+            frame = &particleBox.getPreviousFrame(*frame, isValid);
+            particlesInSuperCell = PMacc::math::CT::volume<SuperCellSize>::type::value;
+        }
+        __syncthreads();
+
+        /*set in SuperCell the mustShift flag which is a optimization for shift particles and fillGaps*/
+        if(linearThreadIdx == 0 && mustShift == 1)
+        {
+            particleBox.getSuperCell(block).setMustShift(true);
+        }
+    }
+
+    /**
+     * Functor that can be used as a frame solver
+     * \tparam T_ScatterAlgo Functor which is used for scattering, that is changing the momentum of the particle
+     * \tparam T_PushAlgo    Functor which is used for moving a particle
+     *
+     * Both functors are called for every particle with (curDensityBox, position, momentum) where curDensityBox is the work area part
+     * of the full density field shifted to the particles cell
+     */
+    template<class T_ScatterAlgo, class T_PushAlgo>
+    struct PushParticlePerFrame
+    {
+        template<class T_Frame, class T_DensityBox >
+        DINLINE void operator()(T_Frame& frame, int particleIdx, const T_DensityBox& densityBox, int& mustShift)
+        {
+            auto particle = frame[particleIdx];
+
+            floatD_X pos = particle[position_];
+            float3_X mom = particle[momentum_];
+            const int particleCellIdx = particle[PMacc::localCellIdx_];
+            Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particleCellIdx));
+
+            auto curDensityBox = densityBox.shift(localCell);
+
+            T_ScatterAlgo()(curDensityBox, pos, mom);
+            T_PushAlgo()(curDensityBox, pos, mom);
+            particle[momentum_] = mom;
+
+            Space dir;
+            for(uint32_t i = 0; i < simDim; ++i)
+            {
+                /* ATTENTION we must handle float rounding errors
+                 * pos in range [-1;2)
+                 *
+                 * If pos is negative and very near to 0(e.g. pos < -1e-8)
+                 * and we move pos with pos+=1.0 back to normal in cell position
+                 * we get a rounding error and pos is assigned to 1. This breaks
+                 * our in cell definition range [0,1)
+                 *
+                 * if pos negative moveDir is set to -1
+                 * if pos positive and >1 moveDir is set to +1
+                 * 0(zero) if particle stays in cell
+                 */
+                float_X moveDir = PMaccMath::floor(pos[i]);
+                /* shift pos back to cell range [0;1)*/
+                pos[i] -= moveDir;
+                /* check for rounding errors and correct them
+                 * if position now is 1 we have a rounding error
+                 */
+                const float_X valueCorrector = PMaccMath::floor(pos[i]);
+                /* One has also to correct moveDir for the following reason:
+                 * Imagine a new particle moves to -1e-20, leaving the cell to the left,
+                 * setting moveDir to -1.
+                 * The new in-cell position will be -1e-20 + 1.0,
+                 * which can flip to 1.0(wrong value).
+                 * We move the particle back to the old cell at position 0.0 and
+                 * moveDir has to be corrected back, too(add +1 again).*/
+                moveDir += valueCorrector;
+                /* If we have corrected moveDir we must set pos to 0 */
+                pos[i] -= valueCorrector;
+                dir[i] = static_cast<int>(moveDir);
+            }
+            particle[position_] = pos;
+
+            /* new local cell position after particle move
+             * can be out of supercell
+             */
+            localCell += dir;
+
+            /* ATTENTION ATTENTION we cast to unsigned, this means that a negative
+             * direction is know a very very big number, than we compare with supercell size!
+             *
+             * if particle is inside of the supercell the **unsigned** representation
+             * of dir is always >= size of the supercell
+             */
+            for(uint32_t i = 0; i < simDim; ++i)
+            {
+                if(static_cast<uint32_t>(localCell[i]) < static_cast<uint32_t>(SuperCellSize::toRT()[i]))
+                    dir[i] = 0;
+            }
+
+            /* dir is only +1 or -1 if particle is outside of supercell
+             * y=cell-(dir*superCell_size)
+             * y=0 if dir==-1
+             * y=superCell_size if dir==+1
+             * for dir 0 localCel is not changed
+             */
+            localCell -= (dir * SuperCellSize::toRT());
+            /*calculate one dimensional cell index*/
+            particle[PMacc::localCellIdx_] = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(localCell);
+
+            /* [ dir + int(dir < 0)*3 ] == [(dir + 3) %3 = y ]
+             * but without modulo
+             * y=0 for dir = 0
+             * y=1 for dir = 1
+             * y=2 for dir = -1
+             */
+            int direction = 1;
+            uint32_t exchangeType = 1; // see libPMacc/include/types.h for RIGHT, BOTTOM and BACK
+            for(uint32_t i = 0; i < simDim; ++i)
+            {
+                direction += (dir[i] == -1 ? 2 : dir[i]) * exchangeType;
+                exchangeType *= 3; // =3^i(1=RIGHT, 3=BOTTOM; 9=BACK)
+            }
+
+            particle[PMacc::multiMask_] = direction;
+
+            /* set our tuning flag if minimal one particle leaves the supercell
+             * This flag is needed later for shifting particles only if needed
+             */
+            if(direction >= 2)
+            {
+                /* if we did not use atomic we would get a WAW error */
+                PMacc::nvidia::atomicAllExch(&mustShift, 1);
+            }
+        }
+    };
 
 }  // namespace kernel
 }  // namespace xrt

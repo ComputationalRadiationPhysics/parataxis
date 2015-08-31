@@ -1,0 +1,12 @@
+#pragma once
+
+namespace xrt {
+namespace particles {
+namespace pusher {
+
+    struct None;
+    struct Photon;
+
+}  // namespace pusher
+}  // namespace particles
+}  // namespace xrt

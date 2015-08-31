@@ -92,7 +92,7 @@ namespace xrt {
                 std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
             densityField->init();
-            particleStorage->init();
+            particleStorage->init(densityField.get());
 
             densityField->createDensityDistribution(densityFieldInitializer);
             particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
