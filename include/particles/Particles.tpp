@@ -83,7 +83,7 @@ namespace xrt{
     template<typename T_ParticleDescription>
     Particles<T_ParticleDescription>::Particles( MappingDesc cellDescription, PMacc::SimulationDataId datasetID ) :
         PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID ),
-        densityField_(nullptr)
+        densityField_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
     {
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
@@ -91,6 +91,10 @@ namespace xrt{
         PMacc::log< XRTLogLvl::MEMORY > ( "communication tag for species %1%: %2%" ) % FrameType::getName() % commTag;
 
         detail::AddExchanges<simDim>::add(this->particlesBuffer, commTag);
+
+        // Get a unique counter start value per rank
+        *nextPartId_.getHostBuffer().getBasePointer() = PMacc::reverseBits(Environment::get().GridController().getGlobalRank());
+        nextPartId_.hostToDevice();
     }
 
     template< typename T_ParticleDescription>
@@ -136,20 +140,16 @@ namespace xrt{
 
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space totalGpuCellOffset = subGrid.getLocalDomain().offset;
-        PMacc::GridBuffer<uint32_t, 1> counter(PMacc::DataSpace<1>(1));
-
-        // Get a unique counter start value per rank
-        *counter.getHostBuffer().getBasePointer() = PMacc::reverseBits(Environment::get().GridController().getGlobalRank());
-        counter.hostToDevice();
 
         dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
         __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::CORE + PMacc::BORDER)
             (block)
             ( distributionFunctor,
-                    positionFunctor,
-                    totalGpuCellOffset,
-                    this->particlesBuffer->getDeviceParticleBox(),
-                    counter.getDeviceBuffer().getBasePointer());
+              positionFunctor,
+              totalGpuCellOffset,
+              this->particlesBuffer->getDeviceParticleBox(),
+              nextPartId_.getDeviceBuffer().getBasePointer()
+              );
 
 
         this->fillAllGaps();
@@ -161,12 +161,12 @@ namespace xrt{
         using PMacc::traits::HasFlag;
         using PMacc::traits::GetFlagType;
 
+        /* If the species defines a pusher/scatterer use it, otherwise fall back to default (None) */
         typedef typename HasFlag<FrameType, particlePusher<> >::type hasPusher;
         typedef typename GetFlagType<FrameType, particlePusher<> >::type FoundPusher;
         typedef typename HasFlag<FrameType, particleScatterer<> >::type hasScatterer;
         typedef typename GetFlagType<FrameType, particleScatterer<> >::type FoundScatterer;
-
-        /* if nothing was defined we use NoAlgo as fallback */
+        /* if nothing was defined we use None as fallback */
         typedef typename PMacc::traits::Resolve<
                     typename std::conditional<hasPusher::value, FoundPusher, particles::pusher::None >::type
                 >::type::type SelectedPusher;
@@ -174,9 +174,12 @@ namespace xrt{
                     typename std::conditional<hasScatterer::value, FoundScatterer, particles::scatterer::None >::type
                 >::type::type SelectedScatterer;
 
-
+        /* Create the frame solver used to manipulate the particle along its way */
         typedef kernel::PushParticlePerFrame<SelectedPusher, SelectedScatterer> FrameSolver;
 
+        /* This contains the working area for one block on the field(s).
+         * It can include margin/halo if the field needs to be interpolated between that of the surrounding cells
+         */
         typedef PMacc::SuperCellDescription<
             typename MappingDesc::SuperCellSize/*,
             LowerMargin,
@@ -185,13 +188,15 @@ namespace xrt{
 
         dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
 
+        /* Change position of particles and set flags whether to move them out of their cell */
         __cudaKernelArea( kernel::moveAndMarkParticles<BlockArea>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
             (block)
             ( this->getDeviceParticlesBox(),
               densityField_->getDeviceDataBox(),
               FrameSolver()
               );
-        ParticlesBaseType::template shiftParticles < PMacc::CORE + PMacc::BORDER > ();
+        /* Actually move particles out of their cells keeping the frames in a valid state */
+        ParticlesBaseType::template shiftParticles< PMacc::CORE + PMacc::BORDER >();
     }
 
 } // namespace xrt

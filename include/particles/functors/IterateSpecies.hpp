@@ -55,7 +55,7 @@ namespace functors{
                         if (particle[PMacc::multiMask_] == 1)
                         {
                             /*calculate global cell index*/
-                            Space localCell(PMacc::DataSpaceOperations<simDim>::template map<Block>(particle[PMacc::localCellIdx_]));
+                            Space localCell(PMacc::DataSpaceOperations<simDim>::map<Block>(particle[PMacc::localCellIdx_]));
                             Space globalCellIdx = localOffset + superCellPosition + localCell;
                             if(filter(globalCellIdx, *framePtr, threadIdx))
                             {

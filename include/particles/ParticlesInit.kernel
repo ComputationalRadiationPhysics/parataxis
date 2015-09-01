@@ -26,10 +26,8 @@ namespace kernel{
 
         __syncthreads(); /*wait that all shared memory is initialized*/
 
-        typedef typename Mapping::SuperCellSize SuperCellSize;
-
         const Space threadIndex(threadIdx);
-        const int linearThreadIdx = PMacc::DataSpaceOperations<simDim>::template map<SuperCellSize>(threadIndex);
+        const int linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
 

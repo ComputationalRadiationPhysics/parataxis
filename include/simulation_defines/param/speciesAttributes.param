@@ -18,7 +18,7 @@ namespace xrt {
     value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** momentum at timestep t */
     value_identifier(float3_X, momentum, float3_X::create(0.));
-
+    /** global unique Id of a particle */
     value_identifier(uint32_t, globalId, 0);
 
     /** alias for particle pusher */
