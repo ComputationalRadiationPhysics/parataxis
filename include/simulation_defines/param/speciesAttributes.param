@@ -9,7 +9,7 @@
 namespace xrt {
 
     /** relative (to cell origin) in-cell position of a particle
-     * With this definition we not define any type like float3,double3,...
+     * With this definition we don't define any type like float3, double3,...
      * This is only a name without a specialization
      */
     alias(position);
@@ -20,6 +20,11 @@ namespace xrt {
     value_identifier(float3_X, momentum, float3_X::create(0.));
     /** global unique Id of a particle */
     value_identifier(uint32_t, globalId, 0);
+
+    /** Timestep at which the particle was created/ entered in the volume */
+    value_identifier(uint32_t, creationTime, 0);
+    /** Phase of the particle at entering the volume */
+    value_identifier(float_X, startPhase, 0);
 
     /** alias for particle pusher */
     alias(particlePusher);
