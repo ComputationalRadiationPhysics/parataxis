@@ -32,14 +32,14 @@ namespace xrt {
         }
     }
 
-    class Field: PMacc::ISimulationData
+    class DensityField: PMacc::ISimulationData
     {
         MappingDesc cellDescription;
         std::unique_ptr<Buffer> buffer;
 
     public:
 
-        Field(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridLayout()))
+        DensityField(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridLayout()))
         {
             auto guardingCells(Space::create(1));
             for (uint32_t i = 1; i < PMacc::traits::NumberOfExchanges<simDim>::value; ++i)
@@ -51,7 +51,7 @@ namespace xrt {
         static std::string
         getName()
         {
-            return "Field";
+            return "DensityField";
         }
 
         PMacc::SimulationDataId getUniqueId() override

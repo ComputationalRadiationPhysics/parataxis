@@ -4,13 +4,14 @@
 #include "Simulation.hpp"
 #include "plugins/plugins.hpp"
 #include "plugins/ISimulationPlugin.hpp"
-#include "Field.hpp"
+#include "DensityField.hpp"
 
 #include <debug/VerboseLog.hpp>
 #include <algorithms/ForEach.hpp>
 #include <compileTime/conversion/MakeSeq.hpp>
 #include <forward.hpp>
 #include <boost/program_options/options_description.hpp>
+#include <list>
 
 namespace xrt{
 
@@ -107,7 +108,7 @@ namespace xrt{
                 FieldPlugins,
                 bmpl::apply1<
                     bmpl::_1,
-                    Field
+                    DensityField
                 >
             >::type SpecializedFieldPlugins;
 

@@ -9,7 +9,7 @@
 
 namespace xrt{
 
-    class Field;
+    class DensityField;
 
     template<typename T_ParticleDescription>
     class Particles : public PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>, public PMacc::ISimulationData
@@ -29,7 +29,7 @@ namespace xrt{
 
         void createParticleBuffer();
 
-        void init(Field* densityField);
+        void init(DensityField* densityField);
         /**
          * Adds particles to the grid
          * \tparam T_DistributionFunctor Functor that returns number of particles for a given total GPU cell idx
@@ -56,7 +56,7 @@ namespace xrt{
     private:
         PMacc::SimulationDataId datasetID;
         PMacc::GridLayout<simDim> gridLayout;
-        Field* densityField_;
+        DensityField* densityField_;
         /** Contains the globalId that is assigned to the next particle created */
         PMacc::GridBuffer<uint32_t, 1> nextPartId_;
     };

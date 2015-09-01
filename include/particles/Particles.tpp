@@ -5,8 +5,6 @@
 #include "particles/functors/NoAlgo.hpp"
 #include "particles/Particles.kernel"
 #include "particles/ParticlesInit.kernel"
-#include "Field.hpp"
-
 #include "debug/LogLevels.hpp"
 
 #include <dataManagement/DataConnector.hpp>
@@ -20,7 +18,7 @@
 #include <dimensions/SuperCellDescription.hpp>
 #include <math/Vector.hpp>
 #include <algorithms/reverseBits.hpp>
-
+#include <DensityField.hpp>
 #include <type_traits>
 
 namespace xrt{
@@ -126,7 +124,7 @@ namespace xrt{
     {}
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::init(Field* densityField)
+    void Particles<T_ParticleDescription>::init(DensityField* densityField)
     {
         densityField_ = densityField;
         PMacc::Environment<>::get().DataConnector().registerData( *this );

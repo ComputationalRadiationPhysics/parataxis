@@ -7,7 +7,7 @@
 #include "particles/functors/EvenDistPosition.hpp"
 #include "particles/Particles.tpp"
 
-#include "Field.hpp"
+#include "DensityField.hpp"
 #include "generators.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -41,7 +41,7 @@ namespace xrt {
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
 
-        std::unique_ptr<Field> densityField;
+        std::unique_ptr<DensityField> densityField;
 
     public:
 
@@ -76,7 +76,7 @@ namespace xrt {
 
         uint32_t init() override
         {
-            densityField.reset(new Field(cellDescription));
+            densityField.reset(new DensityField(cellDescription));
 
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
