@@ -11,18 +11,30 @@
 namespace xrt{
 namespace kernel{
 
+    /**
+     * Fills the grid with particles of T_Species
+     *
+     * \tparam distributionFunctor Should return the number of particles to create for a given totalGpuCellIdx (Space)
+     * \tparam positionFunctor Must provide an init(Space totalGpuCellIdx, totalNumParsToCreate) which is called first.
+     *                         Then is called for each particle, identified by its index in range [0, totalNumParsToCreate)
+     *                         and should return the start position of the particle
+     * \tparam totalGpuCellOffset Offset to the total origin
+     * \tparam particleBox ParticleBox where the particles should be put to
+     * \tparam gId Global start id used for assigning the global IDs to the particles
+     * \tparam mapper Mapping used for this kernel
+     */
     template< typename T_Species, typename T_DistributionFunctor, typename T_PositionFunctor, typename ParBox, class Mapping>
     __global__ void fillGridWithParticles(T_DistributionFunctor distributionFunctor,
                                           T_PositionFunctor positionFunctor,
                                           Space totalGpuCellOffset,
-                                          ParBox pb,
+                                          ParBox particleBox,
                                           uint32_t* gId,
                                           Mapping mapper)
     {
-        typedef typename ParBox::FrameType FRAME;
+        typedef typename ParBox::FrameType FrameType;
         const Space superCells(mapper.getGridSuperCells());
 
-        __shared__ FRAME *frame;
+        __shared__ FrameType *frame;
 
         __syncthreads(); /*wait that all shared memory is initialized*/
 
@@ -59,8 +71,8 @@ namespace kernel{
 
         if (linearThreadIdx == 0)
         {
-            frame = &(pb.getEmptyFrame());
-            pb.setAsLastFrame(*frame, superCellIdx);
+            frame = &(particleBox.getEmptyFrame());
+            particleBox.setAsLastFrame(*frame, superCellIdx);
         }
 
         positionFunctor.init(totalGpuCellIdx, totalNumParsToCreate);
@@ -75,19 +87,12 @@ namespace kernel{
                 finished = 1; //clear flag
             __syncthreads();
 
-            floatD_X pos = positionFunctor(totalNumParsToCreate - numParsToCreate);
-
             if (numParsToCreate > 0)
             {
                 auto particle = (*frame)[linearThreadIdx];
 
-                /** we now initialize all attributes of the new particle to their default values
-                 *   some attributes, such as the position, localCellIdx, weighting or the
-                 *   multiMask (\see AttrToIgnore) of the particle will be set individually
-                 *   in the following lines since they are already known at this point.
-                 */
+                /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                 {
-                    typedef typename ParBox::FrameType FrameType;
                     typedef typename FrameType::ValueTypeSeq ParticleAttrList;
                     typedef bmpl::vector5<position<>, PMacc::multiMask, PMacc::localCellIdx, momentum, globalId> AttrToIgnore;
                     typedef typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type ParticleCleanedAttrList;
@@ -95,22 +100,22 @@ namespace kernel{
                     PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
                     setToDefault(PMacc::forward(particle));
                 }
-                particle[position_] = pos;
                 particle[PMacc::multiMask_] = 1;
                 particle[PMacc::localCellIdx_] = linearThreadIdx;
+                particle[position_] = positionFunctor(totalNumParsToCreate - numParsToCreate);
                 particle[momentum_] = floatD_X(1, 0, 0);
                 // Add a global Id for debugging purposes
                 particle[globalId_] = PMacc::nvidia::atomicAllInc(reinterpret_cast<int32_t*>(gId));
 
                 numParsToCreate--;
                 if (numParsToCreate > 0)
-                    atomicExch(&finished, 0); //one or more cell has particles to create
+                    PMacc::nvidia::atomicAllExch(&finished, 0); //one or more cell has particles to create
             }
             __syncthreads();
             if (linearThreadIdx == 0 && finished == 0)
             {
-                frame = &(pb.getEmptyFrame());
-                pb.setAsLastFrame(*frame, superCellIdx);
+                frame = &(particleBox.getEmptyFrame());
+                particleBox.setAsLastFrame(*frame, superCellIdx);
             }
         }
         while (finished == 0);
