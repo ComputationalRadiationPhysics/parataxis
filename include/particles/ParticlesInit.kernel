@@ -16,6 +16,7 @@ namespace kernel{
                                           T_PositionFunctor positionFunctor,
                                           Space totalGpuCellOffset,
                                           ParBox pb,
+                                          unsigned* gId,
                                           Mapping mapper)
     {
         typedef typename ParBox::FrameType FRAME;
@@ -90,7 +91,7 @@ namespace kernel{
                 {
                     typedef typename ParBox::FrameType FrameType;
                     typedef typename FrameType::ValueTypeSeq ParticleAttrList;
-                    typedef bmpl::vector4<position<>, PMacc::multiMask, PMacc::localCellIdx, momentum> AttrToIgnore;
+                    typedef bmpl::vector5<position<>, PMacc::multiMask, PMacc::localCellIdx, momentum, globalId> AttrToIgnore;
                     typedef typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type ParticleCleanedAttrList;
 
                     PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
@@ -100,6 +101,8 @@ namespace kernel{
                 particle[PMacc::multiMask_] = 1;
                 particle[PMacc::localCellIdx_] = linearThreadIdx;
                 particle[momentum_] = floatD_X(1, 0, 0);
+                // Add a global Id for debugging purposes
+                particle[globalId_] = PMacc::nvidia::atomicAllInc(reinterpret_cast<int*>(gId));
 
                 numParsToCreate--;
                 if (numParsToCreate > 0)

@@ -18,6 +18,7 @@ namespace plugins {
 
     namespace detail {
 
+        template<class T_ParticlesType>
         struct PrintParticle
         {
             template<class T_Particle>
@@ -29,7 +30,7 @@ namespace plugins {
                 for(int i=0; i<simDim; ++i)
                     pos[i] = (float_64(globalIdx[i]) + particle[position_][i]) * cellSize[i] * UNIT_LENGTH * 1e6;
 
-                std::cout << "Particle " << globalIdx << ": " << particle[position_] << " => " << pos << "[µm]\n";
+                std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << particle[globalId_] << "): " << " => " << pos << "[µm]\n";
             }
         };
 
@@ -97,7 +98,7 @@ namespace plugins {
                     localOffset,
                     mapper,
                     particles::filters::IndexFilter(idxOff, idxSz),
-                    detail::PrintParticle()
+                    detail::PrintParticle<ParticlesType>()
                     );
 
             dc.releaseData(PIC_Photons::FrameType::getName());

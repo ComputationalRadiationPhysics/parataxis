@@ -4,6 +4,8 @@
 #include <identifier/value_identifier.hpp>
 #include <particles/Identifier.hpp>
 
+#include <types.h>
+
 namespace xrt {
 
     /** relative (to cell origin) in-cell position of a particle
@@ -16,6 +18,8 @@ namespace xrt {
     value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** momentum at timestep t */
     value_identifier(float3_X, momentum, float3_X::create(0.));
+
+    value_identifier(uint32_t, globalId, 0);
 
     /** alias for particle pusher */
     alias(particlePusher);

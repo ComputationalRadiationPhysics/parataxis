@@ -14,7 +14,8 @@ namespace xrt {
     /** describe attributes of a particle*/
     typedef PMacc::MakeSeq<
             position<position_pic>,
-            momentum
+            momentum,
+            globalId
     >::type DefaultParticleAttributes;
 
     typedef PMacc::MakeSeq<

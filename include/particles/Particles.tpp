@@ -19,6 +19,8 @@
 #include <traits/GetFlagType.hpp>
 #include <dimensions/SuperCellDescription.hpp>
 #include <math/Vector.hpp>
+#include <algorithms/reverseBits.hpp>
+
 #include <type_traits>
 
 namespace xrt{
@@ -134,11 +136,20 @@ namespace xrt{
 
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space totalGpuCellOffset = subGrid.getLocalDomain().offset;
+        PMacc::GridBuffer<uint32_t, 1> counter(PMacc::DataSpace<1>(1));
+
+        // Get a unique counter start value per rank
+        *counter.getHostBuffer().getBasePointer() = PMacc::reverseBits(Environment::get().GridController().getGlobalRank());
+        counter.hostToDevice();
 
         dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
         __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::CORE + PMacc::BORDER)
             (block)
-            ( distributionFunctor, positionFunctor, totalGpuCellOffset, this->particlesBuffer->getDeviceParticleBox() );
+            ( distributionFunctor,
+                    positionFunctor,
+                    totalGpuCellOffset,
+                    this->particlesBuffer->getDeviceParticleBox(),
+                    counter.getDeviceBuffer().getBasePointer());
 
 
         this->fillAllGaps();
