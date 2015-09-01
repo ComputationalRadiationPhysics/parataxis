@@ -27,7 +27,7 @@ namespace functors {
         operator()(uint32_t numPart)
         {
             floatD_X result;
-            for(unsigned i = 0; i < simDim; ++i)
+            for(uint32_t i = 0; i < simDim; ++i)
                 result[i] = rand();
             return result;
         }

@@ -14,9 +14,9 @@ namespace xrt
             pngwriter png(dataSize.x(), dataSize.y(), 0, fileName.c_str());
             png.setcompressionlevel(9);
 
-            for (int y = 0; y < dataSize.y(); ++y)
+            for (int32_t y = 0; y < dataSize.y(); ++y)
             {
-                for (int x = 0; x < dataSize.x(); ++x)
+                for (int32_t x = 0; x < dataSize.x(); ++x)
                 {
                     float p = data(Space2D(x, y));
                     png.plot(x + 1, dataSize.y() - y, p, p, p);

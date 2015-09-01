@@ -27,7 +27,7 @@ namespace xrt{
 
     namespace detail {
 
-        template<unsigned T_simDim>
+        template<uint32_t T_simDim>
         struct AddExchanges;
 
         template<>

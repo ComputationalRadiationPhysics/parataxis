@@ -10,12 +10,12 @@
 struct ScatterConfig
 {
     /* 2MiB page can hold around 256 particle frames */
-    typedef std::integral_constant<int, 2*1024*1024> pagesize;
+    typedef std::integral_constant<uint32_t, 2*1024*1024> pagesize;
     /* accessBlocks, regionSize and wasteFactor are not finally selected
        and might be performance sensitive*/
-    typedef std::integral_constant<int, 4> accessblocks;
-    typedef std::integral_constant<int, 8> regionsize;
-    typedef std::integral_constant<int, 2> wastefactor;
+    typedef std::integral_constant<uint32_t, 4> accessblocks;
+    typedef std::integral_constant<uint32_t, 8> regionsize;
+    typedef std::integral_constant<uint32_t, 2> wastefactor;
     /* resetFreedPages is used to minimize memory fragmentation while different
        frame sizes were used*/
     typedef std::integral_constant<bool, true> resetfreedpages;

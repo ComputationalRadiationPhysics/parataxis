@@ -65,16 +65,16 @@ namespace xrt
             nodeSize = header.nodeSize;
             simSize = header.simSize;
 
-            int countRanks = Environment::get().GridController().getGpuNodes().productOfComponents();
-            std::vector<int> gatherRanks(countRanks); /* rank in WORLD_GROUP or -1 if inactive */
-            std::vector<int> groupRanks(countRanks);  /* rank in new group */
-            int mpiRank = Environment::get().GridController().getGlobalRank();
+            uint32_t countRanks = Environment::get().GridController().getGpuNodes().productOfComponents();
+            std::vector<int32_t> gatherRanks(countRanks); /* rank in WORLD_GROUP or -1 if inactive */
+            std::vector<int32_t> groupRanks(countRanks);  /* rank in new group */
+            int32_t mpiRank = Environment::get().GridController().getGlobalRank();
             if (!isActive)
                 mpiRank = -1;
 
             MPI_CHECK(MPI_Allgather(&mpiRank, 1, MPI_INT, &gatherRanks[0], 1, MPI_INT, MPI_COMM_WORLD));
             numRanks = 0;
-            for (int i = 0; i < countRanks; ++i)
+            for (uint32_t i = 0; i < countRanks; ++i)
             {
                 if (gatherRanks[i] != -1)
                 {
@@ -109,7 +109,7 @@ namespace xrt
             if(!isMaster)
                 return false;
 
-            for(int i=0; i<numRanks; ++i)
+            for(uint32_t i=0; i<numRanks; ++i)
             {
                 if(headers[i].nodeSize != nodeSize)
                     throw std::runtime_error("NodeSizes must be the same on all nodes");
@@ -118,7 +118,7 @@ namespace xrt
         }
 
         template<class Box >
-        Box2D operator()(Box data, unsigned zOffset)
+        Box2D operator()(Box data, uint32_t zOffset)
         {
             static_assert(std::is_same<typename Box::ValueType, ValueType>::value, "Wrong type");
 
@@ -155,7 +155,7 @@ namespace xrt
                                                        ));
 
 
-            for (int i = 0; i < numRanks; ++i)
+            for (uint32_t i = 0; i < numRanks; ++i)
             {
                 MessageHeader& head = headers[i];
                 auto srcBox = Box2D(PMacc::PitchedBox<ValueType, 2 > (
@@ -174,9 +174,9 @@ namespace xrt
         template<class DstBox, class SrcBox>
         void insertData(DstBox& dst, const SrcBox& src, Space offsetToSimNull, Space srcSize, Space nodeGuardCells)
         {
-            for (int y = 0; y < srcSize.y(); ++y)
+            for (int32_t y = 0; y < srcSize.y(); ++y)
             {
-                for (int x = 0; x < srcSize.x(); ++x)
+                for (int32_t x = 0; x < srcSize.x(); ++x)
                 {
                     dst(Space2D(x + offsetToSimNull.x(), y + offsetToSimNull.y())) =
                         src(Space2D(nodeGuardCells.x() + x, nodeGuardCells.y() + y));
@@ -195,7 +195,7 @@ namespace xrt
         MPI_Comm comm;
         Space simSize, nodeSize; /* Sizes of the simulation and the chunk on this node */
         bool isMaster;
-        int numRanks;
+        uint32_t numRanks;
         bool isMPICommInitialized;
     };
 

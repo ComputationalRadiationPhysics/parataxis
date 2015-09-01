@@ -25,7 +25,7 @@ namespace xrt {
             container.push_back(defaultValue);
 
         if(!description.empty()){
-            for(unsigned i=simDim; i<container.size(); ++i)
+            for(uint32_t i=simDim; i<container.size(); ++i)
             {
                 if(container[i] != defaultValue)
                 {
@@ -38,7 +38,7 @@ namespace xrt {
         }
 
         Space result;
-        for(unsigned i=0; i<simDim; ++i)
+        for(uint32_t i=0; i<simDim; ++i)
             result[i] = container[i];
 
         return result;

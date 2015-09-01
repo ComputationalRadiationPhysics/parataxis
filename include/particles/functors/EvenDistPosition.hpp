@@ -30,7 +30,7 @@ namespace functors {
         operator()(uint32_t numPart)
         {
             floatD_X result;
-            for(unsigned i = 0; i < simDim; ++i){
+            for(uint32_t i = 0; i < simDim; ++i){
                 uint32_t remaining = numPart / partsPerDim;
                 uint32_t dimParts  = numPart - remaining;
                 result[i] = dimParts * invPartsPerDim;

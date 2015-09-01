@@ -13,7 +13,7 @@ namespace filters {
 
         template<class T_Frame>
         HDINLINE bool
-        operator()(Space, T_Frame&, int) const
+        operator()(Space, T_Frame&, uint32_t) const
         {
             return true;
         }

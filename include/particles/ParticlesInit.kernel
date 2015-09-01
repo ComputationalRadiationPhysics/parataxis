@@ -16,7 +16,7 @@ namespace kernel{
                                           T_PositionFunctor positionFunctor,
                                           Space totalGpuCellOffset,
                                           ParBox pb,
-                                          unsigned* gId,
+                                          uint32_t* gId,
                                           Mapping mapper)
     {
         typedef typename ParBox::FrameType FRAME;
@@ -27,7 +27,7 @@ namespace kernel{
         __syncthreads(); /*wait that all shared memory is initialized*/
 
         const Space threadIndex(threadIdx);
-        const int linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
+        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
 
@@ -45,7 +45,7 @@ namespace kernel{
         const Space totalGpuCellIdx = totalGpuCellOffset + localCellIndex;
         const uint32_t totalNumParsToCreate = distributionFunctor(totalGpuCellIdx);
 
-        __shared__ int finished;
+        __shared__ int32_t finished;
         if (linearThreadIdx == 0)
             finished = 1;
         __syncthreads();
@@ -93,14 +93,14 @@ namespace kernel{
                     typedef typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type ParticleCleanedAttrList;
 
                     PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
-                    setToDefault(particle);
+                    setToDefault(PMacc::forward(particle));
                 }
                 particle[position_] = pos;
                 particle[PMacc::multiMask_] = 1;
                 particle[PMacc::localCellIdx_] = linearThreadIdx;
                 particle[momentum_] = floatD_X(1, 0, 0);
                 // Add a global Id for debugging purposes
-                particle[globalId_] = PMacc::nvidia::atomicAllInc(reinterpret_cast<int*>(gId));
+                particle[globalId_] = PMacc::nvidia::atomicAllInc(reinterpret_cast<int32_t*>(gId));
 
                 numParsToCreate--;
                 if (numParsToCreate > 0)

@@ -3,7 +3,7 @@ namespace xrt {
     /**
      * Returns a 2D slice from a 3D or 2D DataBox
      */
-    template<unsigned T_simDim>
+    template<uint32_t T_simDim>
     struct ReduceZ;
 
     template<>
@@ -11,7 +11,7 @@ namespace xrt {
     {
         template<class T_Box>
         static T_Box
-        get(T_Box data, unsigned zOffset)
+        get(T_Box data, uint32_t zOffset)
         {
             return data;
         }
@@ -21,7 +21,7 @@ namespace xrt {
     {
         template<class T_Box>
         static auto
-        get(T_Box data, unsigned zOffset)
+        get(T_Box data, uint32_t zOffset)
         -> decltype(data[zOffset])
         {
             return data[zOffset];

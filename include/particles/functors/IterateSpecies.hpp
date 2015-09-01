@@ -23,22 +23,21 @@ namespace functors{
          * @param partBox        (Host-)Box of the species
          * @param localOffset    Local offset of the box
          * @param mapper         Mapping instance (e.g. AreaMapping)
-         * @param filter         Functor that is called with (Space globalCellIdx, Frame&, int partInFrameIdx).
+         * @param filter         Functor that is called with (Space globalCellIdx, Frame&, uint32_t partInFrameIdx).
          *                       If return value = false then particle is skipped
          * @param handleParticle Functor that is called with (Space globalCellIdx, Particle&)
          */
         template<class T_PartBox, class T_Mapping, class T_Filter, class T_HandleParticle>
-        void operator()(int& counter, T_PartBox&& partBox, Space localOffset, T_Mapping mapper, T_Filter&& filter, T_HandleParticle&& handleParticle)
+        void operator()(uint32_t& counter, T_PartBox&& partBox, Space localOffset, T_Mapping mapper, T_Filter&& filter, T_HandleParticle&& handleParticle)
         {
             Space gridDim = mapper.getGridDim();
-            int gridSize = gridDim.productOfComponents();
-            for(int linearBlockIdx = 0; linearBlockIdx < gridSize; ++linearBlockIdx)
+            int32_t gridSize = gridDim.productOfComponents();
+            assert(gridSize >= 0); /* This is the size of 1 supercell in general, which is small enough */
+            for(int32_t linearBlockIdx = 0; linearBlockIdx < gridSize; ++linearBlockIdx)
             {
                 Space blockIdx(PMacc::DataSpaceOperations<simDim>::map(gridDim, linearBlockIdx));
 
                 typedef typename T_PartBox::FrameType FrameType;
-                typedef T_Mapping Mapping;
-                typedef typename Mapping::SuperCellSize Block;
 
                 const Space block = mapper.getSuperCellIndex(blockIdx);
                 const Space superCellPosition((block - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize());
@@ -48,14 +47,14 @@ namespace functors{
 
                 while (isValid) //move over all Frames
                 {
-                    constexpr int particlePerFrame = PMacc::math::CT::volume<SuperCellSize>::type::value;
-                    for (int threadIdx = 0; threadIdx < particlePerFrame; ++threadIdx)
+                    constexpr int32_t particlePerFrame = PMacc::math::CT::volume<SuperCellSize>::type::value;
+                    for (int32_t threadIdx = 0; threadIdx < particlePerFrame; ++threadIdx)
                     {
                         auto particle = (*framePtr)[threadIdx];
                         if (particle[PMacc::multiMask_] == 1)
                         {
                             /*calculate global cell index*/
-                            Space localCell(PMacc::DataSpaceOperations<simDim>::map<Block>(particle[PMacc::localCellIdx_]));
+                            Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particle[PMacc::localCellIdx_]));
                             Space globalCellIdx = localOffset + superCellPosition + localCell;
                             if(filter(globalCellIdx, *framePtr, threadIdx))
                             {

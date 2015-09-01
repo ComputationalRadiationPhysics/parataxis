@@ -36,11 +36,11 @@ namespace kernel {
         const Space block(mapper.getSuperCellIndex(Space(blockIdx)));
 
         const Space threadIndex(threadIdx);
-        const int linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
+        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
 
         const Space blockCell = block * SuperCellSize::toRT();
 
-        __shared__ int mustShift;
+        __shared__ int32_t mustShift;
         __syncthreads(); /*wait that all shared memory is initialized*/
 
         if(linearThreadIdx == 0)
@@ -97,13 +97,13 @@ namespace kernel {
     struct PushParticlePerFrame
     {
         template<class T_Frame, class T_DensityBox >
-        DINLINE void operator()(T_Frame& frame, int particleIdx, const T_DensityBox& densityBox, int& mustShift)
+        DINLINE void operator()(T_Frame& frame, uint32_t particleIdx, const T_DensityBox& densityBox, int32_t& mustShift)
         {
             auto particle = frame[particleIdx];
 
             floatD_X pos = particle[position_];
             float3_X mom = particle[momentum_];
-            const int particleCellIdx = particle[PMacc::localCellIdx_];
+            const uint32_t particleCellIdx = particle[PMacc::localCellIdx_];
             Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particleCellIdx));
 
             auto curDensityBox = densityBox.shift(localCell);
@@ -144,7 +144,7 @@ namespace kernel {
                 moveDir += valueCorrector;
                 /* If we have corrected moveDir we must set pos to 0 */
                 pos[i] -= valueCorrector;
-                dir[i] = static_cast<int>(moveDir);
+                dir[i] = static_cast<int32_t>(moveDir);
             }
             particle[position_] = pos;
 
@@ -153,10 +153,10 @@ namespace kernel {
              */
             localCell += dir;
 
-            /* ATTENTION ATTENTION we cast to unsigned, this means that a negative
+            /* ATTENTION ATTENTION we cast to uint32_t, this means that a negative
              * direction is know a very very big number, than we compare with supercell size!
              *
-             * if particle is inside of the supercell the **unsigned** representation
+             * if particle is inside of the supercell the **uint32_t** representation
              * of dir is always >= size of the supercell
              */
             for(uint32_t i = 0; i < simDim; ++i)
@@ -175,13 +175,13 @@ namespace kernel {
             /*calculate one dimensional cell index*/
             particle[PMacc::localCellIdx_] = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(localCell);
 
-            /* [ dir + int(dir < 0)*3 ] == [(dir + 3) %3 = y ]
+            /* [ dir + int32_t(dir < 0)*3 ] == [(dir + 3) %3 = y ]
              * but without modulo
              * y=0 for dir = 0
              * y=1 for dir = 1
              * y=2 for dir = -1
              */
-            int direction = 1;
+            int32_t direction = 1;
             uint32_t exchangeType = 1; // see libPMacc/include/types.h for RIGHT, BOTTOM and BACK
             for(uint32_t i = 0; i < simDim; ++i)
             {

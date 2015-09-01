@@ -9,7 +9,7 @@ namespace generators {
      * Generates a line (in 2D, --> Point in 1D/Area in 3D)
      * Returns value if current index in \tT_fixedDim equals pos, 0 otherwise
      */
-    template<typename T, unsigned T_fixedDim>
+    template<typename T, uint32_t T_fixedDim>
     struct Line{
         const size_t pos_;
         const T value_;

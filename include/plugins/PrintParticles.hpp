@@ -27,7 +27,7 @@ namespace plugins {
             {
                 // Convert global + local position to position in µm
                 floatD_64 pos;
-                for(int i=0; i<simDim; ++i)
+                for(uint32_t i=0; i<simDim; ++i)
                     pos[i] = (float_64(globalIdx[i]) + particle[position_][i]) * cellSize[i] * UNIT_LENGTH * 1e6;
 
                 std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << particle[globalId_] << "): " << " => " << pos << "[µm]\n";
@@ -48,8 +48,8 @@ namespace plugins {
 
         std::string analyzerName;
         std::string analyzerPrefix;
-        std::vector<unsigned> idxOffset;
-        std::vector<unsigned> idxSize;
+        std::vector<uint32_t> idxOffset;
+        std::vector<uint32_t> idxSize;
 
         Space idxOff, idxSz;
 
@@ -88,7 +88,7 @@ namespace plugins {
             PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName());
             //particles::functors::CopySpeciesToHost<PIC_Photons>()();
 
-            int particlesCount = 0;
+            uint32_t particlesCount = 0;
             auto& particles = dc.getData<PIC_Photons>(PIC_Photons::FrameType::getName());
             const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
             PMacc::AreaMapping< PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(*cellDescription_);
@@ -123,7 +123,7 @@ namespace plugins {
                 // Use an area from the center as the default
                 auto& subGrid = Environment::get().SubGrid();
                 Space offset = subGrid.getTotalDomain().offset + subGrid.getTotalDomain().size / 2;
-                for(unsigned i = 0; i<simDim; ++i)
+                for(uint32_t i = 0; i<simDim; ++i)
                 {
                     idxOffset.push_back(offset[i]);
                     idxSize.push_back(5);
@@ -133,7 +133,7 @@ namespace plugins {
             }
             idxOffset.resize(simDim);
             idxSize.resize(simDim, 1);
-            for(unsigned i = 0; i<simDim; ++i)
+            for(uint32_t i = 0; i<simDim; ++i)
             {
                 idxOff[i] = idxOffset[i];
                 idxSz[i]  = idxSize[i];

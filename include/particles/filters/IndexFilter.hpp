@@ -16,9 +16,9 @@ namespace filters {
 
         template<class T_Frame>
         HDINLINE bool
-        operator()(Space globalCellIdx, T_Frame& frame, int partInFrameIdx) const
+        operator()(Space globalCellIdx, T_Frame& frame, uint32_t partInFrameIdx) const
         {
-            for(unsigned i=0; i<simDim; ++i)
+            for(uint32_t i=0; i<simDim; ++i)
             {
                 if(globalCellIdx[i] < minIdx_[i] || globalCellIdx[i] > maxIdx_[i])
                     return false;

@@ -36,7 +36,7 @@ namespace xrt {
 
         PIC_Photons* particleStorage;
 
-        std::vector<unsigned> gridSize, devices, periodic;
+        std::vector<uint32_t> gridSize, devices, periodic;
 
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
@@ -182,7 +182,7 @@ namespace xrt {
     private:
         void checkGridConfiguration(Space globalGridSize, GridLayout layout)
         {
-            for(unsigned i=0; i<simDim; ++i)
+            for(uint32_t i=0; i<simDim; ++i)
             {
                 // global size must be a divisor of supercell size
                 // note: this is redundant, while using the local condition below

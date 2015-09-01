@@ -69,7 +69,7 @@ namespace plugins {
              * a complete picture discarding the guards.
              */
             Space size = Environment::get().SubGrid().getGlobalDomain().size;
-            int offset;
+            uint32_t offset;
             if(simDim == 2)
                 offset = 0;
             else
