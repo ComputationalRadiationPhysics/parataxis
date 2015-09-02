@@ -1,0 +1,12 @@
+#pragma once
+
+#include "detector/PhotonDetector.hpp"
+#include "detector/CountParticles.hpp"
+
+namespace xrt {
+namespace detector {
+
+    using Detector = PhotonDetector<typename Config::IncomingParticleHandler>;
+
+}  // namespace detector
+}  // namespace xrt

@@ -1,0 +1,25 @@
+#pragma once
+
+namespace xrt {
+namespace detector {
+
+    /** Simply counts all incoming particles per cell */
+    struct CountParticles;
+
+    /**
+     * Config for detector used to collect outgoing particles
+     */
+    struct Config
+    {
+        using IncomingParticleHandler=
+            /**
+             * Policy that defines how the detector handles incoming particles
+             * Possible values:
+             *      CountParticles
+             */
+            CountParticles
+            ;
+    };
+
+}  // namespace detector
+}  // namespace xrt

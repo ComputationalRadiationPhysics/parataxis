@@ -4,3 +4,4 @@
 #include "simulation_defines/unitless/gridConfig.unitless"
 #include "simulation_defines/unitless/pusherConfig.unitless"
 #include "simulation_defines/unitless/scattererConfig.unitless"
+#include "simulation_defines/unitless/detectorConfig.unitless"

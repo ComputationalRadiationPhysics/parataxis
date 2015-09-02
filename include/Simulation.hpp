@@ -42,6 +42,7 @@ namespace xrt {
         MappingDesc cellDescription;
 
         std::unique_ptr<DensityField> densityField;
+        std::unique_ptr<detector::Detector> detector_;
 
     public:
 
@@ -77,6 +78,7 @@ namespace xrt {
         uint32_t init() override
         {
             densityField.reset(new DensityField(cellDescription));
+            detector_.reset(new detector::Detector(Environment::get().SubGrid().getTotalDomain().size));
 
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
@@ -92,6 +94,7 @@ namespace xrt {
                 std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
             densityField->init();
+            detector_->init();
             particleStorage->init(densityField.get());
 
             densityField->createDensityDistribution(densityFieldInitializer);
