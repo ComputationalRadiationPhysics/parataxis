@@ -134,7 +134,7 @@ namespace xrt {
             Environment::get().initDevices(devices, periodic);
 
             /* Divide grid evenly among devices */
-            GC& gc = Environment::get().GridController();
+            auto& gc = Environment::get().GridController();
             Space localGridSize(gridSize / devices);
             Space localGridOffset(gc.getPosition() * localGridSize);
             /* Set up environment (subGrid and singletons) with this size */

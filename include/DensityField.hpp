@@ -34,6 +34,10 @@ namespace xrt {
 
     class DensityField: PMacc::ISimulationData
     {
+    public:
+        using Buffer = PMacc::GridBuffer< float_X, simDim >;
+
+    private:
         MappingDesc cellDescription;
         std::unique_ptr<Buffer> buffer;
 

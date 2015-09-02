@@ -20,7 +20,7 @@ namespace plugins {
         using Field = T_Field;
 
         typedef MappingDesc::SuperCellSize SuperCellSize;
-        GatherSlice<typename Buffer::DataBoxType::ValueType> gather;
+        GatherSlice<typename Field::Buffer::DataBoxType::ValueType> gather;
 
         bool isMaster;
         std::string name;
