@@ -41,7 +41,7 @@ namespace xrt{
 
         void update(uint32_t currentStep);
 
-        virtual PMacc::SimulationDataId getUniqueId();
+        PMacc::SimulationDataId getUniqueId() override;
 
         /** sync device data to host
          *
@@ -49,9 +49,9 @@ namespace xrt{
          *            - the shared (between all species) mallocMC buffer must be copied once
          *              by the user
          */
-        virtual void synchronize();
+        void synchronize() override;
 
-        void syncToDevice();
+        void syncToDevice() override;
 
     private:
         PMacc::SimulationDataId datasetID;
