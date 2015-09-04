@@ -96,7 +96,7 @@ namespace xrt {
 
             densityField->init();
             detector_->init();
-            particleStorage->init(densityField.get());
+            particleStorage->init(densityField.get(), detector_.get());
 
             densityField->createDensityDistribution(densityFieldInitializer);
             particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));

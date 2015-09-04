@@ -81,7 +81,7 @@ namespace xrt{
     template<typename T_ParticleDescription>
     Particles<T_ParticleDescription>::Particles( MappingDesc cellDescription, PMacc::SimulationDataId datasetID ) :
         PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID ),
-        densityField_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
+        densityField_(nullptr), detector_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
     {
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
@@ -124,9 +124,10 @@ namespace xrt{
     {}
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::init(DensityField* densityField)
+    void Particles<T_ParticleDescription>::init(DensityField* densityField, detector::Detector* detector)
     {
         densityField_ = densityField;
+        detector_ = detector;
         PMacc::Environment<>::get().DataConnector().registerData( *this );
     }
 

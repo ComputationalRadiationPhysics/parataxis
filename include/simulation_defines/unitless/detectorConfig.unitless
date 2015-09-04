@@ -6,7 +6,11 @@
 namespace xrt {
 namespace detector {
 
-    using Detector = PhotonDetector<typename Config::IncomingParticleHandler>;
+    class Detector: public PhotonDetector<typename Config::IncomingParticleHandler>
+    {
+        using Parent = PhotonDetector<typename Config::IncomingParticleHandler>;
+        using Parent::Parent;
+    };
 
 }  // namespace detector
 }  // namespace xrt
