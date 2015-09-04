@@ -2,8 +2,8 @@
 
 #include "simulation_defines.hpp"
 #include "particles/Particles.hpp"
+#include "particles/XrtParticleDescription.hpp"
 #include <compileTime/conversion/MakeSeq.hpp>
-#include <particles/ParticleDescription.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/string.hpp>
 
@@ -34,7 +34,7 @@ namespace xrt {
 
     /*define species electrons*/
     typedef Particles<
-        PMacc::ParticleDescription<
+        xrt::particles::ParticleDescription<
             bmpl::string<'p'>,
             SuperCellSize,
             DefaultAttributesSeq,
