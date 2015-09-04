@@ -154,7 +154,7 @@ namespace xrt{
     }
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::update(uint32_t )
+    void Particles<T_ParticleDescription>::update(uint32_t)
     {
         using PMacc::traits::HasFlag;
         using PMacc::traits::GetFlagType;
@@ -195,6 +195,17 @@ namespace xrt{
               );
         /* Actually move particles out of their cells keeping the frames in a valid state */
         ParticlesBaseType::template shiftParticles< PMacc::CORE + PMacc::BORDER >();
+    }
+
+    template<typename T_ParticleDescription>
+    void Particles<T_ParticleDescription>::processLeavingParticles(int32_t direction)
+    {
+        PMacc::ExchangeMapping<PMacc::GUARD, MappingDesc> mapper(this->cellDescription, direction);
+        dim3 grid(mapper.getGridDim());
+
+        __cudaKernel(kernel::detectAndDeleteParticles)
+                (grid, Particles::TileSize)
+                (this->getDeviceParticlesBox(), mapper);
     }
 
 } // namespace xrt

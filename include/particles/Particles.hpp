@@ -53,6 +53,12 @@ namespace xrt{
 
         void syncToDevice() override;
 
+        /**
+         * Handles particles that went out of the volume
+         * @param direction
+         */
+        void processLeavingParticles(int32_t direction);
+
     private:
         PMacc::SimulationDataId datasetID;
         PMacc::GridLayout<simDim> gridLayout;

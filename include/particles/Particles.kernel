@@ -202,5 +202,47 @@ namespace kernel {
         }
     };
 
+    template< class T_ParticleBox, class T_Mapping>
+    __global__ void detectAndDeleteParticles(T_ParticleBox pb,
+                                             T_Mapping mapper)
+    {
+        typedef T_ParticleBox ParticleBox;
+        typedef typename ParticleBox::FrameType FrameType;
+
+        Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
+        const int linearThreadIdx = threadIdx.x;
+
+        __shared__ FrameType *frame;
+        __shared__ bool isValid;
+
+        __syncthreads(); /*wait that all shared memory is initialised*/
+
+        if (linearThreadIdx == 0)
+        {
+            frame = &(pb.getLastFrame(superCellIdx, isValid));
+        }
+
+        __syncthreads();
+
+        while (isValid)
+        {
+
+            PMACC_AUTO(particle, ((*frame)[linearThreadIdx]));
+            particle[PMacc::multiMask_] = 0; //delete particle
+
+            __syncthreads();
+
+            if (linearThreadIdx == 0)
+            {
+                //always remove the last frame
+                isValid = getPreviousFrameAndRemoveLastFrame(frame, pb, superCellIdx);
+            }
+            __syncthreads();
+        }
+
+        if (linearThreadIdx == 0)
+            pb.getSuperCell(superCellIdx).setSizeLastFrame(0);
+    }
+
 }  // namespace kernel
 }  // namespace xrt
