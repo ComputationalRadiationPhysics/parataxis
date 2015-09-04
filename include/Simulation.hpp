@@ -19,6 +19,7 @@
 #include <compileTime/conversion/TypeToPointerPair.hpp>
 #include <debug/VerboseLog.hpp>
 #include <eventSystem/EventSystem.hpp>
+#include <communication/AsyncCommunication.hpp>
 
 #include <boost/program_options.hpp>
 #include <memory>
@@ -113,11 +114,9 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
-            __startTransaction(__getTransactionEvent());
             particleStorage->update(currentStep);
-            PMacc::EventTask commEvt = particleStorage->asyncCommunication(__getTransactionEvent());
-            PMacc::EventTask updateEvt = __endTransaction();
-            __setTransactionEvent(commEvt + updateEvt);
+            PMacc::EventTask commEvt = PMacc::communication::asyncCommunication(*particleStorage, __getTransactionEvent());
+            __setTransactionEvent(commEvt);
         }
 
         const MappingDesc*
