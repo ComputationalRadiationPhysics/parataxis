@@ -39,7 +39,7 @@ TBG_gpu_y=1
 TBG_gpu_z=1
 
 TBG_gridSize="-g 256 256 256"
-TBG_steps="-s 96"
+TBG_steps="-s 480"
 TBG_periodic="-p 1 1 1"
 
 TBG_program="@PROJECT_NAME@"
