@@ -20,7 +20,7 @@ namespace particles {
             T_ValueTypeSeq,
             T_Flags,
             PMacc::HandleGuardRegion<
-                PMacc::particles::ExchangeParticles,
+                PMacc::particles::policies::ExchangeParticles,
                 ProcessLeavingParticles
             >,
             T_MethodsList,
