@@ -19,6 +19,12 @@ namespace detector {
              */
             CountParticles
             ;
+
+        /**
+         * Distance of the detector from the right side of the volume
+         * Unit: meter
+         */
+        static constexpr float_X distance = 1;
     };
 
 }  // namespace detector
