@@ -69,6 +69,7 @@ namespace xrt{
         detector::Detector* detector_;
         /** Contains the globalId that is assigned to the next particle created */
         PMacc::GridBuffer<uint32_t, 1> nextPartId_;
+        uint32_t lastProcessedStep_;
     };
 
 } //namespace xrt

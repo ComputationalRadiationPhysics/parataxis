@@ -8,12 +8,93 @@
 namespace xrt {
 namespace detector {
 
+    namespace detail {
+
+        /**
+         * Calculates the cell index on the detector that a photon reaches when it continues
+         * with the current speed
+         */
+        struct GetTargetCellIdx
+        {
+            /**
+             *
+             * @param xPosition Position of the detector in x direction
+             * @param size      Size of the detector
+             */
+            GetTargetCellIdx(float_X xPosition, Space2D size):
+                xPosition_(xPosition), size_(size)
+            {}
+
+            template<typename T_Particle>
+            HDINLINE bool
+            operator()(const T_Particle& particle, Space globalIdx, Space2D& targetIdx, float_X& dt) const
+            {
+                auto mom = particle[momentum_];
+                /* Not flying towards detector? -> exit */
+                if(mom.x() <= 0)
+                    return false;
+                /* Calculate global position */
+                const float_X momAbs = PMaccMath::abs(mom);
+                const floatD_X vel   = mom * ( SPEED_OF_LIGHT / momAbs );
+                floatD_X pos;
+                for(uint32_t i=0; i<simDim; ++i)
+                    pos[i] = (float_X(globalIdx[i]) + particle[position_][i]) * cellSize[i];
+                /* Required time to reach detector */
+                dt = (xPosition_ - pos.x()) / vel.x();
+                /* Position at detector plane */
+                pos.z() += dt * vel.z();
+                pos.y() += dt * vel.y();
+                targetIdx.x() = pos.z() / CELL_DEPTH;
+                targetIdx.y() = pos.y() / CELL_HEIGHT;
+                /* Check bounds */
+                return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
+                       targetIdx.y() >= 0 && targetIdx.y() < size_.y();
+            }
+
+        private:
+            PMACC_ALIGN(xPosition_, const float_X);
+            PMACC_ALIGN(size_, const Space2D);
+        };
+
+        template<class T_GetTargetCellIdx, class T_AccumPolicy>
+        class DetectParticle
+        {
+            using GetTargetCellIdx = T_GetTargetCellIdx;
+            using AccumPolicy = T_AccumPolicy;
+
+            const GetTargetCellIdx getTargetCellIdx_;
+            const AccumPolicy accumPolicy_;
+            const uint32_t timeStep_;
+        public:
+
+            DetectParticle(GetTargetCellIdx getTargetCellIdx, AccumPolicy accumPolicy, uint32_t timeStep):
+                getTargetCellIdx_(getTargetCellIdx), accumPolicy_(accumPolicy), timeStep_(timeStep)
+            {}
+
+            template<typename T_Particle, typename T_DetectorBox>
+            HDINLINE void
+            operator()(const T_Particle& particle, const Space superCellPosition, T_DetectorBox& detector) const
+            {
+                /*calculate global cell index*/
+                const Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particle[PMacc::localCellIdx_]));
+                const Space globalCellIdx = superCellPosition + localCell;
+                Space2D targetIdx;
+                float_X dt;
+                /* Get index on detector, if none found -> go out */
+                if(!getTargetCellIdx_(particle, globalCellIdx, targetIdx, dt))
+                    return;
+                detector(targetIdx) = accumPolicy_(detector(targetIdx), particle, timeStep_ * DELTA_T + dt);
+            }
+        };
+
+    }  // namespace detail
+
     /**
      * Detector for photons that will accumulate incoming photons with the given policy
      * \tparam T_Config:
      *      policy IncomingParticleHandler_ The policy must define an inner type "Type"
      *          that is used for each "cell" of the detector and be a functor with
-     *          signature Type(Type oldVal, Particle, uint32_t timeStep) that returns
+     *          signature Type(Type oldVal, Particle, float_X timeAtDetector) that returns
      *          the new value for the detector cell
      *      float_X distance Distance from the volume in meters
      */
@@ -34,6 +115,8 @@ namespace detector {
         float_X xPosition_;
 
     public:
+
+        using DetectParticle = detail::DetectParticle<detail::GetTargetCellIdx, AccumPolicy>;
 
         PhotonDetector(const Space& simulationSize)
         {
@@ -69,59 +152,29 @@ namespace detector {
             Environment::get().DataConnector().registerData(*this);
         }
 
-        float_X
-        getXPosition() const
+        typename Buffer::DataBoxType
+        getHostDataBox()
         {
-            return xPosition_;
-        }
-    };
-
-    /**
-     * Calculates the cell index on the detector that a photon reaches when it continues
-     * with the current speed
-     */
-    struct GetTargetCellIdx
-    {
-        /**
-         *
-         * @param xPosition Position of the detector in x direction
-         * @param size      Size of the detector
-         * @param globalIdx Global index of the current super cell
-         */
-        GetTargetCellIdx(float_X xPosition, Space2D size, Space globalIdx):
-            xPosition_(xPosition), size_(size), globalIdx_(globalIdx)
-        {}
-
-        template<typename T_Particle>
-        HDINLINE bool
-        operator()(const T_Particle& particle, Space2D& targetIdx, float_X& dt)
-        {
-            auto mom = particle[momentum_];
-            /* Not flying towards detector? -> exit */
-            if(mom.x() <= 0)
-                return false;
-            /* Calculate global position */
-            const float_X momAbs = PMaccMath::abs(mom);
-            const floatD_X vel   = mom * ( SPEED_OF_LIGHT / momAbs );
-            floatD_X pos;
-            for(uint32_t i=0; i<simDim; ++i)
-                pos[i] = (float_X(globalIdx_[i]) + particle[position_][i]) * cellSize[i];
-            /* Required time to reach detector */
-            dt = (xPosition_ - pos.x()) / vel.x();
-            /* Position at detector plane */
-            pos.z() += dt * vel.z();
-            pos.y() += dt * vel.y();
-            targetIdx.x() = pos.z() / CELL_DEPTH;
-            targetIdx.y() = pos.y() / CELL_HEIGHT;
-            /* Check bounds */
-            return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
-                   targetIdx.y() >= 0 && targetIdx.y() < size_.y();
+            return buffer->getHostBuffer().getDataBox();
         }
 
-    private:
-        PMACC_ALIGN(xPosition_, const float_X);
-        PMACC_ALIGN(size_, const Space2D);
-        PMACC_ALIGN(globalIdx_, const Space);
+        typename Buffer::DataBoxType
+        getDeviceDataBox()
+        {
+            return buffer->getDeviceBuffer().getDataBox();
+        }
+
+        Space2D
+        getSize() const
+        {
+            return buffer->getGridLayout().getDataSpaceWithoutGuarding();
+        }
+
+        DetectParticle
+        getDetectParticle(uint32_t timeStep) const
+        {
+            return DetectParticle(detail::GetTargetCellIdx(xPosition_, getSize()), AccumPolicy(), timeStep);
+        }
     };
 
 }  // namespace detector

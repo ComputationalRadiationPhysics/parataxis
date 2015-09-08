@@ -16,7 +16,7 @@ namespace detector {
 
         template< typename T_Particle >
         HDINLINE Type
-        operator()(Type oldVal, T_Particle& particle, uint32_t currentStep) const
+        operator()(Type oldVal, T_Particle& particle, float_X currentTime) const
         {
             return oldVal + 1;
         }

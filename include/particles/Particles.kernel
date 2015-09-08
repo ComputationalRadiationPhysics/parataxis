@@ -202,24 +202,39 @@ namespace kernel {
         }
     };
 
-    template< class T_ParticleBox, class T_Mapping>
-    __global__ void detectAndDeleteParticles(T_ParticleBox pb,
-                                             T_Mapping mapper)
+    /**
+     * Detects particles and deletes them afterwards
+     *
+     * @param particleBox    Box with particles
+     * @param localOffset    Offset of the current rank
+     * @param detectParticle Functor with signature void(particle, Space superCellPosition, detector)
+     * @param detector       Device side instance of detector (box)
+     * @param mapper         Mapper used for kernel launch
+     */
+    template< class T_ParticleBox, class T_DetectParticle, class T_Detector, class T_Mapping>
+    __global__
+    void detectAndDeleteParticles(T_ParticleBox particleBox,
+                                  Space localOffset,
+                                  T_DetectParticle detectParticle,
+                                  T_Detector detector,
+                                  T_Mapping mapper)
     {
         typedef T_ParticleBox ParticleBox;
         typedef typename ParticleBox::FrameType FrameType;
 
         Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
+        const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize() +
+                                         localOffset;
         const int linearThreadIdx = threadIdx.x;
 
         __shared__ FrameType *frame;
         __shared__ bool isValid;
 
-        __syncthreads(); /*wait that all shared memory is initialised*/
+        __syncthreads(); /*wait that all shared memory is initialized*/
 
         if (linearThreadIdx == 0)
         {
-            frame = &(pb.getLastFrame(superCellIdx, isValid));
+            frame = &(particleBox.getLastFrame(superCellIdx, isValid));
         }
 
         __syncthreads();
@@ -228,6 +243,7 @@ namespace kernel {
         {
 
             PMACC_AUTO(particle, ((*frame)[linearThreadIdx]));
+            detectParticle(particle, superCellPosition, detector);
             particle[PMacc::multiMask_] = 0; //delete particle
 
             __syncthreads();
@@ -235,13 +251,13 @@ namespace kernel {
             if (linearThreadIdx == 0)
             {
                 //always remove the last frame
-                isValid = getPreviousFrameAndRemoveLastFrame(frame, pb, superCellIdx);
+                isValid = getPreviousFrameAndRemoveLastFrame(frame, particleBox, superCellIdx);
             }
             __syncthreads();
         }
 
         if (linearThreadIdx == 0)
-            pb.getSuperCell(superCellIdx).setSizeLastFrame(0);
+            particleBox.getSuperCell(superCellIdx).setSizeLastFrame(0);
     }
 
 }  // namespace kernel
