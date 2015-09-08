@@ -6,9 +6,10 @@
 namespace xrt {
 namespace detector {
 
-    class Detector: public PhotonDetector<Config>
+    class Detector: public PhotonDetector<DetectorConfig>
     {
-        using Parent = PhotonDetector<Config>;
+    public:
+        using Parent = PhotonDetector<DetectorConfig>;
         using Parent::Parent;
     };
 

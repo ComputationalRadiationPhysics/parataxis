@@ -9,7 +9,7 @@ namespace detector {
     /**
      * Config for detector used to collect outgoing particles
      */
-    struct Config
+    struct DetectorConfig
     {
         using IncomingParticleHandler=
             /**
