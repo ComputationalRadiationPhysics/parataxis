@@ -48,7 +48,7 @@ namespace plugins {
         {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
-                ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("xrt"), "base file name to store slices in (_step.png will be appended)")
+                ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("field"), "base file name to store slices in (_step.png will be appended)")
                 ((prefix + ".slicePoint").c_str(), po::value<float_X>(&this->slicePoint)->default_value(0), "slice point 0.0 <= x <= 1.0")
                 ;
         }
@@ -78,12 +78,12 @@ namespace plugins {
                 if(offset >= size[2])
                     offset = size[2] - 1;
             }
-            auto picture = gather(field->getHostDataBox(), offset);
+            auto picture = gather(field.getHostDataBox(), offset);
             if (isMaster){
                 PngCreator png;
                 std::stringstream fileName;
                 fileName << this->fileName
-                         << std::setw(6) << std::setfill('0') << currentStep
+                         << "_" << std::setw(6) << std::setfill('0') << currentStep
                          << ".png";
 
                 png(fileName.str(), picture, size);
