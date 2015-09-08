@@ -108,7 +108,8 @@ namespace detector {
          */
         static constexpr float_X distance = float_X(Config::distance / UNIT_LENGTH);
 
-        using Type = typename AccumPolicy::Type;
+    public: using Type = typename AccumPolicy::Type;
+    private:
         using Buffer = PMacc::GridBuffer< Type, 2 >;
         std::unique_ptr< Buffer > buffer;
 
