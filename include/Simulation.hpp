@@ -37,7 +37,7 @@ namespace xrt {
 
         PIC_Photons* particleStorage;
 
-        std::vector<uint32_t> gridSize, devices, periodic;
+        std::vector<uint32_t> gridSize, devices;
 
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
@@ -65,10 +65,7 @@ namespace xrt {
             desc.add_options()
                 ("devices,d", po::value<std::vector<uint32_t> > (&devices)->multitoken(), "number of devices in each dimension")
 
-                ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid")
-
-                ("periodic", po::value<std::vector<uint32_t> > (&periodic)->multitoken(),
-                 "specifying whether the grid is periodic (1) or not (0) in each dimension, default: no periodic dimensions");
+                ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid");
         }
 
         std::string pluginGetName() const override
@@ -128,7 +125,7 @@ namespace xrt {
     protected:
         void pluginLoad() override
         {
-            Space periodic  = convertToSpace(this->periodic, true, "");
+            Space periodic = Space::create(0); // Non periodic boundaries!
             Space devices   = convertToSpace(this->devices, 1, "devices (-d)");
             Space gridSize  = convertToSpace(this->gridSize, 1, "grid (-g)");
 

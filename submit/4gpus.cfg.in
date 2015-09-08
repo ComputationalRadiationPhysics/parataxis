@@ -40,7 +40,6 @@ TBG_gpu_z=1
 
 TBG_gridSize="-g 256 256 256"
 TBG_steps="-s 200"
-TBG_periodic="-p 1 1 1"
 
 TBG_program="${PROJECT_NAME}"
 
@@ -59,7 +58,6 @@ TBG_devices="-d !TBG_gpu_x !TBG_gpu_y !TBG_gpu_z"
 TBG_programParams="!TBG_devices      \
                    !TBG_gridSize     \
                    !TBG_steps        \
-                   !TBG_periodic     \
                    !TBG_plugins | tee output"
 
 # TOTAL number of GPUs
