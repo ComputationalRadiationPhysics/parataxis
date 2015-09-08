@@ -36,7 +36,7 @@ namespace plugins {
 
     public:
         PrintDetector():
-            name("PrintDetector: Prints the detector to a PNG"),
+            name("PrintDetector: Prints the detector to a TIFF"),
             prefix(Detector::getName() + std::string("_print")),
             notifyFrequency(0)
         {
@@ -47,7 +47,7 @@ namespace plugins {
         {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
-                ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("detector"), "base file name (_step.png will be appended)")
+                ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
                 ;
         }
 
@@ -79,7 +79,7 @@ namespace plugins {
                 std::stringstream fileName;
                 fileName << this->fileName
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
-                         << ".png";
+                         << ".tif";
 
                 tiffWriter::FloatImage<> img(fileName.str(), size.x(), size.y());
                 for(int y = 0; y < size.y(); ++y)
@@ -89,6 +89,7 @@ namespace plugins {
                         img(x, y) = masterBuffer_->getDataBox()(Space2D(x, y));
                     }
                 }
+                img.save();
             }
 
             dc.releaseData(Detector::getName());
