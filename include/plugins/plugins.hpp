@@ -2,7 +2,12 @@
 
 #include "simulation_defines.hpp"
 #include "plugins/PrintParticles.hpp"
-#include "plugins/PrintField.hpp"
+#ifdef XRT_ENABLE_PNG
+#   include "plugins/PrintField.hpp"
+#endif
+#ifdef XRT_ENABLE_TIFF
+#   include "plugins/PrintDetector.hpp"
+#endif
 #include <boost/mpl/vector.hpp>
 
 namespace xrt {
@@ -20,9 +25,16 @@ namespace xrt {
 
     /* field plugins (with placeholder replaced by field) */
     typedef bmpl::vector<
-#if ENABLE_PRINT_Field
-            plugins::PrintParticles<bmpl::_1>
+#if ENABLE_PRINT_FIELDS && defined(XRT_ENABLE_PNG)
+            plugins::PrintField<bmpl::_1>
 #endif
     > FieldPlugins;
+
+    /* detector plugins (with placeholder replaced by detector) */
+    typedef bmpl::vector<
+#if ENABLE_PRINT_DETECTORS && defined(XRT_ENABLE_TIFF)
+            plugins::PrintDetector<bmpl::_1>
+#endif
+    > DetectorPlugins;
 
 }  // namespace xrt

@@ -112,11 +112,20 @@ namespace xrt{
                 >
             >::type SpecializedFieldPlugins;
 
+        typedef bmpl::transform<
+                DetectorPlugins,
+                bmpl::apply1<
+                    bmpl::_1,
+                    detector::Detector
+                >
+            >::type SpecializedDetectorPlugins;
+
         /* create sequence with all plugins*/
         typedef PMacc::MakeSeq<
             StandAlonePlugins,
             SpecializedSpeciesPlugins,
-            SpecializedFieldPlugins
+            SpecializedFieldPlugins,
+            SpecializedDetectorPlugins
         >::type AllPlugins;
 
         void loadPlugins()
