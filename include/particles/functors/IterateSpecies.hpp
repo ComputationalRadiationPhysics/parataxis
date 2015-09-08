@@ -40,7 +40,8 @@ namespace functors{
                 typedef typename T_PartBox::FrameType FrameType;
 
                 const Space block = mapper.getSuperCellIndex(blockIdx);
-                const Space superCellPosition((block - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize());
+                const Space superCellPosition = (block - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize() +
+                                                localOffset;
 
                 bool isValid;
                 FrameType* framePtr = &(partBox.getFirstFrame(block, isValid));
@@ -55,7 +56,7 @@ namespace functors{
                         {
                             /*calculate global cell index*/
                             Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particle[PMacc::localCellIdx_]));
-                            Space globalCellIdx = localOffset + superCellPosition + localCell;
+                            Space globalCellIdx = superCellPosition + localCell;
                             if(filter(globalCellIdx, *framePtr, threadIdx))
                             {
                                 handleParticle(globalCellIdx, particle);
