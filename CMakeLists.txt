@@ -162,7 +162,7 @@ INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
 file(GLOB CFG_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "submit/*.cfg.in")
 FOREACH(file ${CFG_Files})
     get_filename_component(fileNoExt ${file} NAME_WE)
-    configure_file(${file} "submit/${fileNoExt}.cfg")
+    configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
 ENDFOREACH()
 
 INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
