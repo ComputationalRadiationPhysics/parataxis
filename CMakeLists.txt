@@ -19,6 +19,7 @@ SET(PICONGPU_ROOT ~/picongpu CACHE PATH "Path to picongpu base directory")
 #set helper pathes to find libraries and packages
 set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/" "$ENV{MPI_ROOT}" "$ENV{CUDA_ROOT}" "$ENV{BOOST_ROOT}")
 # own modules for find_packages
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PICONGPU_ROOT}/thirdParty/cmake-modules/)
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -68,11 +69,22 @@ SET(PMACC_VERBOSE "0" CACHE STRING "set verbose level for libPMacc")
 ADD_DEFINITIONS(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
 
 ## PNGwriter ##
-find_package(PNGwriter REQUIRED)
+find_package(PNGwriter)
 
-include_directories(SYSTEM ${PNGwriter_INCLUDE_DIRS})
-add_definitions(${PNGwriter_DEFINITIONS})
-list(APPEND LIBS ${PNGwriter_LIBRARIES})
+if(PNGwriter_FOUND)
+    include_directories(SYSTEM ${PNGwriter_INCLUDE_DIRS})
+    add_definitions(${PNGwriter_DEFINITIONS} -DXRT_ENABLE_PNG)
+    list(APPEND LIBS ${PNGwriter_LIBRARIES})
+endif()
+
+## PNGwriter ##
+find_package(TiffWriter)
+
+if(TiffWriter_FOUND)
+    include_directories(${TiffWriter_INCLUDE_DIRS})
+    add_definitions(${TiffWriter_DEFINITIONS} -DXRT_ENABLE_TIFF)
+    list(APPEND LIBS ${TiffWriter_LIBRARIES})
+endif()
 
 ## Boost ##
 FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options regex system filesystem)
