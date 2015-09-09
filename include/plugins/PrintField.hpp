@@ -1,18 +1,176 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "GatherSlice.hpp"
 #include "PngCreator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
+#include <cuSTL/algorithm/mpi/Gather.hpp>
+#include <cuSTL/container/HostBuffer.hpp>
+#include <cuSTL/cursor/tools/slice.hpp>
+#include <cuSTL/algorithm/kernel/Foreach.hpp>
 #include <dataManagement/DataConnector.hpp>
 #include <debug/VerboseLog.hpp>
 #include <string>
 #include <sstream>
+#include <memory>
 
 namespace xrt {
 namespace plugins {
+
+    namespace detail {
+        template<class T_Field, uint32_t T_simDim>
+        struct GatherSlice;
+
+        template<class T_Field>
+        struct GatherSlice<T_Field, 2>
+        {
+            using Field = T_Field;
+            using Gather = PMacc::algorithm::mpi::Gather<2>;
+            using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
+
+            void
+            init(float_X slicePoint, uint32_t nAxis, Space2D fieldSize)
+            {
+                auto& gc = PMacc::Environment<2>::get().GridController();
+                Space2D gpuDim = gc.getGpuNodes();
+                Space2D globalSize = gpuDim * fieldSize;
+                PMacc::zone::SphericZone<2> gpuGatheringZone(gpuDim);
+                gather_.reset(new Gather(gpuGatheringZone));
+                if(gather_->root())
+                    masterField_.reset(new HostBuffer(globalSize));
+                else
+                    masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
+            }
+
+            void
+            operator()(Field& field)
+            {
+                if(!gather_->participate())
+                    return;
+                // This assumes we have no guards!
+                field.synchronize();
+                (*gather_)(*masterField_, field.getHostBuffer().cartBuffer());
+            }
+
+            bool
+            hasData() const
+            {
+                return gather_->root();
+            }
+
+            HostBuffer&
+            getData()
+            {
+                return *masterField_;
+            }
+        private:
+            std::unique_ptr<Gather> gather_;
+            std::unique_ptr<HostBuffer> masterField_;
+        };
+
+        struct ConversionFunctor
+        {
+            DINLINE void operator()(float_X& target, const float_X fieldData) const
+            {
+                target = fieldData;
+            }
+        };
+
+        template<class T_Field>
+        struct GatherSlice<T_Field, 3>
+        {
+            using Field = T_Field;
+            using Gather = PMacc::algorithm::mpi::Gather<3>;
+            using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
+            using TmpBuffer = PMacc::GridBuffer<typename Field::Type, 2>;
+
+            void
+            init(float_X slicePoint, uint32_t nAxis, Space3D fieldSize)
+            {
+                auto& gc = PMacc::Environment<simDim>::get().GridController();
+                Space3D gpuDim = gc.getGpuNodes();
+                /* Global size of the field */
+                Space3D globalSize = gpuDim * fieldSize;
+                /* plane (idx in field array) in global field */
+                int globalPlane = globalSize[nAxis] * slicePoint;
+                /* GPU idx (in the axis dimension) that has the slice */
+                int gpuPlane    = globalPlane / fieldSize[nAxis];
+
+                PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%") % globalPlane % nAxis % fieldSize % globalSize;
+
+                PMacc::zone::SphericZone<3> gpuGatheringZone(gpuDim);
+                /* Use only 1 GPU in the axis dimension */
+                gpuGatheringZone.offset[nAxis] = gpuPlane;
+                gpuGatheringZone.size  [nAxis] = 1;
+
+                gather_.reset(new Gather(gpuGatheringZone));
+                if(!gather_->participate())
+                    return;
+                /* Offset in the local field (if we have the slice) */
+                localOffset_  = globalPlane % fieldSize[nAxis];
+                if(nAxis == 0)
+                {
+                    /* View from left */
+                    twistedAxes_.x() = 2; twistedAxes_.y() = 1;
+                }else if(nAxis == 1)
+                {
+                    /* View from top */
+                    twistedAxes_.x() = 0; twistedAxes_.y() = 2;
+                }else{
+                    /* View from front */
+                    twistedAxes_.x() = 0; twistedAxes_.y() = 1;
+                }
+                twistedAxes_[2] = nAxis;
+
+                /* Reduce size dimension */
+                Space2D tmpSize(fieldSize[twistedAxes_[0]], fieldSize[twistedAxes_[0]]);
+                Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[0]]);
+
+                tmpBuffer_.reset(new TmpBuffer(tmpSize));
+                if(gather_->root())
+                    masterField_.reset(new HostBuffer(masterSize));
+                else
+                    masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
+
+            }
+
+            void
+            operator()(Field& field)
+            {
+                auto dBufferTmp(tmpBuffer_->getDeviceBuffer().cartBuffer());
+                auto dBuffer(field.getGridBuffer().getDeviceBuffer().cartBuffer());
+                ConversionFunctor cf;
+                PMacc::algorithm::kernel::Foreach<PMacc::math::CT::UInt32<4,4,1> >()(
+                             dBufferTmp.zone(), dBufferTmp.origin(),
+                             PMacc::cursor::tools::slice(dBuffer.originCustomAxes(twistedAxes_)(0, 0, localOffset_)),
+                             cf );
+                tmpBuffer_->deviceToHost();
+                auto hBufferTmp(tmpBuffer_->getHostBuffer().cartBuffer());
+                (*gather_)(*masterField_, hBufferTmp);
+            }
+
+            bool
+            hasData() const
+            {
+                return gather_->root();
+            }
+
+            HostBuffer&
+            getData()
+            {
+                return *masterField_;
+            }
+        private:
+            float_X slicePoint_;
+            PMacc::math::UInt32<3> twistedAxes_;
+            uint32_t localOffset_;
+            std::unique_ptr<Gather> gather_;
+            std::unique_ptr<HostBuffer> masterField_;
+            std::unique_ptr<TmpBuffer> tmpBuffer_;
+        };
+
+    }  // namespace detail
 
     template<class T_Field>
     class PrintField : public ISimulationPlugin
@@ -20,7 +178,7 @@ namespace plugins {
         using Field = T_Field;
 
         typedef MappingDesc::SuperCellSize SuperCellSize;
-        GatherSlice<typename Field::Buffer::DataBoxType::ValueType> gather;
+        detail::GatherSlice<Field, simDim> gather_;
 
         bool isMaster;
         std::string name;
@@ -29,6 +187,7 @@ namespace plugins {
         uint32_t notifyFrequency;
         std::string fileName;
         float_X slicePoint;
+        uint32_t nAxis_;
 
     public:
         PrintField():
@@ -50,6 +209,7 @@ namespace plugins {
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("field"), "base file name to store slices in (_step.png will be appended)")
                 ((prefix + ".slicePoint").c_str(), po::value<float_X>(&this->slicePoint)->default_value(0), "slice point 0.0 <= x <= 1.0")
+                ((prefix + ".axis").c_str(), po::value<uint32_t>(&this->nAxis_)->default_value(2), "Axis index to slice through (0=>x, 1=>y, 2=>z)")
                 ;
         }
 
@@ -61,41 +221,35 @@ namespace plugins {
         void notify(uint32_t currentStep) override
         {
             PMacc::log< XRTLogLvl::IN_OUT >("Outputting field at timestep %1%") % currentStep;
-            PMacc::DataConnector &dc = Environment::get().DataConnector();
+
+            auto &dc = Environment::get().DataConnector();
 
             Field& field = dc.getData<Field>(Field::getName());
-            field.synchronize();
-            /* gather::operator() gathers all the buffers and assembles those to
-             * a complete picture discarding the guards.
-             */
-            Space size = Environment::get().SubGrid().getGlobalDomain().size;
-            uint32_t offset;
-            if(simDim == 2)
-                offset = 0;
-            else
-            {
-                offset= slicePoint * size[2];
-                if(offset >= size[2])
-                    offset = size[2] - 1;
-            }
-            auto picture = gather(field.getHostDataBox(), offset);
-            if (isMaster){
+            gather_(field);
+            if (gather_.hasData()){
                 PngCreator png;
                 std::stringstream fileName;
                 fileName << this->fileName
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
                          << ".png";
 
-                png(fileName.str(), picture, size);
+                using Box = PMacc::PitchedBox<typename Field::Type, 2>;
+                PMacc::DataBox<Box> data(Box(
+                        gather_.getData().getDataPointer(),
+                        Space2D(),
+                        Space2D(gather_.getData().size()),
+                        gather_.getData().size().x() * sizeof(typename Field::Type)
+                        ));
+                png(fileName.str(), data, gather_.getData().size());
             }
 
             dc.releaseData(Field::getName());
         }
 
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
-        {}
-        void restart(uint32_t restartStep, const std::string restartDirectory) override
-        {}
+       void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
+       {}
+       void restart(uint32_t restartStep, const std::string restartDirectory) override
+       {}
 
     protected:
         void pluginLoad() override
@@ -106,12 +260,10 @@ namespace plugins {
                 return;
             }
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
-            auto& subGrid = Environment::get().SubGrid();
-            isMaster = gather.init(
-                    MessageHeader(subGrid.getGlobalDomain().size, cellDescription_->getGridLayout(), subGrid.getLocalDomain().offset),
-                    true);
+            gather_.init(slicePoint, nAxis_, Environment::get().SubGrid().getLocalDomain().size);
         }
-    };
+
+     };
 
 }  // namespace plugins
 }  // namespace xrt

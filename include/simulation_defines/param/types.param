@@ -11,6 +11,7 @@ namespace xrt {
     typedef PMacc::Environment<simDim> Environment;
     typedef PMacc::DataSpace<simDim> Space;
     typedef PMacc::DataSpace<2> Space2D;
+    typedef PMacc::DataSpace<3> Space3D;
     typedef PMacc::GridLayout<simDim> GridLayout;
     typedef PMacc::SubGrid<simDim> SubGrid;
 

@@ -35,7 +35,8 @@ namespace xrt {
     class DensityField: PMacc::ISimulationData
     {
     public:
-        using Buffer = PMacc::GridBuffer< float_X, simDim >;
+        using Type = float_X;
+        using Buffer = PMacc::GridBuffer< Type, simDim >;
 
     private:
         MappingDesc cellDescription;
@@ -94,6 +95,12 @@ namespace xrt {
         getDeviceDataBox()
         {
             return buffer->getDeviceBuffer().getDataBox();
+        }
+
+        Buffer&
+        getGridBuffer()
+        {
+            return *buffer;
         }
 
     };

@@ -98,6 +98,8 @@ namespace xrt {
             densityField->createDensityDistribution(densityFieldInitializer);
             particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
 
+            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
+
             return 0;
         }
 
