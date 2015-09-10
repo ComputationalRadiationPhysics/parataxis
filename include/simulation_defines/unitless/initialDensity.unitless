@@ -1,0 +1,21 @@
+#pragma once
+
+#include "generators.hpp"
+
+namespace xrt {
+
+    namespace initialDensity {
+    namespace AvailableGenerators{
+        /** List of possible generators */
+        struct Line{
+            using type = generators::Line<float_X, LineConfig>;
+        };
+        struct Cuboid{
+            using type = generators::Cuboid<float_X, CuboidConfig>;
+        };
+    };  // namespace AvailableGenerators
+    };  // namespace initialDensity
+
+    typename initialDensity::Generator::type densityFieldInitializer;
+
+}  // namespace xrt

@@ -17,3 +17,4 @@ namespace xrt {
 #include <simulation_defines/extensionParam.loader>
 
 #include <simulation_defines/_defaultUnitless.loader>
+#include <simulation_defines/extensionUnitless.loader>
