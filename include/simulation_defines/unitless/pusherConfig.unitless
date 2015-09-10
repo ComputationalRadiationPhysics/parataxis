@@ -1,7 +1,7 @@
 #pragma once
 
 #include "particles/functors/NoAlgo.hpp"
-#include "particles/functors/PhotonPusher.hpp"
+#include "particles/pusher/PhotonPusher.hpp"
 
 namespace xrt {
 namespace particles {
@@ -14,7 +14,7 @@ namespace pusher {
 
     struct Photon
     {
-        using type = particles::functors::PhotonPusher;
+        using type = particles::pusher::PhotonPusher;
     };
 
 }  // namespace pusher

@@ -4,7 +4,7 @@
 
 namespace xrt{
 namespace particles {
-namespace functors {
+namespace pusher {
 
     /**
      * Pusher used to move particles with the speed of light
@@ -25,6 +25,6 @@ namespace functors {
     };
 
 
-}  // namespace functors
+}  // namespace pusher
 }  // namespace particles
 }  // namespace xrt
