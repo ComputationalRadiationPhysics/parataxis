@@ -48,9 +48,11 @@ namespace plugins {
             {
                 if(!gather_->participate())
                     return;
-                // This assumes we have no guards!
                 field.synchronize();
-                (*gather_)(*masterField_, field.getHostBuffer().cartBuffer());
+                (*gather_)(
+                        *masterField_,
+                        field.getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT())
+                        );
             }
 
             bool
@@ -139,7 +141,7 @@ namespace plugins {
             operator()(Field& field)
             {
                 auto dBufferTmp(tmpBuffer_->getDeviceBuffer().cartBuffer());
-                auto dBuffer(field.getGridBuffer().getDeviceBuffer().cartBuffer());
+                auto dBuffer(field.getGridBuffer().getDeviceBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT()));
                 ConversionFunctor cf;
                 PMacc::algorithm::kernel::Foreach<PMacc::math::CT::UInt32<4,4,1> >()(
                              dBufferTmp.zone(), dBufferTmp.origin(),
