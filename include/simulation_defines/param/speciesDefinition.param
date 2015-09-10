@@ -29,7 +29,8 @@ namespace xrt {
     /*########################### define species #################################*/
 
     typedef bmpl::vector<
-            particlePusher<particles::pusher::Photon>
+            particlePusher<particles::pusher::Photon>,
+            particleScatterer<particles::scatterer::Reflection>
     > ParticleFlagsPhotons;
 
     /*define species electrons*/

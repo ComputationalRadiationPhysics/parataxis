@@ -5,6 +5,7 @@ namespace particles {
 namespace scatterer {
 
     struct None;
+    struct Reflection;
 
 }  // namespace scatterer
 }  // namespace particles

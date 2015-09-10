@@ -1,6 +1,7 @@
 #pragma once
 
 #include "particles/functors/NoAlgo.hpp"
+#include "particles/scatterer/Reflection.hpp"
 
 namespace PMacc {
 namespace traits {
