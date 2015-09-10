@@ -27,9 +27,11 @@ TBG_program="@PROJECT_NAME@"
 ## Section: Optional Variables ##
 #################################
 
-TBG_plugins="--p_position.period 24                  \
-             --DensityField_printSlice.period 99999  \
-             --PhotonDetector_print.period 80        \
+TBG_plugins="--p_position.period 24                       \
+             --DensityField_printSlice.period 99999       \
+             --DensityField_printSlice.axis 0             \
+             --DensityField_printSlice.slicePoint 0.2534  \
+             --PhotonDetector_print.period 80             \
              "
 
 #################################
