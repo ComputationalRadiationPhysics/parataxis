@@ -41,7 +41,6 @@ namespace kernel {
         const Space blockCell = block * SuperCellSize::toRT();
 
         __shared__ int32_t mustShift;
-        __syncthreads(); /*wait that all shared memory is initialized*/
 
         if(linearThreadIdx == 0)
             mustShift = 0;
@@ -229,8 +228,6 @@ namespace kernel {
 
         __shared__ FrameType *frame;
         __shared__ bool isValid;
-
-        __syncthreads(); /*wait that all shared memory is initialized*/
 
         if (linearThreadIdx == 0)
         {

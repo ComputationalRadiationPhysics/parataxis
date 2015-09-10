@@ -36,12 +36,9 @@ namespace kernel{
 
         __shared__ FrameType *frame;
 
-        __syncthreads(); /*wait that all shared memory is initialized*/
-
         const Space threadIndex(threadIdx);
         const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
-
 
         /* do not add particle to guarding super cells */
         for (uint32_t d = 0; d < simDim; ++d)
