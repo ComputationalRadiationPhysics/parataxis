@@ -168,10 +168,10 @@ namespace xrt{
         /* if nothing was defined we use None as fallback */
         typedef typename PMacc::traits::Resolve<
                     typename std::conditional<hasPusher::value, FoundPusher, particles::pusher::None >::type
-                >::type::type SelectedPusher;
+                >::type SelectedPusher;
         typedef typename PMacc::traits::Resolve<
                     typename std::conditional<hasScatterer::value, FoundScatterer, particles::scatterer::None >::type
-                >::type::type SelectedScatterer;
+                >::type SelectedScatterer;
 
         /* Create the frame solver used to manipulate the particle along its way */
         typedef kernel::PushParticlePerFrame<SelectedPusher, SelectedScatterer> FrameSolver;

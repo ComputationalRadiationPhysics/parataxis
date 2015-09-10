@@ -9,7 +9,7 @@ namespace pusher {
     /**
      * Pusher used to move particles with the speed of light
      */
-    struct PhotonPusher
+    struct Photon
     {
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
         HDINLINE void operator()(const T_DensityBox&, T_Position& pos, T_Momentum& mom)

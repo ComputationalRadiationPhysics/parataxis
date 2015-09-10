@@ -2,15 +2,14 @@
 
 #include "particles/functors/NoAlgo.hpp"
 
-namespace xrt {
-namespace particles {
-namespace scatterer {
+namespace PMacc {
+namespace traits {
 
-    struct None
+    template<>
+    struct Resolve<xrt::particles::scatterer::None>
     {
-        using type = particles::functors::NoAlgo;
+        using type = xrt::particles::functors::NoAlgo;
     };
 
-}  // namespace scatterer
-}  // namespace particles
-}  // namespace xrt
+}  // namespace traits
+}  // namespace PMacc
