@@ -39,12 +39,12 @@ namespace functors{
 
                 typedef typename T_PartBox::FrameType FrameType;
 
-                const Space block = mapper.getSuperCellIndex(blockIdx);
-                const Space superCellPosition = (block - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize() +
+                const Space superCellIdx = mapper.getSuperCellIndex(blockIdx);
+                const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
                                                 localOffset;
 
                 bool isValid;
-                FrameType* framePtr = &(partBox.getFirstFrame(block, isValid));
+                FrameType* framePtr = &(partBox.getFirstFrame(superCellIdx, isValid));
 
                 while (isValid) //move over all Frames
                 {
