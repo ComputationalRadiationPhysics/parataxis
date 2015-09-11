@@ -139,9 +139,13 @@ namespace xrt{
 
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space totalGpuCellOffset = subGrid.getLocalDomain().offset;
+        /* Add only to first cells */
+        if(totalGpuCellOffset.x() > 0)
+            return;
 
         dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
-        __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::CORE + PMacc::BORDER)
+        block.x = 1;
+        __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::BORDER)
             (block)
             ( distributionFunctor,
               positionFunctor,

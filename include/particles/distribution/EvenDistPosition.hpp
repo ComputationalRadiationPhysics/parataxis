@@ -6,7 +6,7 @@
 
 namespace xrt {
 namespace particles {
-namespace functors {
+namespace distribution {
 
     /**
      * Distributes particles evenly in a cell
@@ -22,7 +22,7 @@ namespace functors {
         init(Space totalCellIdx, uint32_t totalNumParts)
         {
             using PMacc::algorithms::math::pow;
-            partsPerDim = static_cast<uint32_t>(std::ceil(pow(static_cast<float_X>(totalNumParts), static_cast<float_X>(1.) / simDim)));
+            partsPerDim = static_cast<uint32_t>(std::ceil(pow(static_cast<float_X>(totalNumParts), static_cast<float_X>(1./simDim))));
             invPartsPerDim = static_cast<float_X>(1) / static_cast<float_X>(partsPerDim);
         }
 
@@ -43,6 +43,6 @@ namespace functors {
         PMACC_ALIGN(invPartsPerDim, float_X);
     };
 
-}  // namespace functors
+}  // namespace distribution
 }  // namespace particles
 }  // namespace xrt

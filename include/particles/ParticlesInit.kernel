@@ -18,7 +18,7 @@ namespace kernel{
      * \tparam positionFunctor Must provide an init(Space totalGpuCellIdx, totalNumParsToCreate) which is called first.
      *                         Then is called for each particle, identified by its index in range [0, totalNumParsToCreate)
      *                         and should return the start position of the particle
-     * \tparam totalGpuCellOffset Offset to the total origin
+     * \tparam localOffset Offset to the total origin
      * \tparam particleBox ParticleBox where the particles should be put to
      * \tparam gId Global start id used for assigning the global IDs to the particles
      * \tparam mapper Mapping used for this kernel
@@ -26,13 +26,13 @@ namespace kernel{
     template< typename T_Species, typename T_DistributionFunctor, typename T_PositionFunctor, typename ParBox, class Mapping>
     __global__ void fillGridWithParticles(T_DistributionFunctor distributionFunctor,
                                           T_PositionFunctor positionFunctor,
-                                          Space totalGpuCellOffset,
+                                          Space localOffset,
                                           ParBox particleBox,
                                           uint32_t* gId,
                                           Mapping mapper)
     {
+        static_assert(Mapping::AreaType == PMacc::BORDER, "Only borders should be filled");
         typedef typename ParBox::FrameType FrameType;
-        const Space superCells(mapper.getGridSuperCells());
 
         __shared__ FrameType *frame;
 
@@ -41,18 +41,17 @@ namespace kernel{
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
         /* do not add particle to guarding super cells */
+        const Space superCells(mapper.getGridSuperCells());
         for (uint32_t d = 0; d < simDim; ++d)
             if (superCellIdx[d] == 0 || superCellIdx[d] == superCells[d] - 1)
                 return;
 
-        /*get local cell idx*/
-        const Space idx(superCellIdx * SuperCellSize::toRT() + threadIndex);
+        /*get local cell idx and delete guarding cells */
+        const Space localCellIndex = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + threadIndex;
 
-        /*delete guarding cells */
-        const Space localCellIndex = idx - mapper.getGuardingSuperCells() * SuperCellSize::toRT();
-
-        const Space totalGpuCellIdx = totalGpuCellOffset + localCellIndex;
-        const uint32_t totalNumParsToCreate = distributionFunctor(totalGpuCellIdx);
+        const Space totalCellIdx = localOffset + localCellIndex;
+        const Space2D totalCellIdx2D(totalCellIdx.z(), totalCellIdx.y());
+        const uint32_t totalNumParsToCreate = (totalCellIdx.x() == 0) ? distributionFunctor(totalCellIdx2D) : 0;
 
         __shared__ int32_t finished;
         if (linearThreadIdx == 0)
@@ -72,7 +71,7 @@ namespace kernel{
             particleBox.setAsLastFrame(*frame, superCellIdx);
         }
 
-        positionFunctor.init(totalGpuCellIdx, totalNumParsToCreate);
+        positionFunctor.init(totalCellIdx, totalNumParsToCreate);
         /* remaining number of particles to create */
         uint32_t numParsToCreate = totalNumParsToCreate;
 

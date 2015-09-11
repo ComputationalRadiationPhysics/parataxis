@@ -222,7 +222,7 @@ namespace kernel {
         typedef typename ParticleBox::FrameType FrameType;
 
         Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
-        const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * mapper.getSuperCellSize() +
+        const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
                                          localOffset;
         const int linearThreadIdx = threadIdx.x;
 

@@ -3,8 +3,8 @@
 #include "xrtTypes.hpp"
 
 #include "convertToSpace.hpp"
-#include "particles/functors/ConstDistribution.hpp"
-#include "particles/functors/EvenDistPosition.hpp"
+#include "particles/distribution/ConstDistribution.hpp"
+#include "particles/distribution/EvenDistPosition.hpp"
 #include "particles/Particles.tpp"
 
 #include "DensityField.hpp"
@@ -75,8 +75,9 @@ namespace xrt {
 
         uint32_t init() override
         {
+            Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             densityField.reset(new DensityField(cellDescription));
-            detector_.reset(new detector::Detector(Environment::get().SubGrid().getTotalDomain().size));
+            detector_.reset(new detector::Detector(totalSize));
 
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
@@ -96,7 +97,11 @@ namespace xrt {
             particleStorage->init(densityField.get(), detector_.get());
 
             densityField->createDensityDistribution(densityFieldInitializer);
-            particleStorage->add(particles::functors::ConstDistribution<1>(), particles::functors::EvenDistPosition<PIC_Photons>(0));
+            particleStorage->add(
+                    particles::distribution::ConstDistribution<std::integral_constant<int, 1>>(
+                            Space2D(totalSize.z(), totalSize.y())
+                            ),
+                    particles::distribution::EvenDistPosition<PIC_Photons>(0));
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
 

@@ -5,7 +5,7 @@
 
 namespace xrt {
 namespace particles {
-namespace functors {
+namespace distribution {
 
     template<class T_Species>
     struct RandomPosition
@@ -35,6 +35,6 @@ namespace functors {
         Random rand;
     };
 
-}  // namespace functors
+}  // namespace distribution
 }  // namespace particles
 }  // namespace xrt
