@@ -5,6 +5,7 @@
 #include "convertToSpace.hpp"
 #include "particles/Particles.tpp"
 #include "particles/ParticleFillInfo.hpp"
+#include "LaserSource.hpp"
 
 #include "DensityField.hpp"
 #include "generators.hpp"
@@ -37,6 +38,7 @@ namespace xrt {
         PMacc::MallocMCBuffer *mallocMCBuffer;
 
         PIC_Photons* particleStorage;
+        LaserSource<PIC_Photons> laserSource;
 
         std::vector<uint32_t> gridSize, devices;
 
@@ -96,10 +98,10 @@ namespace xrt {
             densityField->init();
             detector_->init();
             particleStorage->init(densityField.get(), detector_.get());
+            laserSource.init();
 
             densityField->createDensityDistribution(densityFieldInitializer);
-            constexpr uint32_t numTimeStepsLaserPulse = laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T;
-            addParticles(0, numTimeStepsLaserPulse);
+
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
 
             return 0;
@@ -115,6 +117,7 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
+            laserSource.processStep(currentStep);
             particleStorage->update(currentStep);
             PMacc::EventTask commEvt = PMacc::communication::asyncCommunication(*particleStorage, __getTransactionEvent());
             __setTransactionEvent(commEvt);
@@ -180,24 +183,6 @@ namespace xrt {
             // initializing the heap for particles
             mallocMC::initHeap(freeGpuMem);
             this->mallocMCBuffer = new PMacc::MallocMCBuffer();
-        }
-
-        void addParticles(uint32_t timeStep, uint32_t numTimeSteps)
-        {
-            using Distribution = Resolve_t<laserConfig::distribution::UsedValue>;
-            using Position     = Resolve_t<laserConfig::position::UsedValue>;
-            using Phase        = Resolve_t<laserConfig::phase::UsedValue>;
-            using Momentum     = Resolve_t<laserConfig::momentum::UsedValue>;
-
-            Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
-            auto initFunctor = particles::getParticleFillInfo(
-                    Distribution(Space2D(totalSize.z(), totalSize.y())),
-                    Position(),
-                    Phase(),
-                    Momentum()
-                    );
-            particleStorage->add(initFunctor, timeStep, numTimeSteps);
-
         }
 
     private:
