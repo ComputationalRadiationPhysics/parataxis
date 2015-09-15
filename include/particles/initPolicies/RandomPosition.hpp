@@ -5,36 +5,39 @@
 
 namespace xrt {
 namespace particles {
-namespace distribution {
+namespace initPolicies {
 
     template<class T_Species>
     struct RandomPosition
     {
         using Species = T_Species;
-        using Random = xrt::Random<Species>;
+        using Random = xrt::Random<Species, laserConfig::DIRECTION>;
 
-
-        HINLINE RandomPosition(uint32_t currentStep): rand(currentStep)
+        HINLINE RandomPosition(uint32_t currentStep): rand(currentStep, seeds::position)
         {}
 
-        HINLINE void
-        init(Space totalCellIdx, uint32_t totalNumParts)
+        HDINLINE void
+        init(Space2D totalCellIdx)
         {
             rand.init(totalCellIdx);
         }
+
+        HDINLINE void
+        setCount(int32_t particleCount)
+        {}
 
         DINLINE floatD_X
         operator()(uint32_t numPart)
         {
             floatD_X result;
             for(uint32_t i = 0; i < simDim; ++i)
-                result[i] = rand();
+                result[i] = rand() * laserConfig::distSize[i] / cellSize[i];
             return result;
         }
     private:
         Random rand;
     };
 
-}  // namespace distribution
+}  // namespace initPolicies
 }  // namespace particles
 }  // namespace xrt

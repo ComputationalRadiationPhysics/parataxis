@@ -1,0 +1,80 @@
+#pragma once
+
+namespace xrt {
+namespace laserConfig {
+
+    /** Maximum in-cell position for the direction in which photons enter */
+    constexpr float_X MAX_X = SPEED_OF_LIGHT * DELTA_T / CELL_WIDTH;
+    constexpr float_X MAX_Y = SPEED_OF_LIGHT * DELTA_T / CELL_HEIGHT;
+    constexpr float_X MAX_Z = SPEED_OF_LIGHT * DELTA_T / CELL_DEPTH;
+
+    /** Size of the area in which photons will be spawned */
+    PMACC_CONST_VECTOR(float_X, simDim, distSize, MAX_X * CELL_WIDTH, CELL_HEIGHT, CELL_DEPTH);
+
+    static_assert(DIRECTION < simDim, "Laser direction out of range");
+
+}  // namespace laserConfig
+}  // namespace xrt
+
+#include "particles/initPolicies/ConstDistribution.hpp"
+
+#include "particles/initPolicies/ConstPosition.hpp"
+#include "particles/initPolicies/EvenDistPosition.hpp"
+#include "particles/initPolicies/RandomPosition.hpp"
+
+#include "particles/initPolicies/PlaneWavePhase.hpp"
+
+#include "particles/initPolicies/ConstMomentum.hpp"
+
+#include <traits/Resolve.hpp>
+#include <math/ConstVector.hpp>
+
+namespace PMacc {
+namespace traits {
+
+    /* Distribution */
+
+    template<>
+    struct Resolve<xrt::laserConfig::distribution::Const>
+    {
+        using Value = xrt::laserConfig::distribution::Const;
+        using type  = xrt::particles::initPolicies::ConstDistribution<Value::numParts>;
+    };
+
+    /* Position */
+
+    template<>
+    struct Resolve<xrt::laserConfig::position::Const>
+    {
+        using Value = xrt::laserConfig::position::Const;
+        using type  = xrt::particles::initPolicies::ConstPosition<Value>;
+    };
+    template<>
+    struct Resolve<xrt::laserConfig::position::EvenDistance>
+    {
+        using type  = xrt::particles::initPolicies::EvenDistPosition;
+    };
+    template<>
+    struct Resolve<xrt::laserConfig::position::Random>
+    {
+        using Value = xrt::laserConfig::position::Random;
+        using type  = xrt::particles::initPolicies::RandomPosition<xrt::PIC_Photons>;
+    };
+
+    /* Phase */
+    template<>
+    struct Resolve<xrt::laserConfig::phase::PlaneWave>
+    {
+        using type  = xrt::particles::initPolicies::PlaneWavePhase<xrt::PIC_Photons>;
+    };
+
+    /* Momentum */
+    template<>
+    struct Resolve<xrt::laserConfig::momentum::Const>
+    {
+        using Value = xrt::laserConfig::momentum::Const;
+        using type  = xrt::particles::initPolicies::ConstMomentum<Value>;
+    };
+
+}  // namespace traits
+}  // namespace PMacc

@@ -11,7 +11,7 @@ namespace xrt {
 
     /*########################### define particle attributes #####################*/
 
-    /** describe attributes of a particle*/
+    /* describe attributes of a particle*/
     typedef PMacc::MakeSeq<
             position<position_pic>,
             momentum,
@@ -28,12 +28,16 @@ namespace xrt {
 
     /*########################### define species #################################*/
 
+    /* 0.1nm wave length for X-Rays */
+    value_identifier(float_X, wavelengthPhotons, 0.1 * 1e-9);
+
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
-            particleScatterer<particles::scatterer::Reflection>
+            particleScatterer<particles::scatterer::Reflection>,
+            wavelength<wavelengthPhotons>
     > ParticleFlagsPhotons;
 
-    /*define species electrons*/
+    /*define species photons*/
     typedef Particles<
         xrt::particles::ParticleDescription<
             bmpl::string<'p'>,

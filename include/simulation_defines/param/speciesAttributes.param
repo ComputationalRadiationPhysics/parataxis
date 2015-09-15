@@ -31,4 +31,7 @@ namespace xrt {
 
     /** alias for particle scatterer */
     alias(particleScatterer);
+
+    /** Wavelength for photon waves */
+    alias(wavelength);
 }  // namespace xrt

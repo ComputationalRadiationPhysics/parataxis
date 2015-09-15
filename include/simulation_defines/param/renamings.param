@@ -1,9 +1,23 @@
 #pragma once
 
+#include <traits/Resolve.hpp>
+
+/* Fwd declare namespace */
+namespace PMacc {
+namespace nvidia {
+namespace rng {
+}  // namespace rng
+}  // namespace nvidia
+}  // namespace PMacc
+
 namespace xrt {
 
     /* Shortcuts for namespaces
      */
     namespace PMaccMath = PMacc::algorithms::math;
+    namespace nvrng = PMacc::nvidia::rng;
+
+    template<typename T>
+    using Resolve_t = typename PMacc::traits::Resolve<T>::type;
 
 }  // namespace xrt

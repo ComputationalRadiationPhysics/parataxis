@@ -39,8 +39,8 @@ namespace xrt{
          * \tparam T_PositionFunctor     Functor that returns a position for a given particle idx
          *                               Must also provide an init(totalGPUCellIdx, totalNumParToCreate) function
          */
-        template<typename T_DistributionFunctor, typename T_PositionFunctor>
-        void add(T_DistributionFunctor&& distributionFunctor, T_PositionFunctor&& positionFunctor);
+        template<typename T_InitFunctor>
+        void add(T_InitFunctor&& initFunctor, uint32_t timeStep, uint32_t numTimeSteps);
 
         void update(uint32_t currentStep);
 

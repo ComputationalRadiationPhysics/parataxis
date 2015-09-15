@@ -132,8 +132,8 @@ namespace xrt{
     }
 
     template<typename T_ParticleDescription>
-    template<typename T_DistributionFunctor, typename T_PositionFunctor>
-    void Particles<T_ParticleDescription>::add(T_DistributionFunctor&& distributionFunctor, T_PositionFunctor&& positionFunctor)
+    template<typename T_InitFunctor>
+    void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor, uint32_t timeStep, uint32_t numTimeSteps)
     {
         PMacc::log< XRTLogLvl::SIM_STATE >("adding particles for species %1%") % FrameType::getName();
 
@@ -147,10 +147,11 @@ namespace xrt{
         block.x = 1;
         __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::BORDER)
             (block)
-            ( distributionFunctor,
-              positionFunctor,
+            ( initFunctor,
               totalGpuCellOffset,
               this->particlesBuffer->getDeviceParticleBox(),
+              timeStep,
+              numTimeSteps,
               nextPartId_.getDeviceBuffer().getBasePointer()
               );
 
