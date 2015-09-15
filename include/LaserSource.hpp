@@ -43,13 +43,15 @@ namespace xrt {
         {
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             auto initFunctor = particles::getParticleFillInfo(
-                    Distribution(Space2D(totalSize.z(), totalSize.y())),
+                    Distribution(totalSize.shrink<2>(laserConfig::DIRECTION + 1)),
                     Position(),
                     Phase(),
                     Momentum()
                     );
-            Species& particles = Environment::get().DataConnector().getData<Species>(FrameType::getName(), true);
+            auto& dc = Environment::get().DataConnector();
+            Species& particles = dc.getData<Species>(FrameType::getName(), true);
             particles.add(initFunctor, timeStep, numTimeSteps);
+            dc.releaseData(FrameType::getName());
         }
     };
 

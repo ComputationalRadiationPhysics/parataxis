@@ -86,7 +86,6 @@ namespace plugins {
 
             /* synchronizes the MallocMCBuffer to the host side */
             PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName());
-            //particles::functors::CopySpeciesToHost<PIC_Photons>()();
 
             uint32_t particlesCount = 0;
             auto& particles = dc.getData<PIC_Photons>(PIC_Photons::FrameType::getName());

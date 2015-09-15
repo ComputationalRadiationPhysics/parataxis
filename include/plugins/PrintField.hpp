@@ -226,7 +226,7 @@ namespace plugins {
 
             auto &dc = Environment::get().DataConnector();
 
-            Field& field = dc.getData<Field>(Field::getName());
+            Field& field = dc.getData<Field>(Field::getName(), false);
             gather_(field);
             if (gather_.hasData()){
                 PngCreator png;

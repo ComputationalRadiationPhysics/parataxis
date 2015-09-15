@@ -62,7 +62,6 @@ namespace plugins {
             PMacc::DataConnector& dc = Environment::get().DataConnector();
 
             Detector& detector = dc.getData<Detector>(Detector::getName());
-            detector.synchronize();
 
             bool isMaster = reduce_.hasResult(ReduceMethod());
             Space2D size = detector.getSize();
