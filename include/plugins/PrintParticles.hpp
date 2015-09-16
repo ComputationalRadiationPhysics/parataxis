@@ -70,7 +70,7 @@ namespace plugins {
             desc.add_options()
                 ((analyzerPrefix + ".period").c_str(), po::value<uint32_t >(&notifyFrequency), "enable analyzer [for each n-th step]")
                 ((analyzerPrefix + ".offset").c_str(), po::value<std::vector<uint32_t> >(&idxOffset)->multitoken(), "Print only particles of cells with idx greater than this")
-                ((analyzerPrefix + ".size").c_str(), po::value<std::vector<uint32_t> >(&idxSize)->multitoken(), "Print only particles of that many cells (in each dimension)")
+                ((analyzerPrefix + ".size").c_str(), po::value<std::vector<uint32_t> >(&idxSize)->multitoken(), "Print only particles of that many cells (in each dimension); 0 = all")
                 ;
         }
 
@@ -117,25 +117,26 @@ namespace plugins {
                 return;
 
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
+            auto& subGrid = Environment::get().SubGrid();
+            Space totalSize = subGrid.getTotalDomain().size;
             if(idxOffset.empty() && idxSize.empty())
             {
                 // Use an area from the center as the default
-                auto& subGrid = Environment::get().SubGrid();
-                Space offset = subGrid.getTotalDomain().offset + subGrid.getTotalDomain().size / 2;
+                Space offset = subGrid.getTotalDomain().offset + totalSize / 2;
                 for(uint32_t i = 0; i<simDim; ++i)
                 {
                     idxOffset.push_back(offset[i]);
                     idxSize.push_back(5);
                 }
                 idxOffset[0] = subGrid.getTotalDomain().offset[0];
-                idxSize[0] = subGrid.getTotalDomain().size[0];
+                idxSize[0] = totalSize[0];
             }
             idxOffset.resize(simDim);
-            idxSize.resize(simDim, 1);
+            idxSize.resize(simDim, 0);
             for(uint32_t i = 0; i<simDim; ++i)
             {
-                idxOff[i] = idxOffset[i];
-                idxSz[i]  = idxSize[i];
+                idxOff[i] = (idxOffset[i] < totalSize[i]) ? idxOffset[i] : 0;
+                idxSz[i]  = (idxSize[i] > 0) ? idxSize[i] : totalSize[i];
             }
             PMacc::log< XRTLogLvl::PLUGINS >("Printing particles in range %1% [%2%] every %3% timesteps") % idxOff % idxSz % notifyFrequency;
         }
