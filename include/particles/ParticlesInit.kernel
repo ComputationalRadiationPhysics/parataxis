@@ -53,7 +53,9 @@ namespace kernel{
         const Space localCellIndex = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + threadIndex;
 
         const Space totalCellIdx = localOffset + localCellIndex;
-        const Space2D totalCellIdx2D(totalCellIdx.z(), totalCellIdx.y());
+        if(totalCellIdx[laserConfig::DIRECTION] != 0)
+            return;
+        const Space2D totalCellIdx2D = totalCellIdx.shrink<simDim - 1>(laserConfig::DIRECTION + 1);
         particleFillInfo.init(totalCellIdx2D);
 
         __shared__ int32_t blockCreatesParticles;
