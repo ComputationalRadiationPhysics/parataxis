@@ -4,6 +4,7 @@
 
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
+#include <algorithms/math.hpp>
 
 namespace xrt {
 namespace detector {
@@ -49,8 +50,9 @@ namespace detector {
                 /* Position at detector plane */
                 pos.y() += dt * vel.y();
                 pos.z() += dt * vel.z();
-                targetIdx.x() = pos.shrink<2>(1).x() / cellSize.shrink<2>(1).x();
-                targetIdx.y() = pos.shrink<2>(1).y() / cellSize.shrink<2>(1).y();
+                using PMacc::algorithms::math::float2int_rn;
+                targetIdx.x() = float2int_rn(pos.shrink<2>(1).x() / cellSize.shrink<2>(1).x());
+                targetIdx.y() = float2int_rn(pos.shrink<2>(1).y() / cellSize.shrink<2>(1).y());
                 /* Check bounds */
                 return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
                        targetIdx.y() >= 0 && targetIdx.y() < size_.y();
