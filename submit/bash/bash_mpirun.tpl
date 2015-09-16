@@ -49,4 +49,4 @@ mkdir simOutput 2> /dev/null
 cd simOutput
 
 echo 'mpirun -tag-output --display-map -npernode !TBG_gpusPerNode -n !TBG_tasks !TBG_dstPath/bin/!TBG_program !TBG_programParams'
-mpirun -tag-output --display-map -npernode !TBG_gpusPerNode -n !TBG_tasks cuda-memcheck !TBG_dstPath/bin/!TBG_program !TBG_programParams
+mpirun -tag-output --display-map -npernode !TBG_gpusPerNode -n !TBG_tasks !TBG_dstPath/bin/!TBG_program !TBG_programParams

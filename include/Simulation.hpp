@@ -100,9 +100,6 @@ namespace xrt {
             particleStorage->init(densityField.get(), detector_.get());
             laserSource.init();
 
-            /* Debugging only */
-            laserSource.processStep(0);
-
             densityField->createDensityDistribution(densityFieldInitializer);
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
@@ -120,7 +117,7 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
-            //laserSource.processStep(currentStep);
+            laserSource.processStep(currentStep);
             particleStorage->update(currentStep);
             PMacc::EventTask commEvt = PMacc::communication::asyncCommunication(*particleStorage, __getTransactionEvent());
             __setTransactionEvent(commEvt);
