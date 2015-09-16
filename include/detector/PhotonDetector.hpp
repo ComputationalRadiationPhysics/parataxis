@@ -25,6 +25,11 @@ namespace detector {
                 xPosition_(xPosition), size_(size)
             {}
 
+            /**
+             * Calculates the index on the detector and the time of impact
+             * Returns true, if the detector was hit, false otherwise.
+             * On false \ref targetIdx and \ref dt are undefined
+             */
             template<typename T_Particle>
             HDINLINE bool
             operator()(const T_Particle& particle, Space globalIdx, Space2D& targetIdx, float_X& dt) const
@@ -42,8 +47,8 @@ namespace detector {
                 /* Required time to reach detector */
                 dt = (xPosition_ - pos.x()) / vel.x();
                 /* Position at detector plane */
-                pos.z() += dt * vel.z();
                 pos.y() += dt * vel.y();
+                pos.z() += dt * vel.z();
                 targetIdx.x() = pos.shrink<2>(1).x() / cellSize.shrink<2>(1).x();
                 targetIdx.y() = pos.shrink<2>(1).y() / cellSize.shrink<2>(1).y();
                 /* Check bounds */
