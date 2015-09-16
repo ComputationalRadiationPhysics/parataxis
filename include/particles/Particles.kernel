@@ -240,8 +240,11 @@ namespace kernel {
         {
 
             PMACC_AUTO(particle, ((*frame)[linearThreadIdx]));
-            detectParticle(particle, superCellPosition, detector);
-            particle[PMacc::multiMask_] = 0; //delete particle
+            if(particle[PMacc::multiMask_])
+            {
+                detectParticle(particle, superCellPosition, detector);
+                particle[PMacc::multiMask_] = 0; //delete particle
+            }
 
             __syncthreads();
 
