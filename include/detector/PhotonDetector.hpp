@@ -44,8 +44,8 @@ namespace detector {
                 /* Position at detector plane */
                 pos.z() += dt * vel.z();
                 pos.y() += dt * vel.y();
-                targetIdx.x() = pos.z() / CELL_DEPTH;
-                targetIdx.y() = pos.y() / CELL_HEIGHT;
+                targetIdx.x() = pos.shrink<2>(1).x() / cellSize.shrink<2>(1).x();
+                targetIdx.y() = pos.shrink<2>(1).y() / cellSize.shrink<2>(1).y();
                 /* Check bounds */
                 return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
                        targetIdx.y() >= 0 && targetIdx.y() < size_.y();
@@ -121,13 +121,7 @@ namespace detector {
 
         PhotonDetector(const Space& simulationSize)
         {
-            /* Detector is right to the volume
-             * => Project from the left so bufX = -simZ && bufY == simY
-             */
-            Space2D size(
-                    simulationSize.z(),
-                    simulationSize.y()
-                    );
+            Space2D size = simulationSize.shrink<simDim-1>(1);
             buffer.reset(new Buffer(size));
             xPosition_ = simulationSize.x() * CELL_WIDTH + distance;
         }

@@ -90,7 +90,7 @@ namespace plugins {
             void
             init(float_X slicePoint, uint32_t nAxis, Space3D fieldSize)
             {
-                auto& gc = PMacc::Environment<simDim>::get().GridController();
+                auto& gc = PMacc::Environment<3>::get().GridController();
                 Space3D gpuDim = gc.getGpuNodes();
                 /* Global size of the field */
                 Space3D globalSize = gpuDim * fieldSize;
@@ -111,23 +111,11 @@ namespace plugins {
                     return;
                 /* Offset in the local field (if we have the slice) */
                 localOffset_  = globalPlane % fieldSize[nAxis];
-                if(nAxis == 0)
-                {
-                    /* View from left */
-                    twistedAxes_.x() = 2; twistedAxes_.y() = 1;
-                }else if(nAxis == 1)
-                {
-                    /* View from top */
-                    twistedAxes_.x() = 0; twistedAxes_.y() = 2;
-                }else{
-                    /* View from front */
-                    twistedAxes_.x() = 0; twistedAxes_.y() = 1;
-                }
-                twistedAxes_[2] = nAxis;
+                twistedAxes_ = PMacc::math::UInt32<3>((nAxis + 1) % 3, (nAxis + 2) % 3, (nAxis + 3) % 3);
 
                 /* Reduce size dimension */
-                Space2D tmpSize(fieldSize[twistedAxes_[0]], fieldSize[twistedAxes_[0]]);
-                Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[0]]);
+                Space2D tmpSize(fieldSize[twistedAxes_[0]], fieldSize[twistedAxes_[1]]);
+                Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[1]]);
 
                 tmpBuffer_.reset(new TmpBuffer(tmpSize));
                 if(gather_->root())

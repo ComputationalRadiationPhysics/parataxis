@@ -24,6 +24,7 @@ namespace xrt {
 
         void init()
         {
+            PMacc::log< XRTLogLvl::DOMAINS >("Laser pulse is %1% timesteps long") % numTimeStepsLaserPulse;
             uint32_t slotsAv = mallocMC::getAvailableSlots(sizeof(FrameType));
             uint64_t numParts = slotsAv * SuperCellSize::toRT().productOfComponents();
             PMacc::log< XRTLogLvl::MEMORY > ("There are %1% slots available that can fit up to %2% particles") % slotsAv % numParts;
@@ -43,7 +44,7 @@ namespace xrt {
         {
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             auto initFunctor = particles::getParticleFillInfo(
-                    Distribution(totalSize.shrink<2>(laserConfig::DIRECTION + 1)),
+                    Distribution(totalSize.shrink<simDim-1>(laserConfig::DIRECTION + 1)),
                     Position(),
                     Phase(),
                     Momentum()
