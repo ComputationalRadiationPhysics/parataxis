@@ -85,6 +85,7 @@ namespace plugins {
                 {
                     for(int x = 0; x < size.x(); ++x)
                     {
+                        /* Top left corner is 0,0*/
                         img(x, y) = masterBuffer_->getDataBox()(Space2D(x, y));
                     }
                 }

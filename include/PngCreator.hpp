@@ -19,7 +19,8 @@ namespace xrt
                 for (int32_t x = 0; x < dataSize.x(); ++x)
                 {
                     float p = data(Space2D(x, y));
-                    png.plot(x + 1, dataSize.y() - y, p, p, p);
+                    /* Png writer coordinates start at 1, 1 in top left corner */
+                    png.plot(x + 1, y + 1, p, p, p);
                 }
             }
             png.close();
