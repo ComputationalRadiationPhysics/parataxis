@@ -33,7 +33,8 @@ namespace xrt {
 
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
-            particleScatterer<particles::scatterer::Reflection>,
+            particleScatterCondition<particles::scatterer::conditions::OnThreshold>,
+            particleScatterDirection<particles::scatterer::direction::Reflect>,
             wavelength<wavelengthPhotons>
     > ParticleFlagsPhotons;
 

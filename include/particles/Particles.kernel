@@ -26,19 +26,20 @@ namespace kernel {
      */
     template<class T_BlockWorkArea, class T_ParBox, class T_DensityBox, class T_FrameSolver, class T_Mapping>
     __global__ void moveAndMarkParticles(T_ParBox particleBox,
-                                         T_DensityBox densityField,
+                                         const Space localOffset,
+                                         const T_DensityBox densityField,
                                          T_FrameSolver frameSolver,
-                                         T_Mapping mapper)
+                                         const T_Mapping mapper)
     {
         using BlockWorkArea = T_BlockWorkArea;
         using DensityBox = T_DensityBox;
         using FrameType = typename T_ParBox::FrameType;
-        const Space block(mapper.getSuperCellIndex(Space(blockIdx)));
 
         const Space threadIndex(threadIdx);
         const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
 
-        const Space blockCell = block * SuperCellSize::toRT();
+        const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
+        const Space blockCell = superCellIdx * SuperCellSize::toRT();
 
         __shared__ int32_t mustShift;
 
@@ -46,7 +47,7 @@ namespace kernel {
             mustShift = 0;
 
         bool isValid;
-        FrameType* frame = &particleBox.getLastFrame(block, isValid);
+        FrameType* frame = &particleBox.getLastFrame(superCellIdx, isValid);
 
         auto cachedDensityField = PMacc::CachedBox::create<0, typename DensityBox::ValueType>(BlockWorkArea());
 
@@ -64,8 +65,12 @@ namespace kernel {
                   );
         __syncthreads();
 
+        const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
+                                        localOffset;
+        frameSolver.init(superCellPosition);
+
         /*move over frames and call frame solver*/
-        PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(block).getSizeLastFrame();
+        PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
         while(isValid)
         {
             if(linearThreadIdx < particlesInSuperCell)
@@ -80,7 +85,7 @@ namespace kernel {
         /*set in SuperCell the mustShift flag which is a optimization for shift particles and fillGaps*/
         if(linearThreadIdx == 0 && mustShift == 1)
         {
-            particleBox.getSuperCell(block).setMustShift(true);
+            particleBox.getSuperCell(superCellIdx).setMustShift(true);
         }
     }
 
@@ -95,6 +100,20 @@ namespace kernel {
     template<class T_ScatterAlgo, class T_PushAlgo>
     struct PushParticlePerFrame
     {
+        using ScatterAlgo = T_ScatterAlgo;
+        using PushAlgo = T_PushAlgo;
+
+        HINLINE
+        PushParticlePerFrame(const ScatterAlgo& scatter = ScatterAlgo(), const PushAlgo& push = PushAlgo()):
+            scatter_(scatter), push_(push)
+        {}
+
+        HDINLINE void
+        init(Space totalCellIdx)
+        {
+            scatter_.init(totalCellIdx);
+        }
+
         template<class T_Frame, class T_DensityBox >
         DINLINE void operator()(T_Frame& frame, uint32_t particleIdx, const T_DensityBox& densityBox, int32_t& mustShift)
         {
@@ -107,8 +126,8 @@ namespace kernel {
 
             auto curDensityBox = densityBox.shift(localCell);
 
-            T_ScatterAlgo()(curDensityBox, pos, mom);
-            T_PushAlgo()(curDensityBox, pos, mom);
+            scatter_(curDensityBox, pos, mom);
+            push_(curDensityBox, pos, mom);
             particle[momentum_] = mom;
 
             Space dir;
@@ -199,6 +218,10 @@ namespace kernel {
                 PMacc::nvidia::atomicAllExch(&mustShift, 1);
             }
         }
+
+    private:
+        ScatterAlgo scatter_;
+        PushAlgo push_;
     };
 
     /**

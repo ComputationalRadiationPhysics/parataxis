@@ -7,17 +7,23 @@ namespace particles {
 namespace scatterer {
 
     /**
-     * Scatterer that inverts the momentum when any density is found
+     * Scatterer that inverts the momentum
      */
-    struct Reflection
+    template<class T_Species = bmpl::_1>
+    struct Reflect
     {
+        HINLINE explicit
+        Reflect(uint32_t)
+        {}
+
+        HDINLINE void
+        init(Space)
+        {}
+
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
         HDINLINE void operator()(const T_DensityBox& density, T_Position& pos, T_Momentum& mom)
         {
-            if(density(Space::create(0)) > float_X(1e-3))
-            {
-                mom *= -1;
-            }
+            mom *= -1;
         }
     };
 

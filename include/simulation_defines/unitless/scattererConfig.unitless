@@ -1,15 +1,29 @@
 #pragma once
 
-#include "particles/functors/NoAlgo.hpp"
-#include "particles/scatterer/Reflection.hpp"
+#include "particles/scatterer/Never.hpp"
+#include "particles/scatterer/OnThreshold.hpp"
+#include "particles/scatterer/Reflect.hpp"
 
 namespace PMacc {
 namespace traits {
 
     template<>
-    struct Resolve<xrt::particles::scatterer::None>
+    struct Resolve<xrt::particles::scatterer::conditions::Never>
     {
-        using type = xrt::particles::functors::NoAlgo;
+        using type = xrt::particles::scatterer::Never<>;
+    };
+
+    template<>
+    struct Resolve<xrt::particles::scatterer::conditions::OnThreshold>
+    {
+        using Config = xrt::particles::scatterer::conditions::OnThreshold;
+        using type = xrt::particles::scatterer::OnThreshold<Config>;
+    };
+
+    template<>
+    struct Resolve<xrt::particles::scatterer::direction::Reflect>
+    {
+        using type = xrt::particles::scatterer::Reflect<>;
     };
 
 }  // namespace traits

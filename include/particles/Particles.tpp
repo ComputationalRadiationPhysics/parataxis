@@ -2,19 +2,17 @@
 
 #include "Particles.hpp"
 
-#include "particles/functors/NoAlgo.hpp"
 #include "particles/Particles.kernel"
 #include "particles/ParticlesInit.kernel"
+#include "particles/scatterer/ScatterFunctor.hpp"
 #include "debug/LogLevels.hpp"
+#include "GetFlagOrDefault.hpp"
 
 #include <dataManagement/DataConnector.hpp>
 #include <particles/memory/buffers/ParticlesBuffer.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
 #include <mappings/simulation/GridController.hpp>
 #include <traits/GetUniqueTypeId.hpp>
-#include <traits/Resolve.hpp>
-#include <traits/HasFlag.hpp>
-#include <traits/GetFlagType.hpp>
 #include <dimensions/SuperCellDescription.hpp>
 #include <math/Vector.hpp>
 #include <algorithms/reverseBits.hpp>
@@ -162,24 +160,17 @@ namespace xrt{
     template<typename T_ParticleDescription>
     void Particles<T_ParticleDescription>::update(uint32_t currentStep)
     {
-        using PMacc::traits::HasFlag;
-        using PMacc::traits::GetFlagType;
-
         /* If the species defines a pusher/scatterer use it, otherwise fall back to default (None) */
-        typedef typename HasFlag<FrameType, particlePusher<> >::type hasPusher;
-        typedef typename GetFlagType<FrameType, particlePusher<> >::type FoundPusher;
-        typedef typename HasFlag<FrameType, particleScatterer<> >::type hasScatterer;
-        typedef typename GetFlagType<FrameType, particleScatterer<> >::type FoundScatterer;
         /* if nothing was defined we use None as fallback */
-        typedef typename PMacc::traits::Resolve<
-                    typename std::conditional<hasPusher::value, FoundPusher, particles::pusher::None >::type
-                >::type SelectedPusher;
-        typedef typename PMacc::traits::Resolve<
-                    typename std::conditional<hasScatterer::value, FoundScatterer, particles::scatterer::None >::type
-                >::type SelectedScatterer;
+        using Pusher = GetFlagOrDefault_t<FrameType, particlePusher<>, particles::pusher::None>;
+        using ScatterCondition = GetFlagOrDefault_t<FrameType, particleScatterCondition<>, particles::scatterer::conditions::Never>;
+        using ScatterDirection = GetFlagOrDefault_t<FrameType, particleScatterDirection<>, particles::scatterer::direction::Reflect>;
+
+        using Scatterer = particles::scatterer::ScatterFunctor<ScatterCondition, ScatterDirection, Particles>;
 
         /* Create the frame solver used to manipulate the particle along its way */
-        typedef kernel::PushParticlePerFrame<SelectedPusher, SelectedScatterer> FrameSolver;
+        using FrameSolver = kernel::PushParticlePerFrame<Scatterer, Pusher>;
+        FrameSolver frameSolver{Scatterer(currentStep)};
 
         /* This contains the working area for one block on the field(s).
          * It can include margin/halo if the field needs to be interpolated between that of the surrounding cells
@@ -196,8 +187,9 @@ namespace xrt{
         __cudaKernelArea( kernel::moveAndMarkParticles<BlockArea>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
             (block)
             ( this->getDeviceParticlesBox(),
+              Environment::get().SubGrid().getLocalDomain().offset,
               densityField_->getDeviceDataBox(),
-              FrameSolver()
+              frameSolver
               );
         /* Actually move particles out of their cells keeping the frames in a valid state */
         ParticlesBaseType::template shiftParticles< PMacc::CORE + PMacc::BORDER >();

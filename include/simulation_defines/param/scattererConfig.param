@@ -4,8 +4,25 @@ namespace xrt {
 namespace particles {
 namespace scatterer {
 
-    struct None;
-    struct Reflection;
+    namespace conditions {
+
+        /** No scattering at all */
+        struct Never;
+        /** Scattering when density field is above threshold */
+        struct OnThreshold
+        {
+            /** Threshold to use */
+            static constexpr float_X threshold = 1e-10;
+        };
+
+    }  // namespace conditions
+
+    namespace direction {
+
+        /** Inverts the momentum */
+        struct Reflect;
+
+    }  // namespace direction
 
 }  // namespace scatterer
 }  // namespace particles

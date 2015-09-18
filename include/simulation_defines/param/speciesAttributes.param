@@ -29,8 +29,11 @@ namespace xrt {
     /** alias for particle pusher */
     alias(particlePusher);
 
-    /** alias for particle scatterer */
-    alias(particleScatterer);
+    /** alias for particle scatter condition (default: None) */
+    alias(particleScatterCondition);
+
+    /** alias for particle scatter direction (default: Reflect) */
+    alias(particleScatterDirection);
 
     /** Wavelength for photon waves */
     alias(wavelength);
