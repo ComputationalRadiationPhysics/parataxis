@@ -36,11 +36,17 @@ namespace kernel{
     {
         static_assert(Mapping::AreaType == PMacc::BORDER, "Only borders should be filled");
         typedef typename ParBox::FrameType FrameType;
+        constexpr uint32_t frameSize = PMacc::math::CT::volume<SuperCellSize>::type::value;
 
-        __shared__ FrameType *frame;
+        /* We try to not waste any space by first filling the "low" frame till its full
+         * and then filling the "high" frame, which is a new, empty frame. To do this in
+         * parallel we need both frame pointers (high might be NULL) and a counter
+         */
+        __shared__ FrameType *frameLow, *frameHigh;
+        __shared__ uint32_t frameCounter, lastFrameSize;
 
         const Space threadIndex(threadIdx);
-        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
+        const bool isMaster = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex) == 0;
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
         /* do not add particle to guarding super cells */
@@ -59,40 +65,109 @@ namespace kernel{
         particleFillInfo.init(totalCellIdx2D);
 
         __shared__ int32_t blockCreatesParticles;
-        if (linearThreadIdx == 0)
+        if (isMaster)
+        {
+            /* Init shared vars */
             blockCreatesParticles = 0;
+            frameLow = nullptr;
+            frameHigh = nullptr;
+            frameCounter = 0;
+            /* Init frameLow if any and not full*/
+            bool hasLastFrame;
+            FrameType& tmpFrame = particleBox.getLastFrame(superCellIdx, hasLastFrame);
+            if(hasLastFrame)
+            {
+                lastFrameSize = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
+                if(lastFrameSize < frameSize)
+                {
+                    frameLow = &tmpFrame;
+                    frameCounter = lastFrameSize;
+                }
+            }else
+                lastFrameSize = 0;
+        }
         __syncthreads();
+
+        /* Invariant at this point:
+         *    frameCounter == 0 (empty or no last frame)
+         * OR frameCounter == lastFrameSize (when there is a last frame)
+         */
 
         /* Iterate over all time steps */
         for(uint32_t t = timeStep; t < timeStep + numTimeSteps; ++t)
         {
             /* remaining number of particles to create for this time step */
-            int32_t numParsToCreate = particleFillInfo.getCount(t);
+            uint32_t numParsToCreate = particleFillInfo.getCount(t);
             if (numParsToCreate > 0)
                 PMacc::nvidia::atomicAllExch(&blockCreatesParticles, 1); //one or more cells have particles to create
 
             __syncthreads();
             if (!blockCreatesParticles)
-                continue; // if there is no particle which has to be created
-
-            if (linearThreadIdx == 0)
-            {
-                frame = &(particleBox.getEmptyFrame());
-                particleBox.setAsLastFrame(*frame, superCellIdx);
-            }
+                continue; // if there is no particle which has to be created for this timestep
 
             /* distribute the particles of the current timestep within the cell */
             do
             {
-                if (linearThreadIdx == 0)
+                /* invariants at this point:
+                 * frameCounter is in [0, frameSize)
+                 * lastFrameSize is in [0, frameSize] with: 0 <=> empty or none; frameSize <=> full
+                 * frameCounter == 0 <=> last frame empty OR does not exist OR is full
+                 * frameCounter > 0 => frameCounter == lastFrameSize; Reason: frameCounter holds the index
+                 *      of the next particle to insert which is always the end of the last frame
+                 *      Note that frameCounter == 0 is a special case and frameCounter == frameSize is impossible
+                 */
+                PMacc::lcellId_t destParticleIdx;
+                if(numParsToCreate)
+                    destParticleIdx = PMacc::nvidia::atomicAllInc(frameCounter);
+                else
+                    destParticleIdx = std::numeric_limits<PMacc::lcellId_t>::max(); /* just to be sure */
+                __syncthreads();
+
+                /* master thread will handle adding new frames */
+                if (isMaster)
+                {
                     blockCreatesParticles = 0; //clear flag
+                    if(frameCounter > 0)
+                    {
+                        /* We have some particles, check that we have frames for them
+                         * frameLow is always required, frameHigh only if not all particles fit into frameLow
+                         */
+                        if(!frameLow)
+                        {
+                            /* No low frame, this can only happen when we have no or a full last frame */
+                            FrameType& tmpFrame = particleBox.getEmptyFrame();
+                            frameLow = &tmpFrame;
+                            particleBox.setAsLastFrame(tmpFrame, superCellIdx);
+                        }
+                        if(frameCounter > frameSize)
+                        {
+                            /* Not all particles fit into last frame -> Create another one */
+                            FrameType& tmpFrame = particleBox.getEmptyFrame();
+                            frameHigh = &tmpFrame;
+                            particleBox.setAsLastFrame(tmpFrame, superCellIdx);
+                            lastFrameSize = frameCounter - frameSize;
+                        }else
+                            lastFrameSize = frameCounter;
+                    }
+                }
                 __syncthreads();
 
                 if (numParsToCreate > 0)
                 {
                     /* Do this first so we can use it as an index */
                     numParsToCreate--;
-                    auto particle = (*frame)[linearThreadIdx];
+
+                    /* Get correct frame and index */
+                    FrameType* myFrame;
+                    if(destParticleIdx < frameSize)
+                        myFrame = frameLow;
+                    else
+                    {
+                        myFrame = frameHigh;
+                        destParticleIdx -= frameSize;
+                    }
+                    assert(destParticleIdx < frameSize);
+                    auto particle = (*myFrame)[destParticleIdx];
 
                     /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                     {
@@ -104,7 +179,7 @@ namespace kernel{
                         setToDefault(PMacc::forward(particle));
                     }
                     particle[PMacc::multiMask_] = 1;
-                    particle[PMacc::localCellIdx_] = linearThreadIdx;
+                    particle[PMacc::localCellIdx_] = destParticleIdx;
                     particle[position_]   = particleFillInfo.getPosition(numParsToCreate);
                     particle[startPhase_] = particleFillInfo.getPhase(t);
                     particle[momentum_]   = particleFillInfo.getMomentum(t);
@@ -116,13 +191,25 @@ namespace kernel{
                         PMacc::nvidia::atomicAllExch(&blockCreatesParticles, 1); //one or more cell has particles to create
                 }
                 __syncthreads();
-                if (linearThreadIdx == 0 && blockCreatesParticles)
+                /* Master thread updates frame pointers */
+                if (isMaster)
                 {
-                    frame = &(particleBox.getEmptyFrame());
-                    particleBox.setAsLastFrame(*frame, superCellIdx);
+                    if(frameCounter >= frameSize)
+                    {
+                        /* frameLow is full --> new low frame is old high frame (might be none) */
+                        frameLow = frameHigh;
+                        frameHigh = nullptr;
+                        /* Reduce counter accordingly. Note the >= check instead of > --> frameCounter CAN reach 0 */
+                        frameCounter -= frameSize;
+                    }
                 }
-            }
-            while (blockCreatesParticles);
+                __syncthreads( );
+            }while (blockCreatesParticles);
+        }
+        /* Finally we need to set the size of the last frame --> No need to fill any gaps */
+        if(isMaster)
+        {
+            particleBox.getSuperCell(superCellIdx).setSizeLastFrame(lastFrameSize);
         }
     }
 

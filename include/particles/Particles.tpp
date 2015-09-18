@@ -153,8 +153,6 @@ namespace xrt{
               nextPartId_.getDeviceBuffer().getBasePointer()
               );
 
-
-        this->fillAllGaps();
     }
 
     template<typename T_ParticleDescription>
