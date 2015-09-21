@@ -12,6 +12,9 @@ namespace laserConfig {
     PMACC_CONST_VECTOR(float_X, simDim, distSize, MAX_X * CELL_WIDTH, CELL_HEIGHT, CELL_DEPTH);
 
     static_assert(DIRECTION < simDim, "Laser direction out of range");
+    constexpr PMacc::ExchangeType EXCHANGE_DIR = (DIRECTION == 0) ? PMacc::LEFT :
+                                                 (DIRECTION == 1) ? PMacc::TOP :
+                                                                    PMacc::FRONT;
 
 }  // namespace laserConfig
 }  // namespace xrt

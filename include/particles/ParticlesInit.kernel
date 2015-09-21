@@ -14,6 +14,8 @@ namespace kernel{
     /**
      * Fills the grid with particles of T_Species
      *
+     * Only call with border mapper (Assumes no thread handles guards)
+     *
      * \tparam particleFillInfo Struct providing functions (or functors) for getting number of particles,
      *                          their position, phase and momentum. Must provide an init(Space2D) function
      *                          that is called first with the totalCellIdx of the plane where particles are
@@ -49,14 +51,8 @@ namespace kernel{
         const bool isMaster = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex) == 0;
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
-        /* do not add particle to guarding super cells */
-        const Space superCells(mapper.getGridSuperCells());
-        for (uint32_t d = 0; d < simDim; ++d)
-            if (superCellIdx[d] == 0 || superCellIdx[d] == superCells[d] - 1)
-                return;
-
         /*get local cell idx and delete guarding cells */
-        const Space localCellIndex = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + threadIndex;
+        const Space localCellIndex = superCellIdx * SuperCellSize::toRT() + threadIndex;
 
         const Space totalCellIdx = localOffset + localCellIndex;
         if(totalCellIdx[laserConfig::DIRECTION] != 0)
@@ -118,7 +114,7 @@ namespace kernel{
                  */
                 PMacc::lcellId_t destParticleIdx;
                 if(numParsToCreate)
-                    destParticleIdx = PMacc::nvidia::atomicAllInc(frameCounter);
+                    destParticleIdx = PMacc::nvidia::atomicAllInc(&frameCounter);
                 else
                     destParticleIdx = std::numeric_limits<PMacc::lcellId_t>::max(); /* just to be sure */
                 __syncthreads();

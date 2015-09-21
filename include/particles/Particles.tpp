@@ -11,6 +11,8 @@
 #include <dataManagement/DataConnector.hpp>
 #include <particles/memory/buffers/ParticlesBuffer.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
+#include <mappings/kernel/ExchangeMapping.hpp>
+#include <mappings/kernel/BorderMapping.hpp>
 #include <mappings/simulation/GridController.hpp>
 #include <traits/GetUniqueTypeId.hpp>
 #include <dimensions/SuperCellDescription.hpp>
@@ -141,16 +143,18 @@ namespace xrt{
         if(totalGpuCellOffset.x() > 0)
             return;
 
+        const PMacc::BorderMapping<laserConfig::EXCHANGE_DIR, MappingDesc> mapper(this->cellDescription);
         dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
         block.x = 1;
-        __cudaKernelArea(kernel::fillGridWithParticles<Particles>, this->cellDescription, PMacc::BORDER)
-            (block)
+        __cudaKernel(kernel::fillGridWithParticles<Particles>)
+            (mapper.getGridDim(), block)
             ( initFunctor,
               totalGpuCellOffset,
               this->particlesBuffer->getDeviceParticleBox(),
               timeStep,
               numTimeSteps,
-              nextPartId_.getDeviceBuffer().getBasePointer()
+              nextPartId_.getDeviceBuffer().getBasePointer(),
+              mapper
               );
 
     }
