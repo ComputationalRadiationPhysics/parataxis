@@ -144,10 +144,10 @@ namespace xrt{
             return;
 
         const PMacc::BorderMapping<laserConfig::EXCHANGE_DIR, MappingDesc> mapper(this->cellDescription);
-        dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
-        block.x = 1;
+        Space block = MappingDesc::SuperCellSize::toRT();
+        block[laserConfig::DIRECTION] = 1;
         __cudaKernel(kernel::fillGridWithParticles<Particles>)
-            (mapper.getGridDim(), block)
+            (mapper.getGridDim(), block.toDim3())
             ( initFunctor,
               totalGpuCellOffset,
               this->particlesBuffer->getDeviceParticleBox(),
