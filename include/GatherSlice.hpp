@@ -1,202 +1,155 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "ReduceZ.hpp"
 
-#include <mappings/simulation/GridController.hpp>
-#include <memory/boxes/PitchedBox.hpp>
-#include <dimensions/DataSpace.hpp>
+#include <cuSTL/algorithm/mpi/Gather.hpp>
+#include <cuSTL/container/HostBuffer.hpp>
+#include <cuSTL/cursor/tools/slice.hpp>
+#include <cuSTL/algorithm/kernel/Foreach.hpp>
 
-#include <mpi.h>
 #include <memory>
-#include <type_traits>
 
 namespace xrt
 {
+    template<class T_Field, uint32_t T_simDim>
+    struct GatherSlice;
 
-    struct MessageHeader
+    template<class T_Field>
+    struct GatherSlice<T_Field, 2>
     {
-        MessageHeader(){}
+        using Field = T_Field;
+        using Gather = PMacc::algorithm::mpi::Gather<2>;
+        using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
 
-        MessageHeader(Space simSize, GridLayout layout, Space nodeOffset) :
-        simSize(simSize),
-        nodeOffset(nodeOffset)
+        void
+        init(float_X slicePoint, uint32_t nAxis, Space2D fieldSize)
         {
-            nodeSize = layout.getDataSpace();
-            nodePictureSize = layout.getDataSpaceWithoutGuarding();
-            nodeGuardCells = layout.getGuard();
+            auto& gc = PMacc::Environment<2>::get().GridController();
+            Space2D gpuDim = gc.getGpuNodes();
+            Space2D globalSize = gpuDim * fieldSize;
+            PMacc::zone::SphericZone<2> gpuGatheringZone(gpuDim);
+            gather_.reset(new Gather(gpuGatheringZone));
+            if(gather_->root())
+                masterField_.reset(new HostBuffer(globalSize));
+            else
+                masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
         }
 
-        Space simSize;
-        Space nodeSize;
-        Space nodePictureSize;
-        Space nodeGuardCells;
-        Space nodeOffset;
+        void
+        operator()(Field& field)
+        {
+            if(!gather_->participate())
+                return;
+            field.synchronize();
+            (*gather_)(
+                    *masterField_,
+                    field.getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT())
+                    );
+        }
 
+        bool
+        hasData() const
+        {
+            return gather_->root();
+        }
+
+        HostBuffer&
+        getData()
+        {
+            return *masterField_;
+        }
+    private:
+        std::unique_ptr<Gather> gather_;
+        std::unique_ptr<HostBuffer> masterField_;
     };
 
-    template<typename T_ValueType>
-    struct GatherSlice
+    struct ConversionFunctor
     {
-        using ValueType = T_ValueType;
-        using Box2D = PMacc::DataBox< PMacc::PitchedBox<ValueType, 2> >;
-
-        GatherSlice() : isMaster(false), numRanks(0), filteredData(nullptr), fullData(nullptr), isMPICommInitialized(false)
-        {}
-
-        ~GatherSlice()
+        DINLINE void operator()(float_X& target, const float_X fieldData) const
         {
-            filteredData.reset();
-            fullData.reset();
-            if (isMPICommInitialized)
-            {
-                MPI_Comm_free(&comm);
-                isMPICommInitialized=false;
-            }
-            isMaster = false;
+            target = fieldData;
+        }
+    };
+
+    template<class T_Field>
+    struct GatherSlice<T_Field, 3>
+    {
+        using Field = T_Field;
+        using Gather = PMacc::algorithm::mpi::Gather<3>;
+        using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
+        using TmpBuffer = PMacc::GridBuffer<typename Field::Type, 2>;
+
+        void
+        init(float_X slicePoint, uint32_t nAxis, Space3D fieldSize)
+        {
+            auto& gc = PMacc::Environment<3>::get().GridController();
+            Space3D gpuDim = gc.getGpuNodes();
+            /* Global size of the field */
+            Space3D globalSize = gpuDim * fieldSize;
+            /* plane (idx in field array) in global field */
+            int globalPlane = globalSize[nAxis] * slicePoint;
+            /* GPU idx (in the axis dimension) that has the slice */
+            int gpuPlane    = globalPlane / fieldSize[nAxis];
+
+            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%") % globalPlane % nAxis % fieldSize % globalSize;
+
+            PMacc::zone::SphericZone<3> gpuGatheringZone(gpuDim);
+            /* Use only 1 GPU in the axis dimension */
+            gpuGatheringZone.offset[nAxis] = gpuPlane;
+            gpuGatheringZone.size  [nAxis] = 1;
+
+            gather_.reset(new Gather(gpuGatheringZone));
+            if(!gather_->participate())
+                return;
+            /* Offset in the local field (if we have the slice) */
+            localOffset_  = globalPlane % fieldSize[nAxis];
+            twistedAxes_ = PMacc::math::UInt32<3>((nAxis + 1) % 3, (nAxis + 2) % 3, (nAxis + 3) % 3);
+
+            /* Reduce size dimension */
+            Space2D tmpSize(fieldSize[twistedAxes_[0]], fieldSize[twistedAxes_[1]]);
+            Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[1]]);
+
+            tmpBuffer_.reset(new TmpBuffer(tmpSize));
+            if(gather_->root())
+                masterField_.reset(new HostBuffer(masterSize));
+            else
+                masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
+
         }
 
-        /*
-         * Initializes a MPI group with all ranks that have active set
-         * @return true if current rank is the master of the new group
-         */
-        bool init(const MessageHeader& header, bool isActive)
+        void
+        operator()(Field& field)
         {
-            nodeSize = header.nodeSize;
-            simSize = header.simSize;
-
-            uint32_t countRanks = Environment::get().GridController().getGpuNodes().productOfComponents();
-            std::vector<int32_t> gatherRanks(countRanks); /* rank in WORLD_GROUP or -1 if inactive */
-            std::vector<int32_t> groupRanks(countRanks);  /* rank in new group */
-            int32_t mpiRank = Environment::get().GridController().getGlobalRank();
-            if (!isActive)
-                mpiRank = -1;
-
-            MPI_CHECK(MPI_Allgather(&mpiRank, 1, MPI_INT, &gatherRanks[0], 1, MPI_INT, MPI_COMM_WORLD));
-            numRanks = 0;
-            for (uint32_t i = 0; i < countRanks; ++i)
-            {
-                if (gatherRanks[i] != -1)
-                {
-                    groupRanks[numRanks] = gatherRanks[i];
-                    numRanks++;
-                }
-            }
-
-            MPI_Group group;
-            MPI_Group newgroup;
-            MPI_CHECK(MPI_Comm_group(MPI_COMM_WORLD, &group));
-            MPI_CHECK(MPI_Group_incl(group, numRanks, &groupRanks.front(), &newgroup));
-
-            MPI_CHECK(MPI_Comm_create(MPI_COMM_WORLD, newgroup, &comm));
-
-            if (mpiRank != -1)
-            {
-                MPI_Comm_rank(comm, &mpiRank);
-                isMPICommInitialized = true;
-            }else
-                return false;
-
-            isMaster = mpiRank == 0;
-
-            /* Collect message headers to master rank */
-            if(isMaster)
-                headers.reset(new MessageHeader[numRanks]);
-            MessageHeader tmpHeader (header);
-            MPI_CHECK(MPI_Gather(&tmpHeader, sizeof(MessageHeader), MPI_CHAR,
-                                 headers.get(), sizeof(MessageHeader), MPI_CHAR, 0, comm));
-
-            if(!isMaster)
-                return false;
-
-            for(uint32_t i=0; i<numRanks; ++i)
-            {
-                if(headers[i].nodeSize != nodeSize)
-                    throw std::runtime_error("NodeSizes must be the same on all nodes");
-            }
-            return true;
+            auto dBufferTmp(tmpBuffer_->getDeviceBuffer().cartBuffer());
+            auto dBuffer(field.getGridBuffer().getDeviceBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT()));
+            ConversionFunctor cf;
+            PMacc::algorithm::kernel::Foreach<PMacc::math::CT::UInt32<4,4,1> >()(
+                         dBufferTmp.zone(), dBufferTmp.origin(),
+                         PMacc::cursor::tools::slice(dBuffer.originCustomAxes(twistedAxes_)(0, 0, localOffset_)),
+                         cf );
+            tmpBuffer_->deviceToHost();
+            auto hBufferTmp(tmpBuffer_->getHostBuffer().cartBuffer());
+            (*gather_)(*masterField_, hBufferTmp);
         }
 
-        template<class Box >
-        Box2D operator()(Box data, uint32_t zOffset)
+        bool
+        hasData() const
         {
-            static_assert(std::is_same<typename Box::ValueType, ValueType>::value, "Wrong type");
-
-            const size_t numElements = nodeSize[0] * nodeSize[1];
-            if (!fullData && isMaster)
-                fullData.reset(new ValueType[numElements * numRanks]);
-
-            const size_t sizeElements = numElements * sizeof (ValueType);
-
-            auto reducedBox = ReduceZ<simDim>::get(data, zOffset);
-            MPI_CHECK(MPI_Gather(reducedBox.getPointer(), sizeElements, MPI_CHAR,
-                                 fullData.get(), sizeElements, MPI_CHAR,
-                                 0, comm));
-
-            if(!isMaster)
-            {
-                return Box2D(PMacc::PitchedBox<ValueType, 2 > (
-                            nullptr,
-                            Space2D(),
-                            Space2D(simSize.x(), simSize.y()),
-                            simSize.x() * sizeof (ValueType)
-                        ));
-            }
-
-            if (!filteredData)
-                filteredData.reset(new ValueType[simSize.productOfComponents()]);
-
-            /*create box with valid memory*/
-            auto dstBox = Box2D(PMacc::PitchedBox<ValueType, 2 > (
-                                                       filteredData.get(),
-                                                       Space2D(),
-                                                       Space2D(simSize.x(), simSize.y()),
-                                                       simSize.x() * sizeof (ValueType)
-                                                       ));
-
-
-            for (uint32_t i = 0; i < numRanks; ++i)
-            {
-                MessageHeader& head = headers[i];
-                auto srcBox = Box2D(PMacc::PitchedBox<ValueType, 2 > (
-                                                               fullData.get() + nodeSize.productOfComponents() * i,
-                                                               Space2D(),
-                                                               Space2D(head.nodeSize.x(), head.nodeSize.y()),
-                                                               head.nodeSize.x() * sizeof (ValueType)
-                                                               ));
-
-                insertData(dstBox, srcBox, head.nodeOffset, head.nodePictureSize, head.nodeGuardCells);
-            }
-
-            return dstBox;
+            return gather_->root();
         }
 
-        template<class DstBox, class SrcBox>
-        void insertData(DstBox& dst, const SrcBox& src, Space offsetToSimNull, Space srcSize, Space nodeGuardCells)
+        HostBuffer&
+        getData()
         {
-            for (int32_t y = 0; y < srcSize.y(); ++y)
-            {
-                for (int32_t x = 0; x < srcSize.x(); ++x)
-                {
-                    dst(Space2D(x + offsetToSimNull.x(), y + offsetToSimNull.y())) =
-                        src(Space2D(nodeGuardCells.x() + x, nodeGuardCells.y() + y));
-                }
-            }
+            return *masterField_;
         }
-
     private:
-
-        /* Master only */
-        std::unique_ptr<ValueType[]> filteredData;
-        std::unique_ptr<ValueType[]> fullData;
-        std::unique_ptr<MessageHeader[]> headers;
-        /* end Master only */
-
-        MPI_Comm comm;
-        Space simSize, nodeSize; /* Sizes of the simulation and the chunk on this node */
-        bool isMaster;
-        uint32_t numRanks;
-        bool isMPICommInitialized;
+        float_X slicePoint_;
+        PMacc::math::UInt32<3> twistedAxes_;
+        uint32_t localOffset_;
+        std::unique_ptr<Gather> gather_;
+        std::unique_ptr<HostBuffer> masterField_;
+        std::unique_ptr<TmpBuffer> tmpBuffer_;
     };
 
 } //namespace xrt
