@@ -51,6 +51,14 @@ IF(CUDA_KEEP_FILES)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --keep --keep-dir "${PROJECT_BINARY_DIR}/nvcc_tmp")
 ENDIF(CUDA_KEEP_FILES)
 
+IF(NOT CUDA_VERSION VERSION_LESS "7.5")
+    SET(CUDA_RELAXED_CONSTEXPR "--expt-relaxed-constexpr")
+ELSEIF(NOT CUDA_VERSION VERSION_LESS "7.0")
+    SET(CUDA_RELAXED_CONSTEXPR "--relaxed-constexpr")
+ELSE()
+    SET(CUDA_RELAXED_CONSTEXPR "")
+ENDIF()
+
 ## libPMacc ##
 find_path(PMACC_ROOT_DIR
   NAMES include/types.h
@@ -128,12 +136,11 @@ endif()
 
 #################################################################################
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${INCLUDE_DIRECTORIES})
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-std=c++11)
 list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-list(APPEND CUDA_NVCC_FLAGS "--relaxed-constexpr")
+list(APPEND CUDA_NVCC_FLAGS "${CUDA_RELAXED_CONSTEXPR}")
 
 IF(VAMPIR_ENABLE)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler=-finstrument-functions,-finstrument-functions-exclude-file-list=stl,-finstrument-functions-exclude-function-list='GPUGrid,execute,allocator,Task,Manager,Transaction,Mask',-pthread )
