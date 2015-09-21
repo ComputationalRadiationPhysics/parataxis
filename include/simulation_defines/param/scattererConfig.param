@@ -14,6 +14,20 @@ namespace scatterer {
             /** Threshold to use */
             static constexpr float_X threshold = 1e-10;
         };
+        /** Scattering randomly with a probability as a function of
+         *  the density at the particles current cell
+         */
+        struct OnRandom
+        {
+            HDINLINE static float_X
+            calcProbability(float_X density)
+            {
+                return
+                /** Formula for the function density->probability */
+                density
+                ;
+            }
+        };
 
     }  // namespace conditions
 
@@ -21,6 +35,8 @@ namespace scatterer {
 
         /** Inverts the momentum */
         struct Reflect;
+        /** Scatter in a random direction specified by evenly distributed spherical coordinates */
+        struct RandomDirection;
 
     }  // namespace direction
 

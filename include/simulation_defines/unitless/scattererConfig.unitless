@@ -2,7 +2,9 @@
 
 #include "particles/scatterer/Never.hpp"
 #include "particles/scatterer/OnThreshold.hpp"
+#include "particles/scatterer/OnRandom.hpp"
 #include "particles/scatterer/Reflect.hpp"
+#include "particles/scatterer/RandomDirection.hpp"
 
 namespace PMacc {
 namespace traits {
@@ -21,9 +23,22 @@ namespace traits {
     };
 
     template<>
+    struct Resolve<xrt::particles::scatterer::conditions::OnRandom>
+    {
+        using Config = xrt::particles::scatterer::conditions::OnRandom;
+        using type = xrt::particles::scatterer::OnRandom<Config>;
+    };
+
+    template<>
     struct Resolve<xrt::particles::scatterer::direction::Reflect>
     {
         using type = xrt::particles::scatterer::Reflect<>;
+    };
+
+    template<>
+    struct Resolve<xrt::particles::scatterer::direction::RandomDirection>
+    {
+        using type = xrt::particles::scatterer::RandomDirection<>;
     };
 
 }  // namespace traits
