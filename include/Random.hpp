@@ -29,8 +29,9 @@ namespace xrt{
             typedef typename SpeciesType::FrameType FrameType;
 
             PMacc::mpi::SeedPerRank<simDim> seedPerRank;
-            seed = seedPerRank(seeds::Global()(), PMacc::traits::GetUniqueTypeId<FrameType, uint32_t>::uid());
-            seed ^= seed;
+            seeds::Global globalSeed;
+            seed ^= globalSeed() ^ PMacc::traits::GetUniqueTypeId<FrameType, uint32_t>::uid();
+            seed = seedPerRank(seed);
             seed ^= currentStep;
 
             const SubGrid& subGrid = Environment::get().SubGrid();
@@ -50,7 +51,7 @@ namespace xrt{
          *
          * @return float_X with value between [0.0, 1.0)
          */
-        DINLINE float_X operator()(const uint32_t)
+        DINLINE float_X operator()()
         {
             return rng();
         }
