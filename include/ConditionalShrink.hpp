@@ -6,7 +6,7 @@ namespace xrt {
 
     namespace detail {
 
-        template<int32_t T_shrinkDim, bool T_doShrink = T_shrinkDim < 0>
+        template<int32_t T_shrinkDim, bool T_doShrink = T_shrinkDim >= 0>
         struct ConditionalShrink
         {
             template<typename T_Space>
@@ -21,9 +21,8 @@ namespace xrt {
         struct ConditionalShrink<T_shrinkDim, true>
         {
             template<typename T_Space>
-            HDINLINE auto
+            HDINLINE PMacc::DataSpace<T_Space::dim - 1>
             operator()(T_Space&& space)
-            -> decltype(space.shrink<T_Space::dim - 1>(0))
             {
                 static_assert(T_shrinkDim < T_Space::dim, "Cannot remove a dimension that is not there");
                 return space.shrink<T_Space::dim - 1>(T_shrinkDim + 1);
