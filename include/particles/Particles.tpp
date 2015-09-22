@@ -143,7 +143,7 @@ namespace xrt{
         if(totalGpuCellOffset.x() > 0)
             return;
 
-        const PMacc::BorderMapping<laserConfig::EXCHANGE_DIR, MappingDesc> mapper(this->cellDescription);
+        const PMacc::BorderMapping<MappingDesc> mapper(this->cellDescription, laserConfig::EXCHANGE_DIR);
         Space block = MappingDesc::SuperCellSize::toRT();
         block[laserConfig::DIRECTION] = 1;
         __cudaKernel(kernel::fillGridWithParticles<Particles>)
