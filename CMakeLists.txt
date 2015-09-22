@@ -1,63 +1,63 @@
 cmake_minimum_required(VERSION 2.8.12.2)
 
-OPTION(VAMPIR_ENABLE "create with vampir support" OFF)
+option(VAMPIR_ENABLE "create with vampir support" OFF)
 
-IF(VAMPIR_ENABLE)
+if(VAMPIR_ENABLE)
     message("[CONFIG]  build program with vampir support")
     set(CMAKE_CXX_COMPILER "vtc++")
     set(CMAKE_CXX_INST_FILE_FILTER "stl,usr/include,vector_types.h,Vector.hpp,DeviceBuffer.hpp,DeviceBufferIntern.hpp,Buffer.hpp,StrideMapping.hpp,StrideMappingMethods.hpp,MappingDescription.hpp,AreaMapping.hpp,AreaMappingMethods.hpp,ExchangeMapping.hpp,ExchangeMappingMethods.hpp,DataSpace.hpp,Manager.hpp,Manager.tpp,Transaction.hpp,Transaction.tpp,TransactionManager.hpp,TransactionManager.tpp,Vector.tpp,Mask.hpp,ITask.hpp,EventTask.hpp,EventTask.tpp,StandardAccessor.hpp,StandardNavigator.hpp,HostBuffer.hpp,HostBufferIntern.hpp")
     set(CMAKE_CXX_INST_FUNC_FILTER "vector,Vector,dim3,PMacc,execute,allocator,Task,Manager,Transaction,Mask,operator,DataSpace,PitchedBox,Event,new,getGridDim,GetCurrentDataSpaces,MappingDescription,getOffset,getParticlesBuffer,getDataSpace,getInstance")
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -vt:hyb -L/$ENV{VT_ROOT}/lib -finstrument-functions-exclude-file-list=${CMAKE_CXX_INST_FILE_FILTER} -finstrument-functions-exclude-function-list=${CMAKE_CXX_INST_FUNC_FILTER} -DVTRACE")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -vt:hyb -L/$ENV{VT_ROOT}/lib -finstrument-functions-exclude-file-list=${CMAKE_CXX_INST_FILE_FILTER} -finstrument-functions-exclude-function-list=${CMAKE_CXX_INST_FUNC_FILTER} -DVTRACE")
-ENDIF(VAMPIR_ENABLE)
+endif(VAMPIR_ENABLE)
 
 # Projekt name
 project (XRayTracing)
-SET(LIBS m)
+set(LIBS m)
 
-SET(PICONGPU_ROOT ~/picongpu CACHE PATH "Path to picongpu base directory")
+set(PICONGPU_ROOT ~/picongpu CACHE PATH "Path to picongpu base directory")
 #set helper pathes to find libraries and packages
 set(CMAKE_PREFIX_PATH "/usr/lib/x86_64-linux-gnu/" "$ENV{MPI_ROOT}" "$ENV{CUDA_ROOT}" "$ENV{BOOST_ROOT}")
 # own modules for find_packages
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PICONGPU_ROOT}/thirdParty/cmake-modules/)
 
-IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    SET(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "install prefix" FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT) 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}" CACHE PATH "install prefix" FORCE)
+endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT) 
 
-INCLUDE_DIRECTORIES(include)
+include_directories(include)
 
 ## MPI ##
-FIND_PACKAGE(MPI REQUIRED)
-INCLUDE_DIRECTORIES(${MPI_CXX_INCLUDE_PATH})
+find_package(MPI REQUIRED)
+include_directories(${MPI_CXX_INCLUDE_PATH})
 list(APPEND LIBS ${MPI_CXX_LIBRARIES})
 
 ## CUDA ##
-FIND_PACKAGE(CUDA REQUIRED)
-SET(CUDA_ARCH sm_20 CACHE STRING "set GPU architecture" )
-SET(CUDA_MATH --use_fast_math CACHE STRING "use intrinsic GPU math functions" )
-OPTION(CUDA_SHOW_REGISTER "show kernel register and create PTX" OFF)
-OPTION(CUDA_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps. (folder: nvcc_tmp)" OFF)
+find_package(CUDA REQUIRED)
+set(CUDA_ARCH sm_20 CACHE STRING "set GPU architecture" )
+set(CUDA_MATH --use_fast_math CACHE STRING "use intrinsic GPU math functions" )
+option(CUDA_SHOW_REGISTER "show kernel register and create PTX" OFF)
+option(CUDA_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps. (folder: nvcc_tmp)" OFF)
 
 
-SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${nvcc_flags} -arch=${CUDA_ARCH} ${CUDA_MATH})
-IF(CUDA_SHOW_REGISTER)
+set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${nvcc_flags} -arch=${CUDA_ARCH} ${CUDA_MATH})
+if(CUDA_SHOW_REGISTER)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -Xptxas=-v)
-ENDIF(CUDA_SHOW_REGISTER)
+endif(CUDA_SHOW_REGISTER)
 
-IF(CUDA_KEEP_FILES)
-    FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/nvcc_tmp")
+if(CUDA_KEEP_FILES)
+    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/nvcc_tmp")
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --keep --keep-dir "${PROJECT_BINARY_DIR}/nvcc_tmp")
-ENDIF(CUDA_KEEP_FILES)
+endif(CUDA_KEEP_FILES)
 
-IF(NOT CUDA_VERSION VERSION_LESS "7.5")
-    SET(CUDA_RELAXED_CONSTEXPR "--expt-relaxed-constexpr")
-ELSEIF(NOT CUDA_VERSION VERSION_LESS "7.0")
-    SET(CUDA_RELAXED_CONSTEXPR "--relaxed-constexpr")
-ELSE()
-    SET(CUDA_RELAXED_CONSTEXPR "")
-ENDIF()
+if(NOT CUDA_VERSION VERSION_LESS "7.5")
+    set(CUDA_RELAXED_CONSTEXPR "--expt-relaxed-constexpr")
+elseif(NOT CUDA_VERSION VERSION_LESS "7.0")
+    set(CUDA_RELAXED_CONSTEXPR "--relaxed-constexpr")
+else()
+    set(CUDA_RELAXED_CONSTEXPR "")
+endif()
 
 ## libPMacc ##
 find_path(PMACC_ROOT_DIR
@@ -66,15 +66,15 @@ find_path(PMACC_ROOT_DIR
   DOC "libPMacc root location."
   )
 
-INCLUDE_DIRECTORIES(${PMACC_ROOT_DIR}/include)
+include_directories(${PMACC_ROOT_DIR}/include)
 
-OPTION(PMACC_BLOCKING_KERNEL "activate checks for every kernel call and sync after every kernel call" OFF)
-IF(PMACC_BLOCKING_KERNEL)
-    ADD_DEFINITIONS(-DPMACC_SYNC_KERNEL=1)
-ENDIF(PMACC_BLOCKING_KERNEL)
+option(PMACC_BLOCKING_KERNEL "activate checks for every kernel call and sync after every kernel call" OFF)
+if(PMACC_BLOCKING_KERNEL)
+    add_definitions(-DPMACC_SYNC_KERNEL=1)
+endif(PMACC_BLOCKING_KERNEL)
 
-SET(PMACC_VERBOSE "0" CACHE STRING "set verbose level for libPMacc")
-ADD_DEFINITIONS(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
+set(PMACC_VERBOSE "0" CACHE STRING "set verbose level for libPMacc")
+add_definitions(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
 
 ## PNGwriter ##
 find_package(PNGwriter)
@@ -95,15 +95,15 @@ if(TiffWriter_FOUND)
 endif()
 
 ## Boost ##
-FIND_PACKAGE(Boost REQUIRED COMPONENTS program_options regex system filesystem)
-INCLUDE_DIRECTORIES(AFTER ${Boost_INCLUDE_DIRS})
-LINK_DIRECTORIES(${Boost_LIBRARY_DIR})
+find_package(Boost REQUIRED COMPONENTS program_options regex system filesystem)
+include_directories(AFTER ${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIR})
 list(APPEND LIBS ${Boost_LIBRARIES})
-ADD_DEFINITIONS(-DBOOST_RESULT_OF_USE_TR1)
+add_definitions(-DBOOST_RESULT_OF_USE_TR1)
 
 ## MallocMC ##
-SET(MALLOCMC_ROOT "${PICONGPU_ROOT}/thirdParty/mallocMC" CACHE PATH "Path to MallocMC")
-FIND_PACKAGE(mallocMC REQUIRED)
+set(MALLOCMC_ROOT "${PICONGPU_ROOT}/thirdParty/mallocMC" CACHE PATH "Path to MallocMC")
+find_package(mallocMC REQUIRED)
 include_directories(SYSTEM ${mallocMC_INCLUDE_DIRS})
 add_definitions(${mallocMC_DEFINITIONS})
 list(APPEND LIBS ${mallocMC_LIBRARIES})
@@ -142,9 +142,9 @@ add_definitions(-std=c++11)
 list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
 list(APPEND CUDA_NVCC_FLAGS "${CUDA_RELAXED_CONSTEXPR}")
 
-IF(VAMPIR_ENABLE)
+if(VAMPIR_ENABLE)
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -Xcompiler=-finstrument-functions,-finstrument-functions-exclude-file-list=stl,-finstrument-functions-exclude-function-list='GPUGrid,execute,allocator,Task,Manager,Transaction,Mask',-pthread )
-ENDIF(VAMPIR_ENABLE)
+endif(VAMPIR_ENABLE)
 
 file(GLOB CUDASRCFILES "*.cu")
 file(GLOB SRCFILES "*.cpp")
@@ -154,25 +154,25 @@ cuda_add_executable(${PROJECT_NAME}
     ${SRCFILES}
 )
 
-IF(VAMPIR_ENABLE)
-    SET(LIBS vt-hyb ${LIBS} )
-ENDIF(VAMPIR_ENABLE)
+if(VAMPIR_ENABLE)
+    set(LIBS vt-hyb ${LIBS} )
+endif(VAMPIR_ENABLE)
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
 ###install section###
-INSTALL(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
-INSTALL(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         PATTERN *.in EXCLUDE)
 
 file(GLOB CFG_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "submit/*.cfg.in")
-FOREACH(file ${CFG_Files})
+foreach(file ${CFG_Files})
     get_filename_component(fileNoExt ${file} NAME_WE)
     configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
-ENDFOREACH()
+endforeach()
 
-INSTALL(FILES "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
         DESTINATION "${CMAKE_INSTALL_PREFIX}/submit/"
         PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE)
 
