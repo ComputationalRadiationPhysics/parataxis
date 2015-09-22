@@ -43,7 +43,7 @@ OPTION(CUDA_KEEP_FILES "Keep all intermediate files that are generated during in
 
 SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${nvcc_flags} -arch=${CUDA_ARCH} ${CUDA_MATH})
 IF(CUDA_SHOW_REGISTER)
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -Xptxas=-v -Xopencc=-LIST:source=on)
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -Xptxas=-v)
 ENDIF(CUDA_SHOW_REGISTER)
 
 IF(CUDA_KEEP_FILES)
