@@ -49,7 +49,39 @@ namespace generators {
                     return 0;
             return value;
         }
+    };
 
+    /**
+     * Creates a double slit
+     */
+    template<typename T, class T_Config>
+    struct DoubleSlit
+    {
+        using Config = T_Config;
+        static constexpr uint32_t roomPos = Config::roomPos;
+        static constexpr uint32_t roomWidth = Config::roomWidth;
+        static constexpr uint32_t offset = Config::offset;
+        static constexpr uint32_t width = Config::width;
+        static constexpr uint32_t spacing = Config::spacing;
+        static constexpr uint32_t offset2 = offset + width + spacing;
+        /** Value used */
+        static constexpr float_64 value = Config::value;
+
+        static_assert(simDim == 2 || roomWidth > 0, "RoomWidth must be > 0");
+        static_assert(simDim == 2 || simDim == 3, "Only for 2D and 3D defined");
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            if(simDim == 3 && (idx[0] < roomPos || idx[0] >= roomPos + roomWidth))
+                return 0;
+            auto idxY = idx[simDim - 2];
+            if((idxY >= offset  && idxY < offset  + width) ||
+               (idxY >= offset2 && idxY < offset2 + width))
+                return value;
+            else
+                return 0;
+        }
     };
 
 }  // namespace generators

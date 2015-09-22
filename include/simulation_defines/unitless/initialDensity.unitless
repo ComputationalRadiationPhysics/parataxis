@@ -13,6 +13,9 @@ namespace xrt {
         struct Cuboid{
             using type = generators::Cuboid<float_X, CuboidConfig>;
         };
+        struct DoubleSlit{
+            using type = generators::DoubleSlit<float_X, DoubleSlitConfig>;
+        };
     };  // namespace AvailableGenerators
     };  // namespace initialDensity
 

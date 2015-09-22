@@ -38,15 +38,36 @@ namespace initialDensity {
         static constexpr float_64 value = 1;
     };
 
+    struct DoubleSlitConfig
+    {
+        /** (3D only) offset into the room (X-direction) */
+        static constexpr uint32_t roomPos = 40;
+        /** (3D only) width of the volume containing the slit (size in X) */
+        static constexpr uint32_t roomWidth = 1;
+        /** Offset of the slits */
+        static constexpr uint32_t offset = 50;
+        /** Width of the slits */
+        static constexpr uint32_t width = 2;
+        /** Spacing between the slits */
+        static constexpr uint32_t spacing = 30;
+        /** Value used */
+        static constexpr float_64 value = 1;
+    };
+
     namespace AvailableGenerators{
-        /** List of possible generators */
+        /* List of possible generators: */
+        /** Simple line(2D)/plane(3D) */
         struct Line;
+        /** Cuboid in 3D or rectangle in 2D */
         struct Cuboid;
+        /** 2 slits of the same width and infinite height,
+         *  extending perpendicular to x-axis in 3D */
+        struct DoubleSlit;
     };
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::Cuboid;
+            AvailableGenerators::DoubleSlit;
 
 }  // namespace initialDensity
 }  // namespace xrt
