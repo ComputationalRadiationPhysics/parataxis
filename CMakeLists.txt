@@ -52,7 +52,7 @@ else()
     set(CUDA_RELAXED_CONSTEXPR "")
 endif()
 
-list(APPEND CUDA_NVCC_FLAGS "${CUDA_RELAXED_CONSTEXPR}")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_RELAXED_CONSTEXPR}")
 
 ################################################################################
 # VampirTrace
@@ -163,7 +163,7 @@ endif(SCOREP_ENABLE)
 ################################################################################
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
-    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_BUILD_TYPE Release)
 endif()
  
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
@@ -171,7 +171,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "Release")
 
     add_definitions(-DNDEBUG)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" "-Xcompiler=-pthread")
-else(PIC_RELEASE)
+else()
     message(STATUS "Debug version")
 
     set(CMAKE_BUILD_TYPE Debug)
@@ -201,7 +201,7 @@ add_definitions(-DBOOST_RESULT_OF_USE_TR1)
 
 find_package(OpenMP)
 if(OPENMP_FOUND)
-    list(APPEND CMAKE_CXX_FLAGS ${OpenMP_CXX_FLAGS})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
 ################################################################################
@@ -303,8 +303,8 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_definitions(-std=c++11)
-list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 
 
 include_directories(include)
