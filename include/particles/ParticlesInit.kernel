@@ -51,7 +51,7 @@ namespace kernel{
         const bool isMaster = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex) == 0;
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
-        /*get local cell idx and delete guarding cells */
+        /*get local cell idx  */
         const Space localCellIndex = superCellIdx * SuperCellSize::toRT() + threadIndex;
 
         const Space totalCellIdx = localOffset + localCellIndex;

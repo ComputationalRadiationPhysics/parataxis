@@ -16,17 +16,17 @@ namespace scatterer {
     {
 
         HINLINE explicit
-        RandomDirection(uint32_t currentStep): rand(currentStep, seeds::scatterDirection)
+        RandomDirection(uint32_t currentStep)
         {}
 
-        HDINLINE void
+        DINLINE void
         init(Space totalCellIdx)
         {
             rand.init(totalCellIdx);
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
-        HDINLINE void
+        DINLINE void
         operator()(const T_DensityBox& density, const T_Position& pos, T_Momentum& mom)
         {
             float_X polarAngle   = rand() * float_X(PI);
@@ -40,7 +40,7 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN(rand, Random<T_Species>);
+        PMACC_ALIGN(rand, Random<>);
     };
 
 }  // namespace scatterer

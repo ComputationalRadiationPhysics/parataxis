@@ -53,8 +53,8 @@ namespace scatterer {
         }
 
     private:
-        Condition condition_;
-        Direction direction_;
+        PMACC_ALIGN(condition_, Condition);
+        PMACC_ALIGN(direction_, Direction);
     };
 
 }  // namespace scatterer

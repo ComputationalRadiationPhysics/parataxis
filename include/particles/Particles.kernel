@@ -25,11 +25,12 @@ namespace kernel {
      *
      */
     template<class T_BlockWorkArea, class T_ParBox, class T_DensityBox, class T_FrameSolver, class T_Mapping>
-    __global__ void moveAndMarkParticles(T_ParBox particleBox,
-                                         const Space localOffset,
-                                         const T_DensityBox densityField,
-                                         T_FrameSolver frameSolver,
-                                         const T_Mapping mapper)
+    __global__ void
+    moveAndMarkParticles(T_ParBox particleBox,
+                         const Space localOffset,
+                         const T_DensityBox densityField,
+                         T_FrameSolver frameSolver,
+                         const T_Mapping mapper)
     {
         using BlockWorkArea = T_BlockWorkArea;
         using DensityBox = T_DensityBox;
@@ -220,8 +221,8 @@ namespace kernel {
         }
 
     private:
-        ScatterAlgo scatter_;
-        PushAlgo push_;
+        PMACC_ALIGN(scatter_, ScatterAlgo);
+        PMACC_ALIGN(push_, PushAlgo);
     };
 
     /**

@@ -10,13 +10,12 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
-        using Species = T_Species;
-        using Random = xrt::Random<Species, laserConfig::DIRECTION>;
+        using Random = xrt::Random<laserConfig::DIRECTION>;
 
-        HINLINE RandomPosition(uint32_t currentStep): rand(currentStep, seeds::position)
+        HINLINE RandomPosition(uint32_t currentStep)
         {}
 
-        HDINLINE void
+        DINLINE void
         init(Space2D totalCellIdx)
         {
             rand.init(totalCellIdx);

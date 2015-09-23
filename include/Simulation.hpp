@@ -9,6 +9,7 @@
 
 #include "DensityField.hpp"
 #include "generators.hpp"
+#include "RNGProvider.tpp"
 #include "debug/LogLevels.hpp"
 
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
@@ -47,6 +48,7 @@ namespace xrt {
 
         std::unique_ptr<DensityField> densityField;
         std::unique_ptr<detector::Detector> detector_;
+        std::unique_ptr<RNGProvider> rngProvider_;
 
     public:
 
@@ -81,6 +83,7 @@ namespace xrt {
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new detector::Detector(totalSize));
+            rngProvider_.reset(new RNGProvider(cellDescription));
 
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
@@ -97,6 +100,7 @@ namespace xrt {
 
             densityField->init();
             detector_->init();
+            rngProvider_->init(seeds::xorRNG);
             particleStorage->init(densityField.get(), detector_.get());
             laserSource.init();
 

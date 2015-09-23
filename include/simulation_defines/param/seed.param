@@ -20,6 +20,11 @@ namespace seeds {
     };
 
     /**
+     * Seed for XOR RNG
+     */
+    static constexpr uint32_t xorRNG = 0xC24E47F2;
+
+    /**
      * Seed for particle positions
      */
     static constexpr uint32_t position = 854666252;
