@@ -98,12 +98,18 @@ namespace xrt {
             if (this->restartRequested)
                 std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing density field");
             densityField->init();
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing detector");
             detector_->init();
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
             rngProvider_->init(seeds::xorRNG);
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing particles");
             particleStorage->init(densityField.get(), detector_.get());
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
             laserSource.init();
 
+            PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
             densityField->createDensityDistribution(densityFieldInitializer);
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");

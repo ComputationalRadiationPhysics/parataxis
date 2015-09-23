@@ -34,14 +34,12 @@ namespace xrt {
         seed = seedPerRank(seed);
 
         Space block = SuperCellSize::toRT();
-
         __cudaKernelArea( kernel::initRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
         (block)
         ( buffer->getDeviceBuffer().getDataBox(),
           Environment::get().SubGrid().getLocalDomain().size,
           seed
           );
-
 
         Environment::get().DataConnector().registerData(*this);
     }
