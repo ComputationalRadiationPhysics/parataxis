@@ -221,8 +221,8 @@ namespace kernel {
         }
 
     private:
-        PMACC_ALIGN(scatter_, ScatterAlgo);
-        PMACC_ALIGN(push_, PushAlgo);
+        PMACC_ALIGN8(scatter_, ScatterAlgo);
+        PMACC_ALIGN8(push_, PushAlgo);
     };
 
     /**
