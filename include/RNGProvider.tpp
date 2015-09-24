@@ -40,7 +40,7 @@ namespace xrt {
 
     }  // namespace kernel
 
-    RNGProvider::RNGProvider(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridSuperCells()))
+    RNGProvider::RNGProvider(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridLayout()))
     {}
 
     void RNGProvider::init(uint32_t seed)
@@ -50,9 +50,9 @@ namespace xrt {
         seed ^= globalSeed();
         seed = seedPerRank(seed);
 
-        Space block = SuperCellSize::toRT();
+        Space blockSize = SuperCellSize::toRT();
         __cudaKernelArea( kernel::initRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
-        (block)
+        (blockSize)
         ( buffer->getDeviceBuffer().getDataBox(),
           Environment::get().SubGrid().getLocalDomain().size,
           seed
