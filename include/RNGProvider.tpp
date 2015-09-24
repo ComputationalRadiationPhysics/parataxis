@@ -3,6 +3,9 @@
 #include "RNGProvider.hpp"
 #include <mpi/SeedPerRank.hpp>
 #include <dimensions/DataSpaceOperations.hpp>
+#include <memory/boxes/CachedBox.hpp>
+#include <nvidia/functors/Assign.hpp>
+#include <mappings/threads/ThreadCollective.hpp>
 
 namespace xrt {
 
@@ -15,10 +18,24 @@ namespace xrt {
             const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
 
             /* get local cell idx (w/o guards) */
-            const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + Space(threadIdx);
+            const Space localBlockOffset = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT();
+            const Space localCellIdx = localBlockOffset + Space(threadIdx);
             const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(localSize, localCellIdx);
 
-            rngBox(localCellIdx) = nvrng::methods::Xor(seed, cellIdx);
+            using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
+            auto cachedRNGBox = PMacc::CachedBox::create<0, typename T_RNGBox::ValueType>(BlockBoxSize());
+
+            cachedRNGBox(Space(threadIdx)) = nvrng::methods::Xor(seed, cellIdx);
+            __syncthreads();
+            const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
+            PMacc::ThreadCollective<BlockBoxSize> collective(linearThreadIdx);
+            auto shiftedRNGBox = rngBox.shift(localBlockOffset);
+            PMacc::nvidia::functors::Assign assign;
+            collective(
+                      assign,
+                      cachedRNGBox,
+                      shiftedRNGBox
+                      );
         }
 
     }  // namespace kernel
