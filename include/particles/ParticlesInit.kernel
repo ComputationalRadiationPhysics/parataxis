@@ -52,7 +52,7 @@ namespace kernel{
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
         /*get local cell idx  */
-        const Space localCellIndex = superCellIdx * SuperCellSize::toRT() + threadIndex;
+        const Space localCellIndex = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + threadIndex;
 
         const Space totalCellIdx = localOffset + localCellIndex;
         if(totalCellIdx[laserConfig::DIRECTION] != 0)

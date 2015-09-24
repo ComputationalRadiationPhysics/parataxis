@@ -138,9 +138,9 @@ namespace xrt{
         PMacc::log< XRTLogLvl::SIM_STATE >("adding particles for species %1%") % FrameType::getName();
 
         const SubGrid& subGrid = Environment::get().SubGrid();
-        Space totalGpuCellOffset = subGrid.getLocalDomain().offset;
+        Space localOffset = subGrid.getLocalDomain().offset;
         /* Add only to first cells */
-        if(totalGpuCellOffset.x() > 0)
+        if(localOffset.x() > 0)
             return;
 
         const PMacc::BorderMapping<MappingDesc> mapper(this->cellDescription, laserConfig::EXCHANGE_DIR);
@@ -149,7 +149,7 @@ namespace xrt{
         __cudaKernel(kernel::fillGridWithParticles<Particles>)
             (mapper.getGridDim(), block.toDim3())
             ( initFunctor,
-              totalGpuCellOffset,
+                    localOffset,
               this->particlesBuffer->getDeviceParticleBox(),
               timeStep,
               numTimeSteps,
