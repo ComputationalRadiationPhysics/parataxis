@@ -11,7 +11,7 @@ namespace filters {
      */
     struct IndexFilter{
 
-        IndexFilter(Space offset, Space size): minIdx_(offset), maxIdx_(offset + size)
+        IndexFilter(Space offset, Space size): startIdx_(offset), endIdx_(offset + size)
         {}
 
         template<class T_Frame>
@@ -20,14 +20,14 @@ namespace filters {
         {
             for(uint32_t i=0; i<simDim; ++i)
             {
-                if(globalCellIdx[i] < minIdx_[i] || globalCellIdx[i] > maxIdx_[i])
+                if(globalCellIdx[i] < startIdx_[i] || globalCellIdx[i] >= endIdx_[i])
                     return false;
             }
             return true;
         }
     protected:
-        PMACC_ALIGN(minIdx_, const Space);
-        PMACC_ALIGN(maxIdx_, const Space);
+        PMACC_ALIGN(startIdx_, const Space);
+        PMACC_ALIGN(endIdx_, const Space);
     };
 
 }  // namespace filters
