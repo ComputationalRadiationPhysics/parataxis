@@ -78,9 +78,9 @@ namespace generators {
             auto idxY = idx[simDim - 2];
             if((idxY >= offset  && idxY < offset  + width) ||
                (idxY >= offset2 && idxY < offset2 + width))
-                return value;
-            else
                 return 0;
+            else
+                return 1;
         }
     };
 
