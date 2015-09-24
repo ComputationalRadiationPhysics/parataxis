@@ -207,12 +207,15 @@ namespace xrt {
             {
                 // global size must be a divisor of supercell size
                 // note: this is redundant, while using the local condition below
-                assert(globalGridSize[i] % MappingDesc::SuperCellSize::toRT()[i] == 0);
+                if(globalGridSize[i] % MappingDesc::SuperCellSize::toRT()[i] != 0)
+                    throw std::invalid_argument("Grid size must be a multiple of the supercell size");
                 // local size must be a divisor of supercell size
-                assert(layout.getDataSpaceWithoutGuarding()[i] % MappingDesc::SuperCellSize::toRT()[i] == 0);
+                if(layout.getDataSpaceWithoutGuarding()[i] % MappingDesc::SuperCellSize::toRT()[i] != 0)
+                    throw std::invalid_argument("Local grid size must be a multiple of the supercell size");
                 // local size must be at least 3 superCells (1x core + 2x border)
                 // note: size of border = guard_size (in superCells)
-                assert(layout.getDataSpaceWithoutGuarding()[i] / MappingDesc::SuperCellSize::toRT()[i] >= 3);
+                if(layout.getDataSpaceWithoutGuarding()[i] / MappingDesc::SuperCellSize::toRT()[i] < 3)
+                    throw std::invalid_argument("Local grid size must be at least 3 supercells");
             }
         }
     };
