@@ -40,7 +40,7 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN(rand, Random<>);
+        PMACC_ALIGN8(rand, Random<>);
     };
 
 }  // namespace scatterer

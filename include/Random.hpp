@@ -33,7 +33,6 @@ namespace xrt{
 
             const SubGrid& subGrid = Environment::get().SubGrid();
             ConditionalShrink<shrinkDim> shrink;
-            localCells = shrink(subGrid.getLocalDomain().size);
             totalGpuOffset = shrink(subGrid.getLocalDomain().offset);
 
             dc.releaseData(RNGProvider::getName());
@@ -45,7 +44,7 @@ namespace xrt{
             Space idx;
             for(int i=0; i<dim; i++)
                 idx[i] = localCellIdx[i];
-            rngPtr = rngBox(idx).getStatePtr();
+            rngBox = rngBox.shift(idx);
         }
 
         /** Returns a uniformly distributed value between [0, 1)
@@ -54,16 +53,14 @@ namespace xrt{
          */
         DINLINE float_X operator()()
         {
-            return Distribution()(rngPtr);
+            return Distribution()(rngBox(Space::create(0)).getStatePtr());
         }
 
     protected:
         typedef nvrng::RNG<nvrng::methods::Xor, nvrng::distributions::Uniform_float> RngType;
 
-        PMACC_ALIGN(rngBox, RNGBox);
-        PMACC_ALIGN(rngPtr, RNGPtr);
-        PMACC_ALIGN(localCells, PMacc::DataSpace<dim>);
-        PMACC_ALIGN(totalGpuOffset, PMacc::DataSpace<dim>);
+        PMACC_ALIGN8(rngBox, RNGBox);
+        PMACC_ALIGN8(totalGpuOffset, PMacc::DataSpace<dim>);
     };
 
 } //namespace xrt
