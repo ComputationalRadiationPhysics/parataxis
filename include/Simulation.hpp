@@ -85,6 +85,11 @@ namespace xrt {
             detector_.reset(new detector::Detector(totalSize));
             rngProvider_.reset(new RNGProvider(cellDescription));
 
+            /* Init RNGs before mallocMC as the generation requires some additional memory */
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
+            rngProvider_->init(seeds::xorRNG);
+
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
 
@@ -102,8 +107,6 @@ namespace xrt {
             densityField->init();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing detector");
             detector_->init();
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
-            rngProvider_->init(seeds::xorRNG);
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing particles");
             particleStorage->init(densityField.get(), detector_.get());
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
@@ -180,18 +183,20 @@ namespace xrt {
         {
             size_t freeGpuMem(0);
             Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
-            freeGpuMem -= reservedGPUMemorySize;
+            size_t heapSize = freeGpuMem - reservedGPUMemorySize;
 
             if( Environment::get().EnvMemoryInfo().isSharedMemoryPool() )
             {
-                freeGpuMem /= 2;
+                heapSize /= 2;
                 PMacc::log< XRTLogLvl::MEMORY > ("Shared RAM between GPU and host detected - using only half of the 'device' memory.");
             }
             else
                 PMacc::log< XRTLogLvl::MEMORY > ("RAM is NOT shared between GPU and host.");
 
+            PMacc::log< XRTLogLvl::MEMORY > ("%1% of %2% MiB free memory is reserved. Using %3% MiB as the heap for MallocMC")
+                % (reservedGPUMemorySize / MiB) % (freeGpuMem / MiB) % (heapSize / MiB);
             // initializing the heap for particles
-            mallocMC::initHeap(freeGpuMem);
+            mallocMC::initHeap(heapSize);
             this->mallocMCBuffer = new PMacc::MallocMCBuffer();
         }
 
