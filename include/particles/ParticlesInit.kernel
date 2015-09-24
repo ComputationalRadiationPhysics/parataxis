@@ -11,6 +11,7 @@
 namespace xrt{
 namespace kernel{
 
+#define isMaster (linearThreadIdx == 0)
     /**
      * Fills the grid with particles of T_Species
      *
@@ -48,7 +49,7 @@ namespace kernel{
         __shared__ uint32_t frameCounter, lastFrameSize;
 
         const Space threadIndex(threadIdx);
-        const bool isMaster = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex) == 0;
+        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
         const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
 
         /*get local cell idx  */
@@ -175,7 +176,7 @@ namespace kernel{
                         setToDefault(PMacc::forward(particle));
                     }
                     particle[PMacc::multiMask_] = 1;
-                    particle[PMacc::localCellIdx_] = destParticleIdx;
+                    particle[PMacc::localCellIdx_] = linearThreadIdx;
                     particle[position_]   = particleFillInfo.getPosition(numParsToCreate);
                     particle[startPhase_] = particleFillInfo.getPhase(t);
                     particle[momentum_]   = particleFillInfo.getMomentum(t);
@@ -208,6 +209,7 @@ namespace kernel{
             particleBox.getSuperCell(superCellIdx).setSizeLastFrame(lastFrameSize);
         }
     }
+#undef isMaster
 
 } // namespace kernel
 } // namespace xrt
