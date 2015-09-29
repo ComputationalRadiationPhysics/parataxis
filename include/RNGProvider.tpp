@@ -18,7 +18,8 @@ namespace xrt {
             const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
 
             /* get local cell idx (w/o guards) */
-            const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + Space(threadIdx);
+            const Space blockCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT();
+            const Space localCellIdx = blockCellIdx + Space(threadIdx);
             const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(mapper.getGridSuperCells() * SuperCellSize::toRT(), localCellIdx);
 
             using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
@@ -28,12 +29,12 @@ namespace xrt {
             __syncthreads();
             const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
             PMacc::ThreadCollective<BlockBoxSize> collective(linearThreadIdx);
-            auto shiftedRNGBox = rngBox.shift(localCellIdx);
+            auto shiftedRNGBox = rngBox.shift(blockCellIdx);
             PMacc::nvidia::functors::Assign assign;
             collective(
                       assign,
-                      cachedRNGBox,
-                      shiftedRNGBox
+                      shiftedRNGBox,
+                      cachedRNGBox
                       );
         }
 
