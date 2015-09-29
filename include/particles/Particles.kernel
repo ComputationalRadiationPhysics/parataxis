@@ -36,8 +36,7 @@ namespace kernel {
         using DensityBox = T_DensityBox;
         using FrameType = typename T_ParBox::FrameType;
 
-        const Space threadIndex(threadIdx);
-        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(threadIndex);
+        const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
 
         const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
         const Space blockCell = superCellIdx * SuperCellSize::toRT();
@@ -66,9 +65,9 @@ namespace kernel {
                   );
         __syncthreads();
 
-        const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
-                                        localOffset;
-        frameSolver.init(superCellPosition);
+        const Space totalCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
+                                        Space(threadIdx) + localOffset;
+        frameSolver.init(totalCellIdx);
 
         /*move over frames and call frame solver*/
         PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
