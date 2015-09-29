@@ -38,6 +38,20 @@ namespace xrt {
                       );
         }
 
+        template<class T_Functor, class T_Mapper>
+        __global__ void
+        testRNGProvider(T_Functor random, const T_Mapper mapper)
+        {
+            const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
+
+            /* get local cell idx (w/o guards) */
+            const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + Space(threadIdx);
+            const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(mapper.getGridSuperCells() * SuperCellSize::toRT(), localCellIdx);
+
+            random.init(localCellIdx);
+            printf("%u: %g\n", cellIdx, random());
+        }
+
     }  // namespace kernel
 
     RNGProvider::RNGProvider(const MappingDesc& desc):
@@ -60,6 +74,13 @@ namespace xrt {
           );
 
         Environment::get().DataConnector().registerData(*this);
+
+#ifndef NDEBUG
+        Random<> random;
+        __cudaKernelArea( kernel::testRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
+        (blockSize)
+        (random);
+#endif
     }
 
     RNGProvider::DataBoxType
