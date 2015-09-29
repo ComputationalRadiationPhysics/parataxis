@@ -52,7 +52,8 @@ else()
     set(CUDA_RELAXED_CONSTEXPR "")
 endif()
 
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_RELAXED_CONSTEXPR}")
+# Does not work with -G (bug in nvcc)
+#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_RELAXED_CONSTEXPR}")
 
 ################################################################################
 # VampirTrace
