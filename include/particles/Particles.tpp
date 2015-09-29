@@ -183,11 +183,11 @@ namespace xrt{
             UpperMargin*/
             > BlockArea;
 
-        dim3 block( MappingDesc::SuperCellSize::toRT().toDim3() );
+        Space blockSize = MappingDesc::SuperCellSize::toRT();
 
         /* Change position of particles and set flags whether to move them out of their cell */
         __cudaKernelArea( kernel::moveAndMarkParticles<BlockArea>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
-            (block)
+            (blockSize)
             ( this->getDeviceParticlesBox(),
               Environment::get().SubGrid().getLocalDomain().offset,
               densityField_->getDeviceDataBox(),
@@ -203,13 +203,13 @@ namespace xrt{
     void Particles<T_ParticleDescription>::processLeavingParticles(int32_t direction)
     {
         PMacc::ExchangeMapping<PMacc::GUARD, MappingDesc> mapper(this->cellDescription, direction);
-        dim3 grid(mapper.getGridDim());
+        Space gridSize(mapper.getGridDim());
 
         const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
         const auto detectParticle = detector_->getDetectParticle(lastProcessedStep_);
 
         __cudaKernel(kernel::detectAndDeleteParticles)
-                (grid, Particles::TileSize)
+                (gridSize, Particles::TileSize)
                 (this->getDeviceParticlesBox(),
                  localOffset,
                  detectParticle,
