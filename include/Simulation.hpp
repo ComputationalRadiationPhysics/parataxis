@@ -80,6 +80,10 @@ namespace xrt {
 
         uint32_t init() override
         {
+#ifndef NDEBUG
+            CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 3 * MiB));
+#endif
+
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new detector::Detector(totalSize));
