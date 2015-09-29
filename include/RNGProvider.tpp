@@ -13,14 +13,14 @@ namespace xrt {
 
         template<class T_RNGBox, class T_Mapper>
         __global__ void
-        initRNGProvider(T_RNGBox rngBox, Space localSize, uint32_t seed, const T_Mapper mapper)
+        initRNGProvider(T_RNGBox rngBox, uint32_t seed, const T_Mapper mapper)
         {
             const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
 
             /* get local cell idx (w/o guards) */
-            const Space localBlockOffset = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT();
-            const Space localCellIdx = localBlockOffset + Space(threadIdx);
-            const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(localSize, localCellIdx);
+            const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + Space(threadIdx);
+            const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(mapper.getGridSuperCells(), localCellIdx);
+            printf("%u\n", cellIdx);
 
             using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
             auto cachedRNGBox = PMacc::CachedBox::create<0, typename T_RNGBox::ValueType>(BlockBoxSize());
@@ -29,7 +29,7 @@ namespace xrt {
             __syncthreads();
             const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
             PMacc::ThreadCollective<BlockBoxSize> collective(linearThreadIdx);
-            auto shiftedRNGBox = rngBox.shift(localBlockOffset);
+            auto shiftedRNGBox = rngBox.shift(localCellIdx);
             PMacc::nvidia::functors::Assign assign;
             collective(
                       assign,
@@ -40,7 +40,9 @@ namespace xrt {
 
     }  // namespace kernel
 
-    RNGProvider::RNGProvider(const MappingDesc& desc): cellDescription(desc), buffer(new Buffer(cellDescription.getGridLayout()))
+    RNGProvider::RNGProvider(const MappingDesc& desc):
+    		cellDescription(desc),
+    		buffer(new Buffer(cellDescription.getGridLayout().getDataSpaceWithoutGuarding()))
     {}
 
     void RNGProvider::init(uint32_t seed)
@@ -54,7 +56,6 @@ namespace xrt {
         __cudaKernelArea( kernel::initRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
         (blockSize)
         ( buffer->getDeviceBuffer().getDataBox(),
-          Environment::get().SubGrid().getLocalDomain().size,
           seed
           );
 
