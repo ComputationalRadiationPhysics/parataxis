@@ -19,8 +19,7 @@ namespace xrt {
 
             /* get local cell idx (w/o guards) */
             const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() + Space(threadIdx);
-            const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(mapper.getGridSuperCells(), localCellIdx);
-            printf("%u\n", cellIdx);
+            const uint32_t cellIdx = PMacc::DataSpaceOperations<simDim>::map(mapper.getGridSuperCells() * SuperCellSize::toRT(), localCellIdx);
 
             using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
             auto cachedRNGBox = PMacc::CachedBox::create<0, typename T_RNGBox::ValueType>(BlockBoxSize());
