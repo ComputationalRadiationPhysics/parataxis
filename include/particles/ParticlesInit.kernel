@@ -116,8 +116,6 @@ namespace kernel{
                 PMacc::lcellId_t destParticleIdx;
                 if(numParsToCreate)
                     destParticleIdx = PMacc::nvidia::atomicAllInc(&frameCounter);
-                else
-                    destParticleIdx = std::numeric_limits<PMacc::lcellId_t>::max(); /* just to be sure */
                 __syncthreads();
 
                 /* master thread will handle adding new frames */
