@@ -2,8 +2,10 @@
 
 #include "xrtTypes.hpp"
 #include "RNGState.hpp"
+#include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
 #include <nvidia/rng/methods/Xor.hpp>
+#include <memory>
 
 namespace xrt {
 
