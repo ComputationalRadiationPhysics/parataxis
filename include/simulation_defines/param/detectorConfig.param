@@ -3,21 +3,27 @@
 namespace xrt {
 namespace detector {
 
-    /** Simply counts all incoming particles per cell */
-    struct CountParticles;
+    namespace particleHandlers {
+
+        /** Simply counts all incoming particles per cell */
+        struct CountParticles;
+
+    }  // namespace particleHandlers
+
+    /** Placeholder when no detector should be used */
+    struct NoDetector;
 
     /**
-     * Config for detector used to collect outgoing particles
+     * Handles outgoing photons (light-like particles)
      */
-    struct DetectorConfig
+    struct PhotonDetector
     {
         using IncomingParticleHandler=
             /**
              * Policy that defines how the detector handles incoming particles
-             * Possible values:
-             *      CountParticles
+             * Possible values \see particleHandlers
              */
-            CountParticles
+            particleHandlers::CountParticles
             ;
 
         /**

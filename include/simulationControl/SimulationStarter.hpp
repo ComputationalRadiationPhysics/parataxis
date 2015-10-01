@@ -116,7 +116,7 @@ namespace xrt{
                 DetectorPlugins,
                 bmpl::apply1<
                     bmpl::_1,
-                    detector::Detector
+                    Resolve_t<detector::PhotonDetector>
                 >
             >::type SpecializedDetectorPlugins;
 

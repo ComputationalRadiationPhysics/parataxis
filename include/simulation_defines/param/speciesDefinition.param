@@ -30,12 +30,15 @@ namespace xrt {
 
     /* 0.1nm wave length for X-Rays */
     value_identifier(float_X, wavelengthPhotons, 0.1 * 1e-9);
+    value_identifier(float_X, amplitudePhotons, 1);
 
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
             particleScatterCondition<particles::scatterer::conditions::OnRandom>,
             particleScatterDirection<particles::scatterer::direction::RandomDirection>,
-            wavelength<wavelengthPhotons>
+            particleDetector<detector::PhotonDetector>,
+            wavelength<wavelengthPhotons>,
+            amplitude<amplitudePhotons>
     > ParticleFlagsPhotons;
 
     /*define species photons*/

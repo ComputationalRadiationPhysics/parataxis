@@ -37,6 +37,13 @@ namespace xrt {
      * \see scattererConfig.param */
     alias(particleScatterDirection);
 
+    /** alias for the particle detector (default: None)
+     * \see detectorConfig.param */
+    alias(particleDetector);
+
     /** Wavelength for photon waves */
     alias(wavelength);
+
+    /** Amplitude of a wave */
+    alias(amplitude);
 }  // namespace xrt

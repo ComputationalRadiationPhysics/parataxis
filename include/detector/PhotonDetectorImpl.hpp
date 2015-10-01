@@ -105,11 +105,13 @@ namespace detector {
      *          the new value for the detector cell
      *      float_X distance Distance from the volume in meters
      */
-    template<class T_Config>
-    class PhotonDetector: PMacc::ISimulationData
+    template<class T_Config, class T_Species>
+    class PhotonDetectorImpl: PMacc::ISimulationData
     {
         using Config = T_Config;
-        using AccumPolicy = typename Config::IncomingParticleHandler;
+        using Species = T_Species;
+        using IncomingParticleHandler = Resolve_t<typename Config::IncomingParticleHandler>;
+        using AccumPolicy = typename bmpl::apply<IncomingParticleHandler, Species>::type;
         /**
          * Distance of the detector from the right side of the volume
          */
@@ -126,7 +128,7 @@ namespace detector {
 
         using DetectParticle = detail::DetectParticle<detail::GetTargetCellIdx, AccumPolicy>;
 
-        PhotonDetector(const Space& simulationSize)
+        PhotonDetectorImpl(const Space& simulationSize)
         {
             Space2D size = simulationSize.shrink<simDim-1>(1);
             buffer.reset(new Buffer(size));

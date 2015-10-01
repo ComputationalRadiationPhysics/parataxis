@@ -1,17 +1,28 @@
 #pragma once
 
-#include "detector/PhotonDetector.hpp"
+#include "detector/PhotonDetectorImpl.hpp"
+#include "detector/NoDetectorImpl.hpp"
 #include "detector/CountParticles.hpp"
 
-namespace xrt {
-namespace detector {
+namespace PMacc { namespace traits {
 
-    class Detector: public PhotonDetector<DetectorConfig>
+    template<>
+    struct Resolve<xrt::detector::particleHandlers::CountParticles>
     {
-    public:
-        using Parent = PhotonDetector<DetectorConfig>;
-        using Parent::Parent;
+        using type  = xrt::detector::CountParticles<>;
     };
 
-}  // namespace detector
-}  // namespace xrt
+    template<>
+    struct Resolve<xrt::detector::PhotonDetector>
+    {
+        using Config = xrt::detector::PhotonDetector;
+        using type  = xrt::detector::PhotonDetectorImpl<Config, xrt::PIC_Photons>;
+    };
+
+    template<>
+    struct Resolve<xrt::detector::NoDetector>
+    {
+        using type  = xrt::detector::NoDetectorImpl;
+    };
+
+}}

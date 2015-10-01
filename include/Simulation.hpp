@@ -35,6 +35,7 @@ namespace xrt {
     class Simulation: public PMacc::SimulationHelper<simDim>
     {
         using Parent = PMacc::SimulationHelper<simDim>;
+        using Detector = Resolve_t<detector::PhotonDetector>;
 
         PMacc::MallocMCBuffer *mallocMCBuffer;
 
@@ -47,7 +48,7 @@ namespace xrt {
         MappingDesc cellDescription;
 
         std::unique_ptr<DensityField> densityField;
-        std::unique_ptr<detector::Detector> detector_;
+        std::unique_ptr<Detector> detector_;
         std::unique_ptr<RNGProvider> rngProvider_;
 
     public:
@@ -86,7 +87,7 @@ namespace xrt {
 
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             densityField.reset(new DensityField(cellDescription));
-            detector_.reset(new detector::Detector(totalSize));
+            detector_.reset(new Detector(totalSize));
             rngProvider_.reset(new RNGProvider(cellDescription));
 
             /* Init RNGs before mallocMC as the generation requires some additional memory */
@@ -112,7 +113,7 @@ namespace xrt {
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing detector");
             detector_->init();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing particles");
-            particleStorage->init(densityField.get(), detector_.get());
+            particleStorage->init(densityField.get());
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
             laserSource.init();
 

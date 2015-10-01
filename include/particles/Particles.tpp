@@ -81,7 +81,7 @@ namespace xrt{
     template<typename T_ParticleDescription>
     Particles<T_ParticleDescription>::Particles( MappingDesc cellDescription, PMacc::SimulationDataId datasetID ) :
         PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID ),
-        densityField_(nullptr), detector_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
+        densityField_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
     {
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
@@ -124,10 +124,9 @@ namespace xrt{
     {}
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::init(DensityField* densityField, detector::Detector* detector)
+    void Particles<T_ParticleDescription>::init(DensityField* densityField)
     {
         densityField_ = densityField;
-        detector_ = detector;
         PMacc::Environment<>::get().DataConnector().registerData( *this );
     }
 
@@ -202,19 +201,24 @@ namespace xrt{
     template<typename T_ParticleDescription>
     void Particles<T_ParticleDescription>::processLeavingParticles(int32_t direction)
     {
+        using Detector = GetFlagOrDefault_t<FrameType, particleDetector<>, detector::NoDetector>;
+        auto& dc = Environment::get().DataConnector();
+        Detector& detector = dc.getData<Detector>(Detector::getName(), true);
+
         PMacc::ExchangeMapping<PMacc::GUARD, MappingDesc> mapper(this->cellDescription, direction);
         Space gridSize(mapper.getGridDim());
 
         const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
-        const auto detectParticle = detector_->getDetectParticle(lastProcessedStep_);
+        const auto detectParticle = detector.getDetectParticle(lastProcessedStep_);
 
         __cudaKernel(kernel::detectAndDeleteParticles)
                 (gridSize, Particles::TileSize)
                 (this->getDeviceParticlesBox(),
                  localOffset,
                  detectParticle,
-                 detector_->getDeviceDataBox(),
+                 detector.getDeviceDataBox(),
                  mapper);
+        dc.releaseData(Detector::getName());
     }
 
 } // namespace xrt

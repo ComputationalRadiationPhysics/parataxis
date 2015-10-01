@@ -1,7 +1,6 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-
 #include <particles/ParticlesBase.hpp>
 #include <particles/memory/buffers/ParticlesBuffer.hpp>
 
@@ -10,9 +9,6 @@
 namespace xrt{
 
     class DensityField;
-    namespace detector {
-        class Detector;
-    }  // namespace detector
 
     template<typename T_ParticleDescription>
     class Particles : public PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>, public PMacc::ISimulationData
@@ -25,14 +21,13 @@ namespace xrt{
         typedef typename ParticlesBaseType::FrameTypeBorder FrameTypeBorder;
         typedef typename ParticlesBaseType::ParticlesBoxType ParticlesBoxType;
 
-
         Particles(MappingDesc cellDescription, PMacc::SimulationDataId datasetID);
 
         virtual ~Particles();
 
         void createParticleBuffer();
 
-        void init(DensityField* densityField, detector::Detector* detector);
+        void init(DensityField* densityField);
         /**
          * Adds particles to the grid
          * \tparam T_DistributionFunctor Functor that returns number of particles for a given total GPU cell idx
@@ -66,7 +61,6 @@ namespace xrt{
         PMacc::SimulationDataId datasetID;
         PMacc::GridLayout<simDim> gridLayout;
         DensityField* densityField_;
-        detector::Detector* detector_;
         /** Contains the globalId that is assigned to the next particle created */
         PMacc::GridBuffer<uint32_t, 1> nextPartId_;
         uint32_t lastProcessedStep_;
