@@ -29,8 +29,8 @@ TBG_program="@PROJECT_NAME@"
 
 TBG_plugins="--p_position.period 24                       \
              --DensityField_printSlice.period 99999       \
-             --DensityField_printSlice.axis 2             \
-             --DensityField_printSlice.slicePoint 0.2534  \
+             --DensityField_printSlice.axis 0             \
+             --DensityField_printSlice.slicePoint 40      \
              --PhotonDetector_print.period 80             \
              "
 

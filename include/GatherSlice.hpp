@@ -22,15 +22,13 @@ namespace xrt
         using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
 
         void
-        init(float_X slicePoint, uint32_t nAxis, Space2D fieldSize)
+        init(uint32_t slicePoint, uint32_t nAxis)
         {
-            auto& gc = PMacc::Environment<2>::get().GridController();
-            Space2D gpuDim = gc.getGpuNodes();
-            Space2D globalSize = gpuDim * fieldSize;
-            PMacc::zone::SphericZone<2> gpuGatheringZone(gpuDim);
+            auto& env = PMacc::Environment<2>::get();
+            PMacc::zone::SphericZone<2> gpuGatheringZone(env.GridController().getGpuNodes());
             gather_.reset(new Gather(gpuGatheringZone));
             if(gather_->root())
-                masterField_.reset(new HostBuffer(globalSize));
+                masterField_.reset(new HostBuffer(env.SubGrid().getTotalDomain().size));
             else
                 masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
         }
@@ -80,33 +78,30 @@ namespace xrt
         using TmpBuffer = PMacc::GridBuffer<typename Field::Type, 2>;
 
         void
-        init(float_X slicePoint, uint32_t nAxis, Space3D fieldSize)
+        init(uint32_t slicePlane, uint32_t nAxis)
         {
-            auto& gc = PMacc::Environment<3>::get().GridController();
-            Space3D gpuDim = gc.getGpuNodes();
-            /* Global size of the field */
-            Space3D globalSize = gpuDim * fieldSize;
-            /* plane (idx in field array) in global field */
-            int globalPlane = globalSize[nAxis] * slicePoint;
+            auto& env = PMacc::Environment<3>::get();
+            Space3D globalSize = env.SubGrid().getTotalDomain().size;
+            Space3D localSize = env.SubGrid().getLocalDomain().size;
             /* GPU idx (in the axis dimension) that has the slice */
-            int gpuPlane    = globalPlane / fieldSize[nAxis];
+            int localPlane = slicePlane / localSize[nAxis];
 
-            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%") % globalPlane % nAxis % fieldSize % globalSize;
+            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%") % slicePlane % nAxis % localSize % globalSize;
 
-            PMacc::zone::SphericZone<3> gpuGatheringZone(gpuDim);
+            PMacc::zone::SphericZone<3> gpuGatheringZone(env.GridController().getGpuNodes());
             /* Use only 1 GPU in the axis dimension */
-            gpuGatheringZone.offset[nAxis] = gpuPlane;
+            gpuGatheringZone.offset[nAxis] = localPlane;
             gpuGatheringZone.size  [nAxis] = 1;
 
             gather_.reset(new Gather(gpuGatheringZone));
             if(!gather_->participate())
                 return;
             /* Offset in the local field (if we have the slice) */
-            localOffset_  = globalPlane % fieldSize[nAxis];
-            twistedAxes_ = PMacc::math::UInt32<3>((nAxis + 1) % 3, (nAxis + 2) % 3, (nAxis + 3) % 3);
+            localOffset_  = slicePlane % localSize[nAxis];
+            twistedAxes_ = PMacc::math::UInt32<3>((nAxis + 1) % 3, (nAxis + 2) % 3, nAxis);
 
             /* Reduce size dimension */
-            Space2D tmpSize(fieldSize[twistedAxes_[0]], fieldSize[twistedAxes_[1]]);
+            Space2D tmpSize(localSize[twistedAxes_[0]], localSize[twistedAxes_[1]]);
             Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[1]]);
 
             tmpBuffer_.reset(new TmpBuffer(tmpSize));
@@ -144,7 +139,7 @@ namespace xrt
             return *masterField_;
         }
     private:
-        float_X slicePoint_;
+        uint32_t slicePoint_;
         PMacc::math::UInt32<3> twistedAxes_;
         uint32_t localOffset_;
         std::unique_ptr<Gather> gather_;

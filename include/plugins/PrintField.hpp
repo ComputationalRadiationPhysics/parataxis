@@ -29,7 +29,7 @@ namespace plugins {
 
         uint32_t notifyFrequency;
         std::string fileName;
-        float_X slicePoint;
+        uint32_t slicePoint;
         uint32_t nAxis_;
 
     public:
@@ -51,8 +51,8 @@ namespace plugins {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("field"), "base file name to store slices in (_step.png will be appended)")
-                ((prefix + ".slicePoint").c_str(), po::value<float_X>(&this->slicePoint)->default_value(0), "slice point 0.0 <= x <= 1.0")
-                ((prefix + ".axis").c_str(), po::value<uint32_t>(&this->nAxis_)->default_value(2), "Axis index to slice through (0=>x, 1=>y, 2=>z)")
+                ((prefix + ".slicePoint").c_str(), po::value<uint32_t>(&this->slicePoint)->default_value(40), "slice point 0 <= x < simSize[axis]")
+                ((prefix + ".axis").c_str(), po::value<uint32_t>(&this->nAxis_)->default_value(0), "Axis index to slice through (0=>x, 1=>y, 2=>z)")
                 ;
         }
 
@@ -97,13 +97,18 @@ namespace plugins {
     protected:
         void pluginLoad() override
         {
-            if(slicePoint < 0 || slicePoint > 1)
+            if(nAxis_ >= simDim)
             {
-                std::cerr << "In " << name << " the slicePoint is outside of [0, 1]. Ignored!" << std::endl;
+                std::cerr << "In " << name << " the axis is invalid. Ignored!" << std::endl;
+                return;
+            }
+            if(slicePoint >= Environment::get().SubGrid().getGlobalDomain().size[nAxis_])
+            {
+                std::cerr << "In " << name << " the slicePoint is bigger than the simulation size. Ignored!" << std::endl;
                 return;
             }
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
-            gather_.init(slicePoint, nAxis_, Environment::get().SubGrid().getLocalDomain().size);
+            gather_.init(slicePoint, nAxis_);
         }
 
      };
