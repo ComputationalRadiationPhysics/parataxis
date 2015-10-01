@@ -75,7 +75,7 @@ namespace xrt {
 
         Environment::get().DataConnector().registerData(*this);
 
-#ifndef NDEBUG
+#ifdef XRT_DEBUG_RNG
         Random<> random;
         __cudaKernelArea( kernel::testRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
         (blockSize)

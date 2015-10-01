@@ -246,7 +246,10 @@ add_definitions(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
 
 set(XRT_VERBOSE "1" CACHE STRING "Set verbosity level for XRT")
 add_definitions(-DXRT_VERBOSE_LVL=${XRT_VERBOSE})
-
+option(XRT_DEBUG_RNG "Output test of RNG provider" OFF)
+if(XRT_DEBUG_RNG)
+    add_definitions(-DXRT_DEBUG_RNG)
+endif()
 
 ################################################################################
 # Warnings
