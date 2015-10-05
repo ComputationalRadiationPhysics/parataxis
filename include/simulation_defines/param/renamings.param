@@ -28,6 +28,9 @@ namespace xrt {
     template<typename T_Object, typename T_Flag>
     using GetFlagType_t = typename PMacc::traits::GetFlagType<T_Object, T_Flag>::type;
 
+    template<typename T_Object, typename T_Flag>
+    using GetResolvedFlag_t = Resolve_t<GetFlagType_t<T_Object, T_Flag>>;
+
     template<bool T_condition, typename T_Then, typename T_Else>
     using conditional_t = typename std::conditional<T_condition, T_Then, T_Else>::type;
 
