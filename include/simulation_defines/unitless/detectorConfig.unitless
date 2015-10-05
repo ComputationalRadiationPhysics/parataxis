@@ -3,6 +3,7 @@
 #include "detector/PhotonDetectorImpl.hpp"
 #include "detector/NoDetectorImpl.hpp"
 #include "detector/CountParticles.hpp"
+#include "detector/AddWaveParticles.hpp"
 
 namespace PMacc { namespace traits {
 
@@ -10,6 +11,12 @@ namespace PMacc { namespace traits {
     struct Resolve<xrt::detector::particleHandlers::CountParticles>
     {
         using type  = xrt::detector::CountParticles<>;
+    };
+
+    template<>
+    struct Resolve<xrt::detector::particleHandlers::AddWaveParticles>
+    {
+        using type  = xrt::detector::AddWaveParticles<>;
     };
 
     template<>
