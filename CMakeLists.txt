@@ -52,8 +52,13 @@ else()
     set(CUDA_RELAXED_CONSTEXPR "")
 endif()
 
-# Does not work with -G (bug in nvcc)
-#set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_RELAXED_CONSTEXPR}")
+
+# Does not work with -G (bug in nvcc with std::map, -G and --relaxed-constexpr: #1690424)
+if(NOT "${CUDA_NVCC_FLAGS}" MATCHES "-G")
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} ${CUDA_RELAXED_CONSTEXPR}")
+else()
+    message(WARNING "-G flag found for CUDA. Cannot use --relaxed-constexpr. Expect compiletime warnings!")
+endif()
 
 ################################################################################
 # VampirTrace
