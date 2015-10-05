@@ -15,8 +15,13 @@ namespace detector {
          * Calculates the cell index on the detector that a photon reaches when it continues
          * with the current speed
          */
+        template<class T_Config>
         struct GetTargetCellIdx
         {
+            using Config = T_Config;
+            static constexpr float_X cellWidth = float_X(Config::cellWidth / UNIT_LENGTH);
+            static constexpr float_X cellHeight = float_X(Config::cellHeight / UNIT_LENGTH);
+
             /**
              *
              * @param xPosition Position of the detector in x direction
@@ -51,8 +56,17 @@ namespace detector {
                 pos.y() += dt * vel.y();
                 pos.z() += dt * vel.z();
                 using PMacc::algorithms::math::float2int_rn;
-                targetIdx.x() = float2int_rn(pos.shrink<2>(1).x() / cellSize.shrink<2>(1).x());
-                targetIdx.y() = float2int_rn(pos.shrink<2>(1).y() / cellSize.shrink<2>(1).y());
+                /* We place so that the simulation volume is in the middle -->
+                 * Offset = (DetectorSize - SimSize) / 2
+                 * With DetectorSize = numCells * DetectorCellSize and SimSize = numCells * SimCellSize
+                 * --> Offset = numCells * (DetectorCellSize - SimCellSize) / 2
+                 */
+                const float_X offsetXFactor = (cellWidth - cellSize[1]) / 2;
+                const float_X offsetYFactor = (cellHeight - cellSize[2]) / 2;
+                float_X xPos = pos.shrink<2>(1).x() + offsetXFactor * size_.x();
+                float_X yPos = pos.shrink<2>(1).y() + offsetYFactor * size_.y();
+                targetIdx.x() = float2int_rn(xPos / cellWidth);
+                targetIdx.y() = float2int_rn(yPos / cellHeight);
                 /* Check bounds */
                 return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
                        targetIdx.y() >= 0 && targetIdx.y() < size_.y();
@@ -126,7 +140,7 @@ namespace detector {
 
     public:
 
-        using DetectParticle = detail::DetectParticle<detail::GetTargetCellIdx, AccumPolicy>;
+        using DetectParticle = detail::DetectParticle<detail::GetTargetCellIdx<Config>, AccumPolicy>;
 
         PhotonDetectorImpl(const Space& simulationSize)
         {
@@ -177,7 +191,7 @@ namespace detector {
         DetectParticle
         getDetectParticle(uint32_t timeStep) const
         {
-            return DetectParticle(detail::GetTargetCellIdx(xPosition_, getSize()), AccumPolicy(), timeStep);
+            return DetectParticle(detail::GetTargetCellIdx<Config>(xPosition_, getSize()), AccumPolicy(), timeStep);
         }
     };
 
