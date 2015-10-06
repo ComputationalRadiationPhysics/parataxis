@@ -11,9 +11,10 @@ namespace scatterer {
     /**
      * Scatterer that changes the momentum based on 2 random angles (spherical coordinates)
      */
-    template<class T_Species = bmpl::_1>
+    template<class T_Config, class T_Species = bmpl::_1>
     struct RandomDirection
     {
+        using Config = T_Config;
 
         HINLINE explicit
         RandomDirection(uint32_t currentStep)
@@ -29,8 +30,8 @@ namespace scatterer {
         DINLINE void
         operator()(const T_DensityBox& density, const T_Position& pos, T_Momentum& mom)
         {
-            float_X polarAngle   = rand() * float_X(PI);
-            float_X azimuthAngle = rand() * float_X(2 * PI);
+            float_X polarAngle   = rand() * float_X(Config::maxPolar - Config::minPolar) + float_X(Config::minPolar);
+            float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
             float_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
             PMaccMath::sincos(polarAngle, sinPolar, cosPolar);
             PMaccMath::sincos(azimuthAngle, sinAzimuth, cosAzimuth);

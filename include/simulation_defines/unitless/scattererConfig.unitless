@@ -38,7 +38,8 @@ namespace traits {
     template<>
     struct Resolve<xrt::particles::scatterer::direction::RandomDirection>
     {
-        using type = xrt::particles::scatterer::RandomDirection<>;
+        using Config = xrt::particles::scatterer::direction::RandomDirection;
+        using type = xrt::particles::scatterer::RandomDirection<Config>;
     };
 
 }  // namespace traits
