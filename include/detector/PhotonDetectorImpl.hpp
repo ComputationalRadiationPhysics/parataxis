@@ -28,7 +28,7 @@ namespace detector {
              * @param size      Size of the detector
              */
             GetTargetCellIdx(float_X xPosition, Space2D size):
-                xPosition_(xPosition), size_(size)
+                xPosition_(xPosition), size_(size), simSize_(Environment::get().SubGrid().getTotalDomain().size.shrink<2>(1))
             {}
 
             /**
@@ -58,13 +58,9 @@ namespace detector {
                 using PMacc::algorithms::math::float2int_rn;
                 /* We place so that the simulation volume is in the middle -->
                  * Offset = (DetectorSize - SimSize) / 2
-                 * With DetectorSize = numCells * DetectorCellSize and SimSize = numCells * SimCellSize
-                 * --> Offset = numCells * (DetectorCellSize - SimCellSize) / 2
                  */
-                const float_X offsetXFactor = (cellWidth - cellSize[1]) / 2;
-                const float_X offsetYFactor = (cellHeight - cellSize[2]) / 2;
-                float_X xPos = pos.shrink<2>(1).x() + offsetXFactor * size_.x();
-                float_X yPos = pos.shrink<2>(1).y() + offsetYFactor * size_.y();
+                float_X xPos = pos.shrink<2>(1).x() + (cellWidth  * size_.x() + cellSize[1] * simSize_.x()) / 2.f;
+                float_X yPos = pos.shrink<2>(1).y() + (cellHeight * size_.y() + cellSize[2] * simSize_.y()) / 2.f;
                 targetIdx.x() = float2int_rn(xPos / cellWidth);
                 targetIdx.y() = float2int_rn(yPos / cellHeight);
                 /* Check bounds */
@@ -75,6 +71,7 @@ namespace detector {
         private:
             PMACC_ALIGN(xPosition_, const float_X);
             PMACC_ALIGN(size_, const Space2D);
+            PMACC_ALIGN(simSize_, const Space2D);
         };
 
         template<class T_GetTargetCellIdx, class T_AccumPolicy>
@@ -142,11 +139,11 @@ namespace detector {
 
         using DetectParticle = detail::DetectParticle<detail::GetTargetCellIdx<Config>, AccumPolicy>;
 
-        PhotonDetectorImpl(const Space& simulationSize)
+        PhotonDetectorImpl(const Space2D& size)
         {
-            Space2D size = simulationSize.shrink<simDim-1>(1);
             buffer.reset(new Buffer(size));
-            xPosition_ = simulationSize.x() * CELL_WIDTH + distance;
+            Space simSize = Environment::get().SubGrid().getTotalDomain().size;
+            xPosition_ = simSize.x() * CELL_WIDTH + distance;
         }
 
         static std::string

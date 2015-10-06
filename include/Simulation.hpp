@@ -42,7 +42,7 @@ namespace xrt {
         PIC_Photons* particleStorage;
         LaserSource<PIC_Photons> laserSource;
 
-        std::vector<uint32_t> gridSize, devices;
+        std::vector<uint32_t> gridSize, devices, detectorSize;
 
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
@@ -70,8 +70,9 @@ namespace xrt {
             SimulationHelper<simDim>::pluginRegisterHelp(desc);
             desc.add_options()
                 ("devices,d", po::value<std::vector<uint32_t> > (&devices)->multitoken(), "number of devices in each dimension")
-
-                ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid");
+                ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid")
+                ("detSize", po::value<std::vector<uint32_t> > (&detectorSize)->multitoken(), "size of detector")
+                ;
         }
 
         std::string pluginGetName() const override
@@ -85,9 +86,8 @@ namespace xrt {
             CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 3 * MiB));
 #endif
 
-            Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             densityField.reset(new DensityField(cellDescription));
-            detector_.reset(new Detector(totalSize));
+            detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
             rngProvider_.reset(new RNGProvider(cellDescription));
 
             /* Init RNGs before mallocMC as the generation requires some additional memory */
@@ -153,6 +153,8 @@ namespace xrt {
             Space periodic = Space::create(0); // Non periodic boundaries!
             Space devices   = convertToSpace(this->devices, 1, "devices (-d)");
             Space gridSize  = convertToSpace(this->gridSize, 1, "grid (-g)");
+            while(detectorSize.size() < 2)
+                detectorSize.push_back(1024);
 
             /* Set up device mappings and create streams etc. */
             Environment::get().initDevices(devices, periodic);
