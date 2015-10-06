@@ -8,7 +8,15 @@ namespace xrt {
     constexpr float_64 UNIT_TIME = SI::DELTA_T;
     /** Unit of length */
     constexpr float_64 UNIT_LENGTH = UNIT_TIME*UNIT_SPEED;
+    /** Unit of mass */
+    constexpr float_64 UNIT_MASS = SI::ELECTRON_MASS;
+    /** Unit of charge */
+    constexpr float_64 UNIT_CHARGE = -1.0 * SI::ELECTRON_CHARGE;
+    /** Unit of energy */
+    constexpr float_64 UNIT_ENERGY = (UNIT_MASS * UNIT_LENGTH * UNIT_LENGTH / (UNIT_TIME * UNIT_TIME));
 
     constexpr float_X SPEED_OF_LIGHT = float_X(SI::SPEED_OF_LIGHT / UNIT_SPEED);
+
+    constexpr float_64 PLANCK_CONSTANT = SI::PLANCK_CONSTANT / (UNIT_ENERGY * UNIT_TIME);
 
 }  // namespace xrt

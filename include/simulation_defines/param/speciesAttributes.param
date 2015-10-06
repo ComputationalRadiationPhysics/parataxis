@@ -43,6 +43,8 @@ namespace xrt {
 
     /** Wavelength for photon waves */
     alias(wavelength);
+    /** Energy photon waves, can be used instead of the wavelength as E = h*f */
+    alias(energy);
 
     /** Amplitude of a wave */
     alias(amplitude);

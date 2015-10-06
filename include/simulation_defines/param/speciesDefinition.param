@@ -28,8 +28,10 @@ namespace xrt {
 
     /*########################### define species #################################*/
 
-    /* 0.1nm wave length for X-Rays */
+    /* wave length for photons in m */
     value_identifier(float_X, wavelengthPhotons, 0.1 * 1e-9);
+    /* energy for photons in J */
+    value_identifier(float_X, energyPhotons, 8 * UNITCONV_keV_to_Joule);
     value_identifier(float_X, amplitudePhotons, 1);
 
     typedef bmpl::vector<
@@ -37,7 +39,8 @@ namespace xrt {
             particleScatterCondition<particles::scatterer::conditions::OnRandom>,
             particleScatterDirection<particles::scatterer::direction::RandomDirection>,
             particleDetector<detector::PhotonDetector>,
-            wavelength<wavelengthPhotons>,
+            //wavelength<wavelengthPhotons>,
+            energy<energyPhotons>,
             amplitude<amplitudePhotons>
     > ParticleFlagsPhotons;
 
