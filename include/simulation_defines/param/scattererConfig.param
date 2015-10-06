@@ -38,11 +38,11 @@ namespace scatterer {
         /** Scatter in a random direction specified by evenly distributed spherical coordinates */
         struct RandomDirection{
             /** Minimum and maximum value for the polar angle (range should be <= PI) */
-            static constexpr float_64 minPolar = 0;
-            static constexpr float_64 maxPolar = PI;
+            static constexpr float_64 minPolar = PI / 4;
+            static constexpr float_64 maxPolar = PI * 3./4.;
             /** Minimum and maximum value for the azimuth angle (range should be <= 2*PI) */
-            static constexpr float_64 minAzimuth = 0;
-            static constexpr float_64 maxAzimuth = 2 * PI;
+            static constexpr float_64 minAzimuth = -PI / 4;
+            static constexpr float_64 maxAzimuth =  PI / 4;
         };
 
     }  // namespace direction
