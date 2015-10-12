@@ -69,7 +69,7 @@ namespace plugins {
             if(isMaster && !masterBuffer_)
                 masterBuffer_.reset(new PMacc::HostBufferIntern<Type, 2>(size));
             reduce_(PMacc::nvidia::functors::Add(),
-                   masterBuffer_->getDataBox().getPointer(),
+                   isMaster ? masterBuffer_->getDataBox().getPointer() : nullptr,
                    detector.getHostDataBox().getPointer(),
                    size.productOfComponents(),
                    ReduceMethod()
