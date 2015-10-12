@@ -21,8 +21,7 @@ namespace xrt
         using Gather = PMacc::algorithm::mpi::Gather<2>;
         using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
 
-        void
-        init(uint32_t slicePoint, uint32_t nAxis)
+        GatherSlice(uint32_t slicePoint, uint32_t nAxis)
         {
             auto& env = PMacc::Environment<2>::get();
             PMacc::zone::SphericZone<2> gpuGatheringZone(env.GridController().getGpuNodes());
@@ -77,8 +76,7 @@ namespace xrt
         using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
         using TmpBuffer = PMacc::GridBuffer<typename Field::Type, 2>;
 
-        void
-        init(uint32_t slicePlane, uint32_t nAxis)
+        GatherSlice(uint32_t slicePlane, uint32_t nAxis)
         {
             auto& env = PMacc::Environment<3>::get();
             Space3D globalSize = env.SubGrid().getTotalDomain().size;

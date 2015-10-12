@@ -106,6 +106,10 @@ namespace plugins {
         {
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
         }
+        void pluginUnload() override
+        {
+            masterBuffer_.reset();
+        }
     };
 
 }  // namespace plugins

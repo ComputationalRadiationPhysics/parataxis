@@ -21,7 +21,8 @@ namespace plugins {
         using Field = T_Field;
 
         typedef MappingDesc::SuperCellSize SuperCellSize;
-        GatherSlice<Field, simDim> gather_;
+        using UsedGatherSlice = GatherSlice<Field, simDim>;
+        std::unique_ptr<UsedGatherSlice> gather_;
 
         bool isMaster;
         std::string name;
@@ -68,8 +69,8 @@ namespace plugins {
             auto &dc = Environment::get().DataConnector();
 
             Field& field = dc.getData<Field>(Field::getName(), false);
-            gather_(field);
-            if (gather_.hasData()){
+            (*gather_)(field);
+            if (gather_->hasData()){
                 PngCreator png;
                 std::stringstream fileName;
                 fileName << this->fileName
@@ -78,12 +79,12 @@ namespace plugins {
 
                 using Box = PMacc::PitchedBox<typename Field::Type, 2>;
                 PMacc::DataBox<Box> data(Box(
-                        gather_.getData().getDataPointer(),
+                        gather_->getData().getDataPointer(),
                         Space2D(),
-                        Space2D(gather_.getData().size()),
-                        gather_.getData().size().x() * sizeof(typename Field::Type)
+                        Space2D(gather_->getData().size()),
+                        gather_->getData().size().x() * sizeof(typename Field::Type)
                         ));
-                png(fileName.str(), data, gather_.getData().size());
+                png(fileName.str(), data, gather_->getData().size());
             }
 
             dc.releaseData(Field::getName());
@@ -108,7 +109,12 @@ namespace plugins {
                 return;
             }
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
-            gather_.init(slicePoint, nAxis_);
+            gather_.reset(new UsedGatherSlice(slicePoint, nAxis_));
+        }
+
+        void pluginUnload() override
+        {
+            gather_.reset();
         }
 
      };
