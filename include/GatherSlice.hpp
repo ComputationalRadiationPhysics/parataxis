@@ -84,7 +84,8 @@ namespace xrt
             /* GPU idx (in the axis dimension) that has the slice */
             int localPlane = slicePlane / localSize[nAxis];
 
-            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%") % slicePlane % nAxis % localSize % globalSize;
+            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%")
+                    % slicePlane % nAxis % localSize % globalSize;
 
             PMacc::zone::SphericZone<3> gpuGatheringZone(env.GridController().getGpuNodes());
             /* Use only 1 GPU in the axis dimension */
@@ -101,6 +102,9 @@ namespace xrt
             /* Reduce size dimension */
             Space2D tmpSize(localSize[twistedAxes_[0]], localSize[twistedAxes_[1]]);
             Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[1]]);
+
+            PMacc::log< XRTLogLvl::IN_OUT >("Participation in gather operation. Local offset: %1%. Rank: %2%. Is root: %3%")
+                    % localOffset_ % gather_->rank() % gather_->root();
 
             tmpBuffer_.reset(new TmpBuffer(tmpSize));
             if(gather_->root())
