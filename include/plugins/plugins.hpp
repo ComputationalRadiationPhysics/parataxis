@@ -6,6 +6,7 @@
 #   include "plugins/PrintField.hpp"
 #endif
 #ifdef XRT_ENABLE_TIFF
+#   include "plugins/TiffToDensity.hpp"
 #   include "plugins/PrintDetector.hpp"
 #endif
 #include <boost/mpl/vector.hpp>
@@ -14,6 +15,9 @@ namespace xrt {
 
     /* stand alone plugins (no placeholders) */
     typedef bmpl::vector<
+#if defined(XRT_ENABLE_TIFF)
+            plugins::TiffToDensity
+#endif
     > StandAlonePlugins;
 
     /* species plugins (with placeholder replaced by species) */
