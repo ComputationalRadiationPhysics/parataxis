@@ -73,8 +73,9 @@ namespace plugins {
             Environment::get().PluginConnector().setNotificationPeriod(this, std::numeric_limits<uint32>::max());
         }
 
+        /// Returns the number as a string extend by the filler to the minSize
         std::string
-        getFilledNumber(unsigned num) const
+        getFilledNumber(uint32_t num) const
         {
             std::string s(std::to_string(num));
             while(s.size()<minSizeFiller)
@@ -82,6 +83,7 @@ namespace plugins {
             return s;
         }
 
+        /// Replaces a string in a string
         std::string
         replace(std::string str, const std::string& from, const std::string& to) const
         {
@@ -91,12 +93,19 @@ namespace plugins {
             return str.replace(start_pos, from.length(), to);
         }
 
-        std::string getFilePath(unsigned num) const
+        /// Gets the file path for a given slice number (replaces '%i' in filePath member by the number)
+        std::string getFilePath(uint32_t num) const
         {
             return replace(filePath, "%i", getFilledNumber(firstIdx));
         }
 
-        void load2D()
+        /// Calculates the bounds into the local density field
+        /// \param begin First index into the local field
+        /// \param end One past the end index into the local field
+        /// \param imgOffset offset that needs to be added to the local coords to get the img coords
+        /// \param depth Number of slices in 3D (in simulation x-direction)
+        /// \return True if anything needs to be copied, false if e.g. begin >= end
+        bool calculateBounds(Space& begin, Space& end, Space2D& imgOffset, int32_t depth)
         {
             auto localDomain = Environment::get().SubGrid().getLocalDomain();
             // Get local size including guards on both sides
@@ -111,13 +120,13 @@ namespace plugins {
                 // For 3D sims check if our "slice" in x direction is in the range that should be filled
                 // and exit early if it is not (avoid loading the image altogether)
                 if(offset.x() >= localSize.x())
-                    return; // Starts after this domain
-                if(offset.x() < 0 && !repeat)
-                    return; // Starts before this domain and we don't repeat
+                    return false; // Starts after this domain
+                if(offset.x() + depth <= 0)
+                    return false; // Ends before this domain
             }
-            tiffWriter::FloatImage<> img(getFilePath(firstIdx));
+            tiffWriter::FloatImage<> img(getFilePath(firstIdx), false);
             Space2D imgSize(img.getWidth(), img.getHeight());
-            Space2D imgOffset(this->imgOffsetX, this->imgOffsetY);
+            imgOffset = Space2D(this->imgOffsetX, this->imgOffsetY);
             // Because of the offset the image appears smaller
             imgSize -= imgOffset;
             if(maxImgSize >= 0)
@@ -130,33 +139,44 @@ namespace plugins {
             const Space2D offset2D = offset.shrink<2>(1);
             const Space2D localSize2D = localSize.shrink<2>(1);
             // Get bounds for the local area/volume
-            // x >= 0 && x >= offset
-            const int x0 = std::max(0, offset.x());
+            // x >= 0 && && x < depth + offset (see below for y)
+            begin.x() = std::max(0, offset.x());
             // x < localSize or for no repeat mode use only 1 slice
-            const int x1 = repeat ? localSize.x() : x0 + 1;
+            end.x() = std::min(localSize.x(), offset.x() + depth);
             // y >= 0 && y >= offset
-            const int y0 = std::max(0, offset2D.x());
-            // y < localSize && y - offset < imgSize ( or y < imgSize + offset)
+            begin.y() = std::max(0, offset2D.x());
+            // y < localSize && y - offset < imgSize ( <=> y < imgSize + offset)
             // Remember: y is in local coords, offset is offset to start of image as seen in local coords
             // --> Start of image is at y = offset -> imgIdx = y - offset
-            const int y1 = std::min(localSize2D.x(), imgSize.x() + offset2D.x());
+            end.y() = std::min(localSize2D.x(), imgSize.x() + offset2D.x());
             // Same as in y
-            const int z0 = std::max(0, offset2D.y());
-            const int z1 = std::min(localSize2D.y(), imgSize.y() + offset2D.y());
-            // Check if we need to insert a part of the img (Note: X is already checked above for 3D only)
+            begin.z() = std::max(0, offset2D.y());
+            end.z() = std::min(localSize2D.y(), imgSize.y() + offset2D.y());
+            // Check if we need to insert a part of the img (Note: x >= y <=> x > y-1)
             // (e.g. false if simulation is split in y and we only insert into the top part)
-            if(z0 >= z1 || y0 >= y1)
+            if(begin.isOneDimensionGreaterThan(end - 1))
+                return false;
+            // Combine both offsets
+            imgOffset -= offset2D;
+            return true;
+        }
+
+        void load2D()
+        {
+            Space begin, end;
+            Space2D imgOffset;
+            if(!calculateBounds(begin, end, imgOffset, repeat ? Environment::get().SubGrid().getGlobalDomain().size.x() : 1))
                 return;
+
             auto& dc = Environment::get().DataConnector();
             auto& densityField = dc.getData<DensityField>(DensityField::getName(), true);
             auto densityBox = densityField.getHostDataBox();
-            // Combine both offsets
-            imgOffset -= offset2D;
-            for(int z = z0; z < z1; z++)
+            tiffWriter::FloatImage<> img(getFilePath(firstIdx));
+            for(int32_t z = begin.z(); z < end.z(); z++)
             {
-                for(int y = y0; y < y1; y++)
+                for(int32_t y = begin.y(); y < end.y(); y++)
                 {
-                    for(int x = x0; x < x1; x++)
+                    for(int32_t x = begin.x(); x < end.x(); x++)
                     {
                         Space idx(x, y, z);
                         Space2D idxImg = idx.shrink<2>(1) + imgOffset;
