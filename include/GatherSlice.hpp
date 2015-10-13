@@ -21,7 +21,7 @@ namespace xrt
         using Gather = PMacc::algorithm::mpi::Gather<2>;
         using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
 
-        GatherSlice(uint32_t slicePoint, uint32_t nAxis)
+        GatherSlice(uint32_t slicePoint, uint32_t nAxis): nAxis_(nAxis)
         {
             auto& env = PMacc::Environment<2>::get();
             PMacc::zone::SphericZone<2> gpuGatheringZone(env.GridController().getGpuNodes());
@@ -40,7 +40,8 @@ namespace xrt
             field.synchronize();
             (*gather_)(
                     *masterField_,
-                    field.getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT())
+                    field.getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT()),
+                    nAxis_
                     );
         }
 
@@ -58,6 +59,7 @@ namespace xrt
     private:
         std::unique_ptr<Gather> gather_;
         std::unique_ptr<HostBuffer> masterField_;
+        const uint32_t nAxis_;
     };
 
     struct ConversionFunctor
@@ -76,7 +78,7 @@ namespace xrt
         using HostBuffer = PMacc::container::HostBuffer<typename Field::Type, 2>;
         using TmpBuffer = PMacc::GridBuffer<typename Field::Type, 2>;
 
-        GatherSlice(uint32_t slicePlane, uint32_t nAxis)
+        GatherSlice(uint32_t slicePlane, uint32_t nAxis): nAxis_(nAxis)
         {
             auto& env = PMacc::Environment<3>::get();
             Space3D globalSize = env.SubGrid().getTotalDomain().size;
@@ -117,6 +119,8 @@ namespace xrt
         void
         operator()(Field& field)
         {
+            if(!gather_->participate())
+                return;
             auto dBufferTmp(tmpBuffer_->getDeviceBuffer().cartBuffer());
             auto dBuffer(field.getGridBuffer().getDeviceBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT()));
             ConversionFunctor cf;
@@ -126,7 +130,7 @@ namespace xrt
                          cf );
             tmpBuffer_->deviceToHost();
             auto hBufferTmp(tmpBuffer_->getHostBuffer().cartBuffer());
-            (*gather_)(*masterField_, hBufferTmp);
+            (*gather_)(*masterField_, hBufferTmp, nAxis_);
         }
 
         bool
@@ -144,6 +148,7 @@ namespace xrt
         uint32_t slicePoint_;
         PMacc::math::UInt32<3> twistedAxes_;
         uint32_t localOffset_;
+        const uint32_t nAxis_;
         std::unique_ptr<Gather> gather_;
         std::unique_ptr<HostBuffer> masterField_;
         std::unique_ptr<TmpBuffer> tmpBuffer_;
