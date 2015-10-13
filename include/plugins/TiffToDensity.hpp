@@ -105,14 +105,14 @@ namespace plugins {
         /// \param imgOffset offset that needs to be added to the local coords to get the img coords
         /// \param depth Number of slices in 3D (in simulation x-direction)
         /// \return True if anything needs to be copied, false if e.g. begin >= end
-        bool calculateBounds(Space& begin, Space& end, Space2D& imgOffset, int32_t depth)
+        bool calculateBounds(Space& begin, Space& end, Space& imgOffset, int32_t depth)
         {
             auto localDomain = Environment::get().SubGrid().getLocalDomain();
             // Get local size including guards on both sides
             Space localSize = localDomain.size + 2 * cellDescription_ ->getGuardingSuperCells() * SuperCellSize::toRT();
             // Offset into the simulation
             Space simOffset = convertToSpace(this->simOffset, 0, "");
-            // Offset from the start of the local area to the start of the image (can be negative, if the image starts in a previous slice:
+            // Offset from the start of the local domain to the start of the image (can be negative, if the image starts in a previous slice:
             // == difference of sim offset and local offset + the guarding cells at the beginning of the sim
             Space offset = simOffset - localDomain.offset + cellDescription_ ->getGuardingSuperCells() * SuperCellSize::toRT();
             if(simDim == 3)
@@ -126,9 +126,9 @@ namespace plugins {
             }
             tiffWriter::FloatImage<> img(getFilePath(firstIdx), false);
             Space2D imgSize(img.getWidth(), img.getHeight());
-            imgOffset = Space2D(this->imgOffsetX, this->imgOffsetY);
+            imgOffset = Space(0, this->imgOffsetX, this->imgOffsetY);
             // Because of the offset the image appears smaller
-            imgSize -= imgOffset;
+            imgSize -= imgOffset.shrink<2>(1);
             if(maxImgSize >= 0)
             {
                 // Use the given the size but stay within the bounds
@@ -157,14 +157,13 @@ namespace plugins {
             if(begin.isOneDimensionGreaterThan(end - 1))
                 return false;
             // Combine both offsets
-            imgOffset -= offset2D;
+            imgOffset -= offset;
             return true;
         }
 
         void load2D()
         {
-            Space begin, end;
-            Space2D imgOffset;
+            Space begin, end, imgOffset;
             if(!calculateBounds(begin, end, imgOffset, repeat ? Environment::get().SubGrid().getGlobalDomain().size.x() : 1))
                 return;
 
@@ -172,6 +171,7 @@ namespace plugins {
             auto& densityField = dc.getData<DensityField>(DensityField::getName(), true);
             auto densityBox = densityField.getHostDataBox();
             tiffWriter::FloatImage<> img(getFilePath(firstIdx));
+            Space2D imgOffset2D = imgOffset.shrink<2>(1);
             for(int32_t z = begin.z(); z < end.z(); z++)
             {
                 for(int32_t y = begin.y(); y < end.y(); y++)
@@ -179,7 +179,7 @@ namespace plugins {
                     for(int32_t x = begin.x(); x < end.x(); x++)
                     {
                         Space idx(x, y, z);
-                        Space2D idxImg = idx.shrink<2>(1) + imgOffset;
+                        Space2D idxImg = idx.shrink<2>(1) + imgOffset2D;
                         densityBox(idx) = img(idxImg.x(), idxImg.y());
                     }
                 }
@@ -191,7 +191,32 @@ namespace plugins {
 
         void load3D()
         {
+            Space begin, end, imgOffset;
+            if(!calculateBounds(begin, end, imgOffset, lastIdx - firstIdx + 1))
+                return;
 
+            auto& dc = Environment::get().DataConnector();
+            auto& densityField = dc.getData<DensityField>(DensityField::getName(), true);
+            auto densityBox = densityField.getHostDataBox();
+            Space2D imgOffset2D = imgOffset.shrink<2>(1);
+            tiffWriter::FloatImage<> img;
+            imgOffset.x() += firstIdx;
+            for(int32_t x = begin.x(); x < end.x(); x++)
+            {
+                img.open(getFilePath(x + imgOffset.x()));
+                for(int32_t z = begin.z(); z < end.z(); z++)
+                {
+                    for(int32_t y = begin.y(); y < end.y(); y++)
+                    {
+                        Space idx(x, y, z);
+                        Space2D idxImg = idx.shrink<2>(1) + imgOffset2D;
+                        densityBox(idx) = img(idxImg.x(), idxImg.y());
+                    }
+                }
+            }
+            // Sync to device
+            densityField.getGridBuffer().hostToDevice();
+            dc.releaseData(DensityField::getName());
         }
     };
 
