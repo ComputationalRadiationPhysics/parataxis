@@ -101,7 +101,7 @@ namespace plugins {
             Space offset = simOffset - localDomain.offset + cellDescription_ ->getGuardingSuperCells() * SuperCellSize::toRT();
             if(simDim == 3)
             {
-                if(offset.x() >= localDomain.size.x())
+                if(offset.x() >= localSize.x())
                     return; // Starts after this domain
                 if(offset.x() < 0 && !repeat)
                     return; // Starts before this domain and we don't repeat
