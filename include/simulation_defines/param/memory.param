@@ -13,7 +13,7 @@ namespace xrt {
      *   - reduces
      *   - ...
      */
-    const size_t reservedGPUMemorySize = 350 * MiB;
+    constexpr size_t reservedGPUMemorySize = 350 * MiB;
 
     namespace mCT=PMacc::math::CT;
     /** size of a superCell
