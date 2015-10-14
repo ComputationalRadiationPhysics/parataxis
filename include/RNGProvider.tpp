@@ -25,7 +25,7 @@ namespace xrt {
             using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
             auto cachedRNGBox = PMacc::CachedBox::create<0, typename T_RNGBox::ValueType>(BlockBoxSize());
 
-            cachedRNGBox(Space(threadIdx)) = nvrng::methods::Xor(seed, cellIdx);
+            curand_init(seed, cellIdx, 0, cachedRNGBox(Space(threadIdx)).getStatePtr());
             __syncthreads();
             const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
             PMacc::ThreadCollective<BlockBoxSize> collective(linearThreadIdx);

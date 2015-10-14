@@ -10,23 +10,26 @@ namespace xrt {
      * and a typedef for StatePtr
      */
     template<class T_RNGMethod>
-    class RNGState: public T_RNGMethod
+    class RNGState
     {
     public:
         typedef T_RNGMethod RNGMethod;
+        typedef typename RNGMethod::StateType StateType;
         typedef typename RNGMethod::StatePtr StatePtr;
 
         HDINLINE RNGState()
         {}
 
-        HDINLINE RNGState(const RNGMethod& other): RNGMethod(other)
+        HDINLINE RNGState(const StateType& other): state(other)
         {}
 
         DINLINE StatePtr
         getStatePtr()
         {
-            return RNGMethod::getStatePtr();
+            return &state;
         }
+    private:
+        StateType state;
     };
 
 }  // namespace xrt
