@@ -179,7 +179,6 @@ namespace xrt {
 
         void pluginUnload() override
         {
-
             Parent::pluginUnload();
 
             __delete(mallocMCBuffer);
@@ -190,6 +189,13 @@ namespace xrt {
         {
             size_t freeGpuMem(0);
             Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
+            if(freeGpuMem < reservedGPUMemorySize)
+            {
+                PMacc::log< XRTLogLvl::MEMORY > ("%1% MiB free memory < %2% MiB required reserved memory")
+                    % (freeGpuMem / MiB) % (reservedGPUMemorySize / MiB) ;
+                throw std::runtime_error("Cannot reserve enough memory");
+            }
+
             size_t heapSize = freeGpuMem - reservedGPUMemorySize;
 
             if( Environment::get().EnvMemoryInfo().isSharedMemoryPool() )
