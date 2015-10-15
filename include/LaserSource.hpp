@@ -33,14 +33,13 @@ namespace xrt {
         void processStep(uint32_t currentStep)
         {
             if(timeStepsProcessed < numTimeStepsLaserPulse){
-                uint32_t numTimeSteps = 1;
-                addParticles(timeStepsProcessed, numTimeSteps);
-                timeStepsProcessed += numTimeSteps;
+                addParticles(timeStepsProcessed);
+                timeStepsProcessed++;
             }
         }
 
     private:
-        void addParticles(uint32_t timeStep, uint32_t numTimeSteps)
+        void addParticles(uint32_t timeStep)
         {
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             auto initFunctor = particles::getParticleFillInfo(
@@ -51,7 +50,7 @@ namespace xrt {
                     );
             auto& dc = Environment::get().DataConnector();
             Species& particles = dc.getData<Species>(FrameType::getName(), true);
-            particles.add(initFunctor, timeStep, numTimeSteps);
+            particles.add(initFunctor, timeStep);
             dc.releaseData(FrameType::getName());
         }
     };

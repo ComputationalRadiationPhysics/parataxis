@@ -132,7 +132,7 @@ namespace xrt{
 
     template<typename T_ParticleDescription>
     template<typename T_InitFunctor>
-    void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor, uint32_t timeStep, uint32_t numTimeSteps)
+    void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor, uint32_t timeStep)
     {
         PMacc::log< XRTLogLvl::SIM_STATE >("adding particles for species %1%") % FrameType::getName();
 
@@ -151,7 +151,6 @@ namespace xrt{
                     localOffset,
               this->particlesBuffer->getDeviceParticleBox(),
               timeStep,
-              numTimeSteps,
               nextPartId_.getDeviceBuffer().getBasePointer(),
               mapper
               );

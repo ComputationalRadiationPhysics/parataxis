@@ -35,7 +35,7 @@ namespace xrt{
          *                               Must also provide an init(totalGPUCellIdx, totalNumParToCreate) function
          */
         template<typename T_InitFunctor>
-        void add(T_InitFunctor&& initFunctor, uint32_t timeStep, uint32_t numTimeSteps);
+        void add(T_InitFunctor&& initFunctor, uint32_t timeStep);
 
         void update(uint32_t currentStep);
 
