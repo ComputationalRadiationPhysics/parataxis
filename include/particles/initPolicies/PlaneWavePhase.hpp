@@ -23,7 +23,8 @@ namespace initPolicies {
         operator()(uint32_t timeStep) const
         {
             const float_X omega = functors::GetAngularFrequency<Species>()();
-            return omega * timeStep * DELTA_T;
+            /* phase phi = phi_0 - omega * t; Here we assume phi_0 = 0 */
+            return - omega * timeStep * DELTA_T;
         }
     };
 
