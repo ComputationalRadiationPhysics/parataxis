@@ -119,7 +119,8 @@ namespace xrt {
             laserSource.init();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
-            densityField->createDensityDistribution(densityFieldInitializer);
+            Resolve_t<initialDensity::Generator> generator;
+            densityField->createDensityDistribution(generator);
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
 

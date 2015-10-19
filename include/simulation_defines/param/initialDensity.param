@@ -5,69 +5,68 @@
 namespace xrt {
 namespace initialDensity {
 
-    /** Config for the Line generator */
-    struct LineConfig
-    {
-        /** Dimension which the line/plan cuts */
-        static constexpr uint32_t nDim = 0;
-        /** Offset where the line/plane is drawn */
-        static constexpr size_t offset = 50;
-        /** Value used */
-        static constexpr float_64 value = 1;
-    };
-
-    struct CuboidConfig
-    {
-        using Offset = PMacc::math::CT::UInt32<
-                /** Offset in x-direction */
-                40
-                /** Offset in y-direction */,
-                50
-                /** Offset in z-direction */,
-                60
-                >;
-        using Size = PMacc::math::CT::UInt32<
-                /** Size in x-direction */
-                30
-                /** Size in y-direction */,
-                40
-                /** Size in z-direction */,
-                50
-                >;
-        /** Value used */
-        static constexpr float_64 value = 1;
-    };
-
-    struct DoubleSlitConfig
-    {
-        /** (3D only) offset into the room (X-direction) */
-        static constexpr uint32_t roomPos = 40;
-        /** (3D only) width of the volume containing the slit (size in X) */
-        static constexpr uint32_t roomWidth = 1;
-        /** Offset of the slits */
-        static constexpr uint32_t offset = 50;
-        /** Width of the slits */
-        static constexpr uint32_t width = 2;
-        /** Spacing between the slits */
-        static constexpr uint32_t spacing = 30;
-        /** Value used */
-        static constexpr float_64 value = 1;
-    };
-
     namespace AvailableGenerators{
         /* List of possible generators: */
+        /** Constant value at every point */
+        struct Const
+        {
+            /** Value used */
+            static constexpr float_64 value = 0;
+        };
+
         /** Simple line(2D)/plane(3D) */
-        struct Line;
+        struct Line
+        {
+            /** Dimension which the line/plan cuts */
+            static constexpr uint32_t nDim = 0;
+            /** Offset where the line/plane is drawn */
+            static constexpr size_t offset = 50;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
         /** Cuboid in 3D or rectangle in 2D */
-        struct Cuboid;
+        struct Cuboid
+        {
+            using Offset = PMacc::math::CT::UInt32<
+                    /** Offset in x-direction */
+                    40
+                    /** Offset in y-direction */,
+                    50
+                    /** Offset in z-direction */,
+                    60
+                    >;
+            using Size = PMacc::math::CT::UInt32<
+                    /** Size in x-direction */
+                    30
+                    /** Size in y-direction */,
+                    40
+                    /** Size in z-direction */,
+                    50
+                    >;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
         /** 2 slits of the same width and infinite height,
          *  extending perpendicular to x-axis in 3D */
-        struct DoubleSlit;
+        struct DoubleSlit{
+            /** (3D only) offset into the room (X-direction) */
+            static constexpr uint32_t roomPos = 40;
+            /** (3D only) width of the volume containing the slit (size in X) */
+            static constexpr uint32_t roomWidth = 1;
+            /** Offset of the slits */
+            static constexpr uint32_t offset = 50;
+            /** Width of the slits */
+            static constexpr uint32_t width = 2;
+            /** Spacing between the slits */
+            static constexpr uint32_t spacing = 30;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
     };
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::DoubleSlit;
+            AvailableGenerators::Const;
 
 }  // namespace initialDensity
 }  // namespace xrt

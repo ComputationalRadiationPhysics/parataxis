@@ -6,6 +6,21 @@ namespace xrt {
 namespace generators {
 
     /**
+     * Sets all cells to the same value
+     */
+    template<typename T, class T_Config>
+    struct Const{
+        using Config = T_Config;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            return Config::value;
+        }
+    };
+
+
+    /**
      * Generates a line (in 2D, --> Point in 1D/Area in 3D)
      * Returns value if current index in \tT_fixedDim equals pos, 0 otherwise
      */
