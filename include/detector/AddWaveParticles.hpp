@@ -25,7 +25,7 @@ namespace detector {
         HDINLINE Type
         operator()(Type oldVal, T_Particle& particle, float_X currentTime) const
         {
-            const float_X omega = particles::functors::GetAngularFrequency<Species>()();
+            const float_64 omega = particles::functors::GetAngularFrequency<Species>()();
             /* Add a phase offset based on the current time. This makes the detector oscillate with the
              * particles frequency so the addition of 2 particles that had the same way results in adding
              * their amplitudes. However the phase is (phi_0 + omega*dt) with dt being the traveling time
