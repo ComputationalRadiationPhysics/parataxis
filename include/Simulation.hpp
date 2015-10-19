@@ -34,6 +34,7 @@ namespace xrt {
 
     class Simulation: public PMacc::SimulationHelper<simDim>
     {
+        static_assert(simDim == 2 || simDim == 3, "Only 2D or 3D sims are allowed");
         using Parent = PMacc::SimulationHelper<simDim>;
         using Detector = Resolve_t<detector::PhotonDetector>;
 

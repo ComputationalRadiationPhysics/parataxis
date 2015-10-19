@@ -10,7 +10,7 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
-        using Random = xrt::Random<laserConfig::DIRECTION>;
+        using Random = xrt::Random<simDim == 3 ? laserConfig::DIRECTION : -1>;
 
         HINLINE RandomPosition(uint32_t currentStep)
         {}

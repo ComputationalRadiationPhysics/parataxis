@@ -15,7 +15,7 @@ namespace pusher {
         HDINLINE void operator()(const T_DensityBox&, T_Position& pos, T_Momentum& mom)
         {
             const float_X momAbs = PMaccMath::abs( mom );
-            const T_Position vel  = mom * ( SPEED_OF_LIGHT / momAbs );
+            const T_Momentum vel  = mom * ( SPEED_OF_LIGHT / momAbs );
 
             for(uint32_t d=0; d<simDim; ++d)
             {

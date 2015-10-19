@@ -1,6 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
+#include "ConditionalShrink.hpp"
 
 namespace xrt {
 
@@ -19,6 +20,8 @@ namespace xrt {
 
         static constexpr uint32_t numTimeStepsLaserPulse = laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T;
         uint32_t timeStepsProcessed = 0;
+
+        static_assert(laserConfig::DIRECTION >= 0 && laserConfig::DIRECTION <= 2, "Invalid laser direction");
 
     public:
 
@@ -43,7 +46,7 @@ namespace xrt {
         {
             Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
             auto initFunctor = particles::getParticleFillInfo(
-                    Distribution(totalSize.shrink<simDim-1>(laserConfig::DIRECTION + 1)),
+                    Distribution(ConditionalShrink<simDim == 2 ? -1 : laserConfig::DIRECTION + 1>()(totalSize)),
                     Position(),
                     Phase(),
                     Momentum()

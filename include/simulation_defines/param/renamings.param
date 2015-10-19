@@ -34,4 +34,7 @@ namespace xrt {
     template<bool T_condition, typename T_Then, typename T_Else>
     using conditional_t = typename std::conditional<T_condition, T_Then, T_Else>::type;
 
+    template< class T >
+    using remove_reference_t = typename std::remove_reference<T>::type;
+
 }  // namespace xrt

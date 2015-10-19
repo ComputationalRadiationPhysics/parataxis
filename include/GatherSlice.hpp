@@ -38,9 +38,10 @@ namespace xrt
             if(!gather_->participate())
                 return;
             field.synchronize();
+            auto hBuffer = field.getGridBuffer().getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT());
             (*gather_)(
                     *masterField_,
-                    field.getHostBuffer().cartBuffer().view(SuperCellSize::toRT(), -SuperCellSize::toRT()),
+                    hBuffer,
                     nAxis_
                     );
         }

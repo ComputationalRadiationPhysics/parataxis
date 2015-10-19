@@ -46,10 +46,11 @@ namespace detector {
                     return false;
                 /* Calculate global position */
                 const float_X momAbs = PMaccMath::abs(mom);
-                const floatD_X vel   = mom * ( SPEED_OF_LIGHT / momAbs );
-                floatD_X pos;
+                const auto vel = mom * ( SPEED_OF_LIGHT / momAbs );
+                float3_X pos;
+                // This loop sets x,y,z for 3D and y,z for 2D
                 for(uint32_t i=0; i<simDim; ++i)
-                    pos[i] = (float_X(globalIdx[i]) + particle[position_][i]) * cellSize[i];
+                    pos[i + 3 - simDim] = (float_X(globalIdx[i]) + particle[position_][i]) * cellSize[i];
                 /* Required time to reach detector */
                 dt = (xPosition_ - pos.x()) / vel.x();
                 /* Position at detector plane */
@@ -59,8 +60,8 @@ namespace detector {
                 /* We place so that the simulation volume is in the middle -->
                  * Offset = (DetectorSize - SimSize) / 2
                  */
-                float_X xPos = pos.shrink<2>(1).x() + (cellWidth  * size_.x() + cellSize[1] * simSize_.x()) / 2.f;
-                float_X yPos = pos.shrink<2>(1).y() + (cellHeight * size_.y() + cellSize[2] * simSize_.y()) / 2.f;
+                float_X xPos = pos.shrink<2>(1).x() + (cellWidth  * size_.x() + cellSize[simDim - 2] * simSize_.x()) / 2.f;
+                float_X yPos = pos.shrink<2>(1).y() + (cellHeight * size_.y() + cellSize[simDim - 1] * simSize_.y()) / 2.f;
                 targetIdx.x() = float2int_rn(xPos / cellWidth);
                 targetIdx.y() = float2int_rn(yPos / cellHeight);
                 /* Check bounds */

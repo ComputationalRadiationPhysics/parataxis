@@ -11,7 +11,7 @@ namespace xrt {
         {
             template<typename T_Space>
             HDINLINE T_Space
-            operator()(T_Space&& space)
+            operator()(T_Space&& space) const
             {
                 return space;
             }
@@ -21,11 +21,12 @@ namespace xrt {
         struct ConditionalShrink<T_shrinkDim, true>
         {
             template<typename T_Space>
-            HDINLINE PMacc::DataSpace<T_Space::dim - 1>
-            operator()(T_Space&& space)
+            HDINLINE PMacc::DataSpace<(remove_reference_t<T_Space>::Dim) - 1>
+            operator()(T_Space&& space) const
             {
-                static_assert(T_shrinkDim < T_Space::dim, "Cannot remove a dimension that is not there");
-                return space.shrink<T_Space::dim - 1>(T_shrinkDim + 1);
+                constexpr uint32_t oldDim = remove_reference_t<T_Space>::Dim;
+                static_assert(T_shrinkDim < oldDim, "Cannot remove a dimension that is not there");
+                return space.template shrink<oldDim - 1>(T_shrinkDim + 1);
             }
         };
 

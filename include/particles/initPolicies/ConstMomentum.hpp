@@ -23,10 +23,10 @@ namespace initPolicies {
         setCount(int32_t particleCount)
         {}
 
-        DINLINE floatD_X
+        DINLINE momentum::type
         operator()(uint32_t timeStep)
         {
-            return ToVector<Config, simDim>()();
+            return ToVector<Config, momentum::type::dim>()();
         }
     };
 

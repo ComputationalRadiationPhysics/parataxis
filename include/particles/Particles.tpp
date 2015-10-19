@@ -148,7 +148,7 @@ namespace xrt{
         __cudaKernel(kernel::fillGridWithParticles<Particles>)
             (mapper.getGridDim(), block.toDim3())
             ( initFunctor,
-                    localOffset,
+              localOffset,
               this->particlesBuffer->getDeviceParticleBox(),
               timeStep,
               nextPartId_.getDeviceBuffer().getBasePointer(),
