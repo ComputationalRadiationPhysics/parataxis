@@ -4,6 +4,7 @@
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 #include "ComplexTraits.hpp"
+#include "math/abs.hpp"
 
 #include <dataManagement/DataConnector.hpp>
 #include <debug/VerboseLog.hpp>
