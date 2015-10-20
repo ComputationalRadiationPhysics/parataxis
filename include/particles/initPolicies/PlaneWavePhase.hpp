@@ -19,7 +19,7 @@ namespace initPolicies {
         init(Space2D totalCellIdx) const
         {}
 
-        DINLINE int32_t
+        DINLINE float_X
         operator()(uint32_t timeStep) const
         {
             const float_X omega = functors::GetAngularFrequency<Species>()();
