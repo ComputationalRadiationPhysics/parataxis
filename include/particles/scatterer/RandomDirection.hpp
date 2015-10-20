@@ -31,7 +31,7 @@ namespace scatterer {
         operator()(const T_DensityBox& density, const T_Position& pos, T_Momentum& mom)
         {
             float_X polarAngle   = rand() * float_X(Config::maxPolar - Config::minPolar) + float_X(Config::minPolar);
-            float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
+            float_X azimuthAngle = acos(rand() * cos(float_X(Config::maxAzimuth - Config::minAzimuth)) + cos(float_X(Config::minAzimuth)));
             float_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
             PMaccMath::sincos(polarAngle, sinPolar, cosPolar);
             PMaccMath::sincos(azimuthAngle, sinAzimuth, cosAzimuth);
