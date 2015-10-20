@@ -102,7 +102,7 @@ namespace detector {
                 /* Get index on detector, if none found -> go out */
                 if(!getTargetCellIdx_(particle, globalCellIdx, targetIdx, dt))
                     return;
-                detector(targetIdx) = accumPolicy_(detector(targetIdx), particle, timeStep_ * DELTA_T + dt);
+                accumPolicy_(detector(targetIdx), particle, timeStep_ * DELTA_T + dt);
             }
         };
 
@@ -113,7 +113,7 @@ namespace detector {
      * \tparam T_Config:
      *      policy IncomingParticleHandler_ The policy must define an inner type "Type"
      *          that is used for each "cell" of the detector and be a functor with
-     *          signature Type(Type oldVal, Particle, float_X timeAtDetector) that returns
+     *          signature void(Type& value, Particle, float_X timeAtDetector) that returns
      *          the new value for the detector cell
      *      float_X distance Distance from the volume in meters
      */

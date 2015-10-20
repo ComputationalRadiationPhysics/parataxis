@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "particles/functors/GetAngFrequency.hpp"
 #include <math/Complex.hpp>
+#include <basicOperations.hpp>
 
 namespace xrt {
 namespace detector {
@@ -19,11 +20,12 @@ namespace detector {
         static_assert(HasFlag_t<FrameType, amplitude<> >::value, "Species has no amplitude set");
         using Amplitude = GetResolvedFlag_t<FrameType, amplitude<> >;
     public:
-        using Type = PMacc::math::Complex<float_64>;
+        using FloatType = float_64;
+        using Type = PMacc::math::Complex<FloatType>;
 
         template< typename T_Particle >
-        HDINLINE Type
-        operator()(Type oldVal, T_Particle& particle, float_X currentTime) const
+        DINLINE void
+        operator()(Type& oldVal, T_Particle& particle, float_X currentTime) const
         {
             const float_64 omega = particles::functors::GetAngularFrequency<Species>()();
             /* Add a phase offset based on the current time. This makes the detector oscillate with the
@@ -33,10 +35,11 @@ namespace detector {
              * I assume that the intensity will be correct although there is an absolute phase offset compared
              * to the correct phase that is proportional to the detector distance (->TODO: Check)
              */
-            float_64 phase = particle[startPhase_] + float_64(currentTime) * omega;
-            float_64 sinPhase, cosPhase;
+            FloatType phase = particle[startPhase_] + FloatType(currentTime) * omega;
+            FloatType sinPhase, cosPhase;
             PMaccMath::sincos(phase, sinPhase, cosPhase);
-            return oldVal + Type(Amplitude::getValue() * cosPhase, Amplitude::getValue() * sinPhase);
+            PMacc::atomicAddWrapper(&oldVal.get_real(), 1);//FloatType(Amplitude::getValue() * cosPhase));
+            //PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(Amplitude::getValue() * sinPhase));
         }
     };
 

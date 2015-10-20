@@ -16,10 +16,10 @@ namespace detector {
         using Type = uint32_t;
 
         template< typename T_Particle >
-        HDINLINE Type
-        operator()(Type oldVal, T_Particle& particle, float_X currentTime) const
+        DINLINE void
+        operator()(Type& oldVal, T_Particle& particle, float_X currentTime) const
         {
-            return oldVal + 1;
+            atomicAdd(&oldVal, 1);
         }
     };
 
