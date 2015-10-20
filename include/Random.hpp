@@ -57,8 +57,6 @@ namespace xrt{
         }
 
     protected:
-        typedef nvrng::RNG<nvrng::methods::Xor, nvrng::distributions::Uniform_float> RngType;
-
         PMACC_ALIGN8(rngBox, RNGBox);
         PMACC_ALIGN8(totalGpuOffset, PMacc::DataSpace<dim>);
     };

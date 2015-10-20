@@ -114,7 +114,6 @@ namespace xrt
                 masterField_.reset(new HostBuffer(masterSize));
             else
                 masterField_.reset(new HostBuffer(PMacc::math::Size_t<2>::create(0)));
-
         }
 
         void
