@@ -38,8 +38,8 @@ namespace detector {
             FloatType phase = particle[startPhase_] + FloatType(currentTime) * omega;
             FloatType sinPhase, cosPhase;
             PMaccMath::sincos(phase, sinPhase, cosPhase);
-            PMacc::atomicAddWrapper(&oldVal.get_real(), 1);//FloatType(Amplitude::getValue() * cosPhase));
-            //PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(Amplitude::getValue() * sinPhase));
+            PMacc::atomicAddWrapper(&oldVal.get_real(), FloatType(Amplitude::getValue() * cosPhase));
+            PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(Amplitude::getValue() * sinPhase));
         }
     };
 
