@@ -27,7 +27,7 @@ namespace detector {
              * @param xPosition Position of the detector in x direction
              * @param size      Size of the detector
              */
-            GetTargetCellIdx(float_X xPosition, Space2D size):
+            GetTargetCellIdx(float_64 xPosition, Space2D size):
                 xPosition_(xPosition), size_(size), simSize_(Environment::get().SubGrid().getTotalDomain().size.shrink<2>(1))
             {}
 
@@ -38,7 +38,7 @@ namespace detector {
              */
             template<typename T_Particle>
             HDINLINE bool
-            operator()(const T_Particle& particle, Space globalIdx, Space2D& targetIdx, float_X& dt) const
+            operator()(const T_Particle& particle, Space globalIdx, Space2D& targetIdx, float_64& dt) const
             {
                 auto mom = particle[momentum_];
                 /* Not flying towards detector? -> exit */
@@ -70,7 +70,7 @@ namespace detector {
             }
 
         private:
-            PMACC_ALIGN(xPosition_, const float_X);
+            PMACC_ALIGN(xPosition_, const float_64);
             PMACC_ALIGN(size_, const Space2D);
             PMACC_ALIGN(simSize_, const Space2D);
         };
@@ -98,7 +98,7 @@ namespace detector {
                 const Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particle[PMacc::localCellIdx_]));
                 const Space globalCellIdx = superCellPosition + localCell;
                 Space2D targetIdx;
-                float_X dt;
+                float_64 dt;
                 /* Get index on detector, if none found -> go out */
                 if(!getTargetCellIdx_(particle, globalCellIdx, targetIdx, dt))
                     return;
@@ -127,7 +127,7 @@ namespace detector {
         /**
          * Distance of the detector from the right side of the volume
          */
-        static constexpr float_X distance = float_X(Config::distance / UNIT_LENGTH);
+        static constexpr float_64 distance = float_64(Config::distance / UNIT_LENGTH);
 
     public: using Type = typename AccumPolicy::Type;
     private:

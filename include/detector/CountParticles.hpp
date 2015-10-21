@@ -17,7 +17,7 @@ namespace detector {
 
         template< typename T_Particle >
         DINLINE void
-        operator()(Type& oldVal, T_Particle& particle, float_X currentTime) const
+        operator()(Type& oldVal, T_Particle& particle, float_64 currentTime) const
         {
             atomicAdd(&oldVal, 1);
         }
