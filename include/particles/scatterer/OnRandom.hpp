@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "Random.hpp"
+#include "random/Random.hpp"
 
 namespace xrt {
 namespace particles {
@@ -37,7 +37,7 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN8(rand, Random<>);
+        PMACC_ALIGN8(rand, random::Random<>);
     };
 
 }  // namespace scatterer

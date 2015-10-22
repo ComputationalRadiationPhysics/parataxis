@@ -8,6 +8,7 @@
 #include <mappings/threads/ThreadCollective.hpp>
 
 namespace xrt {
+namespace random {
 
     namespace kernel {
 
@@ -106,4 +107,5 @@ namespace xrt {
         buffer->deviceToHost();
     }
 
+}  // namespace random
 }  // namespace xrt

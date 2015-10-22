@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace xrt {
+namespace random {
 
     /**
      * Provider of a per cell random number generator
@@ -43,4 +44,5 @@ namespace xrt {
         void synchronize() override;
     };
 
+}  // namespace random
 }  // namespace xrt

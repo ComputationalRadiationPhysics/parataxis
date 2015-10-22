@@ -9,7 +9,7 @@
 
 #include "DensityField.hpp"
 #include "generators.hpp"
-#include "RNGProvider.tpp"
+#include "random/RNGProvider.tpp"
 #include "debug/LogLevels.hpp"
 
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
@@ -50,7 +50,7 @@ namespace xrt {
 
         std::unique_ptr<DensityField> densityField;
         std::unique_ptr<Detector> detector_;
-        std::unique_ptr<RNGProvider> rngProvider_;
+        std::unique_ptr<random::RNGProvider> rngProvider_;
 
     public:
 
@@ -89,7 +89,7 @@ namespace xrt {
 
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
-            rngProvider_.reset(new RNGProvider(cellDescription));
+            rngProvider_.reset(new random::RNGProvider(cellDescription));
 
             /* Init RNGs before mallocMC as the generation requires some additional memory */
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");

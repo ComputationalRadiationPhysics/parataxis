@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "Random.hpp"
+#include "random/Random.hpp"
 
 namespace xrt {
 namespace particles {
@@ -10,7 +10,7 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
-        using Random = xrt::Random<simDim == 3 ? laserConfig::DIRECTION : -1>;
+        using Random = random::Random<simDim == 3 ? laserConfig::DIRECTION : -1>;
 
         HINLINE RandomPosition(uint32_t currentStep)
         {}

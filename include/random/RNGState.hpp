@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 
 namespace xrt {
+namespace random {
 
     /**
      * Class representing the state of a random number generator
@@ -32,4 +33,5 @@ namespace xrt {
         StateType state;
     };
 
+}  // namespace random
 }  // namespace xrt

@@ -8,7 +8,8 @@
 #include <nvidia/rng/distributions/Uniform_float.hpp>
 
 
-namespace xrt{
+namespace xrt {
+namespace random {
 
     /**
      * Wrapper around a uniform random number generator
@@ -61,4 +62,5 @@ namespace xrt{
         PMACC_ALIGN8(totalGpuOffset, PMacc::DataSpace<dim>);
     };
 
-} //namespace xrt
+}  // namespace random
+}  // namespace xrt
