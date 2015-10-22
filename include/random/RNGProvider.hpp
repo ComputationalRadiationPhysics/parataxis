@@ -2,7 +2,7 @@
 
 #include "xrtTypes.hpp"
 #include "random/RNGState.hpp"
-#include "random/methods/Xor.hpp"
+#include "random/methods/XorMin.hpp"
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
 #include <memory>
@@ -16,7 +16,7 @@ namespace random {
     class RNGProvider: PMacc::ISimulationData
     {
     public:
-        typedef methods::Xor RNGMethod;
+        typedef methods::XorMin RNGMethod;
         typedef PMacc::GridBuffer< RNGState<RNGMethod>, simDim > Buffer;
         typedef typename Buffer::DataBoxType DataBoxType;
 
