@@ -20,6 +20,7 @@ namespace xrt{
         DEFINE_LOGLVL(1 << 3, DOMAINS);
         DEFINE_LOGLVL(1 << 4, IN_OUT);
         DEFINE_LOGLVL(1 << 5, PLUGINS);
+        DEFINE_LOGLVL(1 << 6, TIMING);
     )
     /*set default verbose lvl (integer number)*/
     (NOTHING::lvl|XRT_VERBOSE_LVL);

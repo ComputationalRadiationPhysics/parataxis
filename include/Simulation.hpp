@@ -10,6 +10,7 @@
 #include "DensityField.hpp"
 #include "generators.hpp"
 #include "random/RNGProvider.tpp"
+#include "TimerIntervallExt.hpp"
 #include "debug/LogLevels.hpp"
 
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
@@ -86,21 +87,27 @@ namespace xrt {
 #ifndef NDEBUG
             CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 3 * MiB));
 #endif
-
+            TimeIntervallExt timer;
+            PMacc::log<XRTLogLvl::SIM_STATE>("Creating buffers");
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
             rngProvider_.reset(new random::RNGProvider(cellDescription));
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             /* Init RNGs before mallocMC as the generation requires some additional memory */
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
             rngProvider_->init(seeds::xorRNG);
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing Particles");;
             /* ... and allocate the particles (which uses mallocMC) */
             particleStorage = new PIC_Photons(cellDescription, PIC_Photons::FrameType::getName());
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             size_t freeGpuMem(0);
             Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
@@ -111,16 +118,21 @@ namespace xrt {
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing density field");
             densityField->init();
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing detector");
             detector_->init();
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing particles");
             particleStorage->init(densityField.get());
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
             laserSource.init();
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
             Resolve_t<initialDensity::Generator> generator;
             densityField->createDensityDistribution(generator);
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
 
