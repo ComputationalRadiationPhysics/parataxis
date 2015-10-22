@@ -2,11 +2,9 @@
 
 #include "xrtTypes.hpp"
 #include "ConditionalShrink.hpp"
-#include "RNGProvider.hpp"
+#include "random/RNGProvider.hpp"
+#include "random/distributions/Uniform_float.h"
 #include <dimensions/DataSpaceOperations.hpp>
-#include <nvidia/rng/RNG.hpp>
-#include <nvidia/rng/distributions/Uniform_float.hpp>
-
 
 namespace xrt {
 namespace random {
@@ -17,13 +15,13 @@ namespace random {
      * in the range [0, 1) that is uniformly distributed
      */
     template<int32_t T_shrinkDim = -1>
-    struct Random
+    struct Random: private distributions::Uniform_float<RNGProvider::RNGMethod>
     {
         static constexpr int32_t shrinkDim = T_shrinkDim;
         static constexpr uint32_t dim = (shrinkDim >= 0) ? simDim - 1 : simDim;
         using RNGBox = RNGProvider::DataBoxType;
-        using RNGPtr = RNGProvider::RNGMethod::StatePtr;
-        using Distribution = nvrng::distributions::Uniform_float;
+        using RNGState = RNGProvider::RNGMethod::StateType;
+        using Distribution = distributions::Uniform_float<RNGProvider::RNGMethod>;
 
         HINLINE Random()
         {
@@ -54,7 +52,7 @@ namespace random {
          */
         DINLINE float_X operator()()
         {
-            return Distribution()(rngBox(Space::create(0)).getStatePtr());
+            return Distribution::operator()(rngBox(Space::create(0)).getState());
         }
 
     protected:

@@ -1,10 +1,10 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "RNGState.hpp"
+#include "random/RNGState.hpp"
+#include "random/methods/Xor.hpp"
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
-#include <nvidia/rng/methods/Xor.hpp>
 #include <memory>
 
 namespace xrt {
@@ -16,7 +16,7 @@ namespace random {
     class RNGProvider: PMacc::ISimulationData
     {
     public:
-        typedef nvrng::methods::Xor RNGMethod;
+        typedef methods::Xor RNGMethod;
         typedef PMacc::GridBuffer< RNGState<RNGMethod>, simDim > Buffer;
         typedef typename Buffer::DataBoxType DataBoxType;
 

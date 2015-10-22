@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RNGProvider.hpp"
+#include "random/RNGProvider.hpp"
 #include <mpi/SeedPerRank.hpp>
 #include <dimensions/DataSpaceOperations.hpp>
 #include <memory/boxes/CachedBox.hpp>
@@ -12,7 +12,7 @@ namespace random {
 
     namespace kernel {
 
-        template<class T_RNGBox, class T_Mapper>
+        template<class T_RNGMethod, class T_RNGBox, class T_Mapper>
         __global__ void
         initRNGProvider(T_RNGBox rngBox, uint32_t seed, const T_Mapper mapper)
         {
@@ -26,7 +26,7 @@ namespace random {
             using BlockBoxSize =  PMacc::SuperCellDescription<SuperCellSize>;
             auto cachedRNGBox = PMacc::CachedBox::create<0, typename T_RNGBox::ValueType>(BlockBoxSize());
 
-            curand_init(seed, cellIdx, 0, cachedRNGBox(Space(threadIdx)).getStatePtr());
+            T_RNGMethod().init(cachedRNGBox(Space(threadIdx)).getState(), seed, cellIdx);
             __syncthreads();
             const uint32_t linearThreadIdx = PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(Space(threadIdx));
             PMacc::ThreadCollective<BlockBoxSize> collective(linearThreadIdx);
@@ -68,7 +68,7 @@ namespace random {
         seed = seedPerRank(seed);
 
         Space blockSize = SuperCellSize::toRT();
-        __cudaKernelArea( kernel::initRNGProvider, this->cellDescription, PMacc::CORE + PMacc::BORDER )
+        __cudaKernelArea( kernel::initRNGProvider<RNGMethod>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
         (blockSize)
         ( buffer->getDeviceBuffer().getDataBox(),
           seed

@@ -7,8 +7,7 @@ namespace random {
 
     /**
      * Class representing the state of a random number generator
-     * Requires a policy that provides a state pointer via getStatePtr()
-     * and a typedef for StatePtr
+     * Requires a policy that provides a typedef for StateType
      */
     template<class T_RNGMethod>
     class RNGState
@@ -16,7 +15,6 @@ namespace random {
     public:
         typedef T_RNGMethod RNGMethod;
         typedef typename RNGMethod::StateType StateType;
-        typedef typename RNGMethod::StatePtr StatePtr;
 
         HDINLINE RNGState()
         {}
@@ -24,10 +22,10 @@ namespace random {
         HDINLINE RNGState(const StateType& other): state(other)
         {}
 
-        DINLINE StatePtr
-        getStatePtr()
+        HDINLINE StateType&
+        getState()
         {
-            return &state;
+            return state;
         }
     private:
         StateType state;
