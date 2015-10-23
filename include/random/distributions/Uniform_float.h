@@ -18,8 +18,7 @@ namespace distributions {
         DINLINE float
         operator()(StateType& state)
         {
-            /** Simply divide the 32 bit value by the maximum possible value */
-            return static_cast<float>(RNGMethod().get32Bits(state)) / float(1 << 31);
+            return _curand_uniform(RNGMethod().get32Bits(state));
         }
     };
 
