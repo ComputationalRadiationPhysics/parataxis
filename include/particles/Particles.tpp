@@ -139,12 +139,13 @@ namespace xrt{
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space localOffset = subGrid.getLocalDomain().offset;
         /* Add only to first cells */
-        if(localOffset.x() > 0)
+        if(simDim == 3 && localOffset[laserConfig::DIRECTION] > 0)
             return;
 
         const PMacc::BorderMapping<MappingDesc> mapper(this->cellDescription, laserConfig::EXCHANGE_DIR);
         Space block = MappingDesc::SuperCellSize::toRT();
-        block[laserConfig::DIRECTION] = 1;
+        if(simDim == 3)
+            block[laserConfig::DIRECTION] = 1;
         __cudaKernel(kernel::fillGridWithParticles<Particles>)
             (mapper.getGridDim(), block.toDim3())
             ( initFunctor,

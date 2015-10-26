@@ -252,8 +252,12 @@ add_definitions(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
 set(XRT_VERBOSE "1" CACHE STRING "Set verbosity level for XRT")
 add_definitions(-DXRT_VERBOSE_LVL=${XRT_VERBOSE})
 option(XRT_DEBUG_RNG "Output test of RNG provider" OFF)
+option(XRT_CHECK_PHOTON_CT "Checks if the number of photons generated can fit into the memory" ON)
 if(XRT_DEBUG_RNG)
     add_definitions(-DXRT_DEBUG_RNG)
+endif()
+if(XRT_CHECK_PHOTON_CT)
+    add_definitions(-DXRT_CHECK_PHOTON_CT)
 endif()
 
 ################################################################################

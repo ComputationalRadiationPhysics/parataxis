@@ -28,17 +28,17 @@ namespace kernel{
      * \tparam gId Global start id used for assigning the global IDs to the particles
      * \tparam mapper Mapping used for this kernel
      */
-    template< typename T_Species, typename T_ParticleFillInfo, typename ParBox, class Mapping>
+    template< typename T_Species, typename T_ParticleFillInfo, typename T_ParBox, class T_Mapper>
     __global__ void fillGridWithParticles(T_ParticleFillInfo particleFillInfo,
                                           const Space localOffset,
-                                          ParBox particleBox,
+                                          T_ParBox particleBox,
                                           const uint32_t timeStep,
                                           uint32_t* gId,
-                                          const Mapping mapper)
+                                          const T_Mapper mapper)
     {
-        static_assert(Mapping::AreaType == PMacc::BORDER, "Only borders should be filled");
-        using FrameType = typename ParBox::FrameType;
-        using FramePtr = typename PMacc::traits::GetEmptyDefaultConstructibleType<typename ParBox::FramePtr>::type;
+        static_assert(T_Mapper::AreaType == PMacc::BORDER, "Only borders should be filled");
+        using FrameType = typename T_ParBox::FrameType;
+        using FramePtr = typename PMacc::traits::GetEmptyDefaultConstructibleType<typename T_ParBox::FramePtr>::type;
         constexpr uint32_t frameSize = PMacc::math::CT::volume<SuperCellSize>::type::value;
 
         /* We try to not waste any space by first filling the "low" frame till its full

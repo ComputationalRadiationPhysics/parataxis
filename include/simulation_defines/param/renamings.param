@@ -3,6 +3,7 @@
 #include <traits/Resolve.hpp>
 #include <traits/HasFlag.hpp>
 #include <traits/GetFlagType.hpp>
+#include <algorithms/TypeCast.hpp>
 
 /* Fwd declare namespace */
 namespace PMacc {
@@ -13,6 +14,8 @@ namespace rng {
 }  // namespace PMacc
 
 namespace xrt {
+
+    using PMacc::algorithms::precisionCast::precisionCast;
 
     /* Shortcuts for namespaces
      */

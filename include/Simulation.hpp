@@ -126,7 +126,7 @@ namespace xrt {
             particleStorage->init(densityField.get());
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
-            laserSource.init();
+            laserSource.init(runSteps, this->cellDescription);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
