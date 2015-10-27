@@ -180,7 +180,7 @@ namespace detector {
                     "CellSize: %5%mm - %6%mm\n"
                     "Distance: %7%m - %8%m")
                             % size.x() % size.y()
-                            % minSize % maxSize
+                            % (minSize * 1e6) % (maxSize * 1e6)
                             % minCellSize % maxCellSize
                             % minDistance % maxDistance;
             }
