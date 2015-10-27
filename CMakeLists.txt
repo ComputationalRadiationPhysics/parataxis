@@ -320,7 +320,21 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 
 
+################################################################################
+# Check for XRT_EXTENSION_PATH
+################################################################################
+
+find_path(XRT_EXTENSION_PATH
+    NAMES extension/simulation_defines
+    PATHS "${CMAKE_CURRENT_BINARY_DIR}"
+    DOC "search PATH to extension folder"
+    NO_DEFAULT_PATH
+    NO_CMAKE_ENVIRONMENT_PATH
+    NO_CMAKE_SYSTEM_PATH
+    )
+
 include_directories(include)
+include_directories(BEFORE ${XRT_EXTENSION_PATH}/extension)
 
 ################################################################################
 # Compile & Link
