@@ -2,6 +2,7 @@
 
 #include "xrtTypes.hpp"
 #include "ConditionalShrink.hpp"
+#include "debug/LogLevels.hpp"
 #include "math/Max.hpp"
 #include <nvidia/reduce/Reduce.hpp>
 #include <algorithms/TypeCast.hpp>
