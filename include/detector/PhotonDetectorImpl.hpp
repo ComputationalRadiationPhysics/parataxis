@@ -168,7 +168,7 @@ namespace detector {
 
             const float_64 minSize = detRangeMax * 2;
             const float_64 maxCellSize = detRangeMin / (Config::minNumMaxima * Config::resolutionFactor);
-            const float_64 maxSize = maxCellSize * PMaccMath::max(Config::cellWidth, Config::cellHeight);
+            const float_64 maxSize = maxCellSize * std::max(size.x(), size.y());
             const float_64 minCellSize = minSize / std::min(size.x(), size.y());
             const float_64 maxDistance = std::min(size.x() * Config::cellWidth, size.y() * Config::cellHeight) / 2 / tan(phiMax) - simSizeWidth;
             const float_64 minDistance = PMaccMath::max(Config::cellWidth, Config::cellHeight) * (Config::minNumMaxima * Config::resolutionFactor) / tan(phiMin);
@@ -176,12 +176,12 @@ namespace detector {
             if(doReport)
             {
                 PMacc::log< XRTLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px):\n"
-                    "Size: %3%m - %4%m\n"
-                    "CellSize: %5%mm - %6%mm\n"
-                    "Distance: %7%m - %8%m")
+                    "Size: %3%m - %4%m (%5% - %6% px)\n"
+                    "CellSize: %7%µm - %8%µm\n"
+                    "Distance: %9%m - %10%m")
                             % size.x() % size.y()
-                            % (minSize * 1e6) % (maxSize * 1e6)
-                            % minCellSize % maxCellSize
+                            % minSize % maxSize % PMaccMath::ceil(minSize/PMaccMath::max(Config::cellWidth, Config::cellHeight)) % PMaccMath::ceil(maxSize/PMaccMath::min(Config::cellWidth, Config::cellHeight))
+                            % (minCellSize * 1e6) % (maxCellSize * 1e6)
                             % minDistance % maxDistance;
             }
             std::string strError;
@@ -205,8 +205,8 @@ namespace detector {
                 if(doReport)
                 {
                     PMacc::log< XRTLogLvl::DOMAINS >("[WARNING] Detector resolution might be to low or it is to close.\n"
-                            "Maximum cell size: %1%mm\n"
-                            "Current cell size: %2%mm\n"
+                            "Maximum cell size: %1%µm\n"
+                            "Current cell size: %2%µm\n"
                             "Or minimum distance: %3%m. Current: %4%m")
                         % (maxCellSize * 1e6)
                         % (PMaccMath::max(Config::cellWidth, Config::cellHeight) * 1e6)
