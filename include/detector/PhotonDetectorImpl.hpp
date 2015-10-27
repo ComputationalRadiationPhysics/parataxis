@@ -1,6 +1,8 @@
 #pragma once
 
 #include "xrtTypes.hpp"
+#include "particles/functors/GetWavelength.hpp"
+#include "debug/LogLevels.hpp"
 
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
@@ -145,6 +147,75 @@ namespace detector {
             buffer.reset(new Buffer(size));
             Space simSize = Environment::get().SubGrid().getTotalDomain().size;
             xPosition_ = simSize.x() * CELL_WIDTH + distance;
+
+            // Report only for rank 0
+            const bool doReport = Environment::get().SubGrid().getGlobalDomain().offset == Space::create(0);
+
+            const float_64 wavelength = particles::functors::GetWavelength<Species>()() * UNIT_LENGTH;
+            // Angle for first maxima is given by: wavelength = sin(theta) * structSize ~= theta * structSize (theta << 1)
+            // --> theta = wavelength / structSize
+            const float_64 phiMin = Config::minNumMaxima * wavelength / Config::maxStructureSize;
+            const float_64 phiMax = Config::minNumMaxima * wavelength / Config::minStructureSize;
+            if(phiMin < 0 || phiMin > PI/2 || phiMax < 0 || phiMax > PI/2)
+                throw std::runtime_error("Invalid range for phi. Probably your wavelength or detector constraints config is wrong.");
+            // Calculate required ranges from middle of detector to the top
+            // Note: We stay in SI units (m) here for simplicity
+            const float_64 simSizeWidth = simSize.x() * CELL_WIDTH * UNIT_LENGTH;
+            const float_64 distFromSimStart = Config::distance + simSizeWidth;
+            const float_64 detRangeMin = tan(phiMin) * Config::distance;
+            const float_64 detRangeMax = tan(phiMax) * distFromSimStart;
+            assert(detRangeMin <= detRangeMax);
+
+            const float_64 minSize = detRangeMax * 2;
+            const float_64 maxCellSize = detRangeMin / (Config::minNumMaxima * Config::resolutionFactor);
+            const float_64 maxSize = maxCellSize * PMaccMath::max(Config::cellWidth, Config::cellHeight);
+            const float_64 minCellSize = minSize / std::min(size.x(), size.y());
+            const float_64 maxDistance = std::min(size.x() * Config::cellWidth, size.y() * Config::cellHeight) / 2 / tan(phiMax) - simSizeWidth;
+            const float_64 minDistance = PMaccMath::max(Config::cellWidth, Config::cellHeight) * (Config::minNumMaxima * Config::resolutionFactor) / tan(phiMin);
+
+            if(doReport)
+            {
+                PMacc::log< XRTLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px):\n"
+                    "Size: %3%m - %4%m\n"
+                    "CellSize: %5%mm - %6%mm\n"
+                    "Distance: %7%m - %8%m")
+                            % size.x() % size.y()
+                            % minSize % maxSize
+                            % minCellSize % maxCellSize
+                            % minDistance % maxDistance;
+            }
+            std::string strError;
+            if(minSize > size.x() * Config::cellWidth || minSize > size.y() * Config::cellHeight)
+            {
+                if(doReport)
+                {
+                    PMacc::log< XRTLogLvl::DOMAINS >("[WARNING] Detector is probably to small or to far away.\n"
+                            "Required size: %1%m\n"
+                            "Current size: (%2%m x %3%m)\n"
+                            "Or maximum distance: %4%m. Current: %5%m")
+                        % minSize % (size.x() * Config::cellWidth) % (size.y() * Config::cellHeight)
+                        % maxDistance % Config::distance;
+                }
+                strError += " To small or to far away.";
+            }
+            // Resolution in pixels
+            // PixelSize <= DetectorSize / (ResolutionFactor * minNumMaxima)
+            if(PMaccMath::max(Config::cellWidth, Config::cellHeight) > maxCellSize)
+            {
+                if(doReport)
+                {
+                    PMacc::log< XRTLogLvl::DOMAINS >("[WARNING] Detector resolution might be to low or it is to close.\n"
+                            "Maximum cell size: %1%mm\n"
+                            "Current cell size: %2%mm\n"
+                            "Or minimum distance: %3%m. Current: %4%m")
+                        % (maxCellSize * 1e6)
+                        % (PMaccMath::max(Config::cellWidth, Config::cellHeight) * 1e6)
+                        % minDistance % Config::distance;
+                }
+                strError += " To low resolution or to close.";
+            }
+            if(!strError.empty() && Config::abortOnConstraintError)
+                throw std::runtime_error(std::string("Detector constraints violated:") + strError);
         }
 
         static std::string
