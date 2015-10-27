@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2013-2014 Axel Huebl, Anton Helm, Rene Widera
 #
 # This file is part of PIConGPU.
@@ -20,12 +20,12 @@
 
 
 ## calculation are done by tbg ##
-TBG_queue="k20"
+TBG_queue="k80"
 TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
 TBG_mailSettings=${MY_MAILNOTIFY:-"n"}
 
-# 4 gpus per node if we need more than 4 gpus else same count as TBG_tasks
-TBG_gpusPerNode=`if [ $TBG_tasks -gt 4 ] ; then echo 4; else echo $TBG_tasks; fi`
+# 8 gpus per node if we need more than 8 gpus else same count as TBG_tasks
+TBG_gpusPerNode=`if [ $TBG_tasks -gt 8 ] ; then echo 8; else echo $TBG_tasks; fi`
 
 #number of cores per parallel node / default is 2 cores per gpu on k20 queue
 TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
