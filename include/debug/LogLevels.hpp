@@ -15,12 +15,12 @@ namespace xrt{
         /* define log lvl for later use
          * e.g. log<PMaccLogLvl::NOTHING>("TEXT");*/
         DEFINE_LOGLVL(0, NOTHING);
-        DEFINE_LOGLVL(1 << 1, SIM_STATE);
-        DEFINE_LOGLVL(1 << 2, MEMORY);
-        DEFINE_LOGLVL(1 << 3, DOMAINS);
-        DEFINE_LOGLVL(1 << 4, IN_OUT);
-        DEFINE_LOGLVL(1 << 5, PLUGINS);
-        DEFINE_LOGLVL(1 << 6, TIMING);
+        DEFINE_LOGLVL(1, SIM_STATE);
+        DEFINE_LOGLVL(2, MEMORY);
+        DEFINE_LOGLVL(4, DOMAINS);
+        DEFINE_LOGLVL(8, IN_OUT);
+        DEFINE_LOGLVL(16, PLUGINS);
+        DEFINE_LOGLVL(32, TIMING);
     )
     /*set default verbose lvl (integer number)*/
     (NOTHING::lvl|XRT_VERBOSE_LVL);
