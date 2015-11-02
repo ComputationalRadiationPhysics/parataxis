@@ -26,6 +26,7 @@
 #include <boost/program_options.hpp>
 #include <particles/initPolicies/ConstDistribution.hpp>
 #include <particles/initPolicies/EvenDistPosition.hpp>
+#include <cuda_profiler_api.h>
 #include <memory>
 #include <vector>
 
@@ -149,6 +150,17 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
+#if (XRT_NVPROF_NUM_TS>0)
+            if(currentStep == XRT_NVPROF_START_TS)
+            {
+                CUDA_CHECK(cudaDeviceSynchronize());
+                CUDA_CHECK(cudaProfilerStart());
+            }else if(currentStep == XRT_NVPROF_START_TS + XRT_NVPROF_NUM_TS)
+            {
+                CUDA_CHECK(cudaDeviceSynchronize());
+                CUDA_CHECK(cudaProfilerStop());
+            }
+#endif
             laserSource.processStep(currentStep);
             particleStorage->update(currentStep);
             PMacc::EventTask commEvt = PMacc::communication::asyncCommunication(*particleStorage, __getTransactionEvent());
