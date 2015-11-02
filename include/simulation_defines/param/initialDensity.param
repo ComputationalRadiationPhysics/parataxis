@@ -29,19 +29,19 @@ namespace initialDensity {
         {
             using Offset = PMacc::math::CT::UInt32<
                     /** Offset in cells in x-direction */
-                    40
+                    10
                     /** Offset in cells in y-direction */,
-                    50
+                    0
                     /** Offset in cells in z-direction */,
-                    60
+                    0
                     >;
             using Size = PMacc::math::CT::UInt32<
                     /** Size in cells in x-direction */
-                    30
+                    2048
                     /** Size in cells in y-direction */,
-                    40
+                    2048
                     /** Size in cells in z-direction */,
-                    50
+                    2048
                     >;
             /** Value used */
             static constexpr float_64 value = 1;
@@ -50,11 +50,11 @@ namespace initialDensity {
          *  extending perpendicular to x-axis in 3D */
         struct DoubleSlit{
             /** (3D only) offset in cells into the room (X-direction) */
-            static constexpr uint32_t roomPos = 40;
+            static constexpr uint32_t roomPos = 10;
             /** (3D only) width in cells of the volume containing the slit (size in X) */
             static constexpr uint32_t roomWidth = 1;
             /** Offset in cells of the slits */
-            static constexpr uint32_t offset = (1024 - 112) / 2;
+            static constexpr uint32_t offset = (256 - 112) / 2;
             /** Width in cells of the slits */
             static constexpr uint32_t width = 11;
             /** Spacing in cells between the slits */
