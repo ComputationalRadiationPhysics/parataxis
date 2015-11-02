@@ -40,9 +40,9 @@ namespace scatterer {
             /** Minimum and maximum value for the polar angle (range should be <= PI) */
             static constexpr float_64 minPolar = PI / 4;
             static constexpr float_64 maxPolar = PI * 3./4.;
-            /** Minimum and maximum value for the azimuth angle (range should be <= 2*PI) */
-            static constexpr float_64 minAzimuth = -PI / 4;
-            static constexpr float_64 maxAzimuth =  PI / 4;
+            /** Minimum and maximum value for the azimuth angle (range should always be [0, 2*PI) ) */
+            static constexpr float_64 minAzimuth = 0;
+            static constexpr float_64 maxAzimuth = 2*PI;
         };
 
     }  // namespace direction
