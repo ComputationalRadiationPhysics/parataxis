@@ -14,8 +14,10 @@ namespace pusher {
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
         HDINLINE void operator()(const T_DensityBox&, T_Position& pos, T_Momentum& mom)
         {
-            const float_X momAbs = PMaccMath::abs( mom );
-            const T_Momentum vel  = mom * ( SPEED_OF_LIGHT / momAbs );
+            // This is required due to a bug(?) that you can't pass global constexpr as const& in device code
+            constexpr float_X SPEED = SPEED_OF_LIGHT;
+            // This assumes a unit vector for the momentum
+            const T_Momentum vel  = mom * SPEED;
 
             for(uint32_t d=0; d<simDim; ++d)
             {
@@ -23,7 +25,6 @@ namespace pusher {
             }
         }
     };
-
 
 }  // namespace pusher
 }  // namespace particles

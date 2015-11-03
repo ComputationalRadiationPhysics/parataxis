@@ -26,7 +26,9 @@ namespace initPolicies {
         DINLINE momentum::type
         operator()(uint32_t timeStep)
         {
-            return ToVector<Config, momentum::type::dim>()();
+            const momentum::type mom =  ToVector<Config, momentum::type::dim>()();
+            // We need unit vectors!
+            return mom / PMaccMath::abs(mom);
         }
     };
 
