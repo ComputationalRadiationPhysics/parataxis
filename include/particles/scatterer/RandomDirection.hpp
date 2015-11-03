@@ -34,6 +34,7 @@ namespace scatterer {
              * Note that compared to e.g. wikipedia the z and x axis are swapped as our usual propagation direction is X
              * but it does not influence anything as the axis can be arbitrarily named */
             float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
+            // Here we'd actually need an adjustment so that the coordinates are evenly distributed on a unit sphere but for very small angles this is ok
             float_X polarAngle   = rand() * float_X(Config::maxPolar - Config::minPolar) + float_X(Config::minPolar);
 
             /* Now we have the azimuth and polar angles by which we want to change the current direction. So we need some rotations:
