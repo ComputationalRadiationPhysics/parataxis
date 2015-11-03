@@ -337,7 +337,9 @@ find_path(XRT_EXTENSION_PATH
     )
 
 include_directories(include)
-include_directories(BEFORE ${XRT_EXTENSION_PATH}/extension)
+if(XRT_EXTENSION_PATH)
+    include_directories(BEFORE ${XRT_EXTENSION_PATH}/extension)
+endif()
 
 ################################################################################
 # Compile & Link
