@@ -46,8 +46,8 @@ namespace scatterer {
              * --> B = R_A * R_B'
              * To get R_A we need to find how to rotate e_X to A which means a rotation with cos(a) = A*e_X (dot product) around A x e_X (cross product)
              * Formula for the general case is on wikipedia but can be simplified with cos(a) = A_x, A_y² + A_z² = 1 - A_x² = sin²(a) = (1 + A_x)(1 - A_x)
-             * So finally one gets B = {{x, -y*w,z*w}, {y*w,x+z²/(1+x),y*z/(1+x)},{-z*w,y*z/(1+x),x+y²/(1+x)}}*{cos(t),sin(t)sin(p),sin(t)cos(p)}
-             * With x,y,z=A_x,..., w = sqrt(1-x²), t=polar, p=azimuth. This solved by Wolfram Alpha results in the following formulas
+             * So finally one gets B = {{x,-y,-z}, {y,x+z²/(1+x),-y*z/(1+x)},{+z,-y*z/(1+x),x+y²/(1+x)}}*{cos(t),sin(t)sin(p),sin(t)cos(p)}
+             * With x,y,z=A_x,..., t=polar, p=azimuth. This solved by Wolfram Alpha results in the following formulas
              */
 
             float_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
@@ -56,10 +56,18 @@ namespace scatterer {
             const float_X x = mom.x();
             const float_X y = mom.y();
             const float_X z = mom.z();
-            const float_X w = PMaccMath::sqrt(1 - x*x);
-            mom.x() =      x * cosPolar +      w * z            * cosAzimuth * sinPolar -      w * y            * sinAzimuth * cosPolar;
-            mom.y() =  y * w * cosPolar +      y * z / (1 + x)  * cosAzimuth * sinPolar + (x + z * z / (1 + x)) * sinAzimuth * sinPolar;
-            mom.z() = -z * w * cosPolar + (x + y * y / (1 + x)) * cosAzimuth * sinPolar +      y * z / (1 + x)  * sinAzimuth * sinPolar;
+            if(PMaccMath::abs(1 + x) <= std::numeric_limits<float_X>::min())
+            {
+                // Special case: x=-1 --> y=z=0 (unit vector), so avoid division by zero
+                mom.x() = -cosPolar;
+                mom.y() = -sinAzimuth * sinPolar;
+                mom.z() = -cosAzimuth * sinPolar;
+            }else
+            {
+                mom.x() = x * cosPolar -          z            * cosAzimuth * sinPolar -          y            * sinAzimuth * cosPolar;
+                mom.y() = y * cosPolar -      y * z / (1 + x)  * cosAzimuth * sinPolar + (x + z * z / (1 + x)) * sinAzimuth * sinPolar;
+                mom.z() = z * cosPolar + (x + y * y / (1 + x)) * cosAzimuth * sinPolar -      y * z / (1 + x)  * sinAzimuth * sinPolar;
+            }
         }
 
     private:
