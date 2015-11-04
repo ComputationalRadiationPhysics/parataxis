@@ -68,9 +68,14 @@ namespace random {
         seed = seedPerRank(seed);
 
         Space blockSize = SuperCellSize::toRT();
+#if XRT_USE_MAPPED_RNG_BUFFER
+        auto bufferBox = buffer->getDataBox();
+#else
+        auto bufferBox = buffer->getDeviceBuffer().getDataBox();
+#endif
         __cudaKernelArea( kernel::initRNGProvider<RNGMethod>, this->cellDescription, PMacc::CORE + PMacc::BORDER )
         (blockSize)
-        ( buffer->getDeviceBuffer().getDataBox(),
+        ( bufferBox,
           seed
           );
 
@@ -87,7 +92,11 @@ namespace random {
     RNGProvider::DataBoxType
     RNGProvider::getDeviceDataBox()
     {
+#if XRT_USE_MAPPED_RNG_BUFFER
+        return buffer->getDataBox();
+#else
         return buffer->getDeviceBuffer().getDataBox();
+#endif
     }
 
     std::string
@@ -104,7 +113,11 @@ namespace random {
 
     void RNGProvider::synchronize()
     {
+#if XRT_USE_MAPPED_RNG_BUFFER
+        throw std::runtime_error("Calling synchronize on a mapped buffer is not possible!");
+#else
         buffer->deviceToHost();
+#endif
     }
 
 }  // namespace random

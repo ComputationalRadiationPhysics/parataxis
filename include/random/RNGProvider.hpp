@@ -3,7 +3,11 @@
 #include "xrtTypes.hpp"
 #include "random/RNGState.hpp"
 #include "random/methods/XorMin.hpp"
-#include <memory/buffers/GridBuffer.hpp>
+#if XRT_USE_MAPPED_RNG_BUFFER
+#   include <memory/buffers/MappedBufferIntern.hpp>
+#else
+#   include <memory/buffers/GridBuffer.hpp>
+#endif
 #include <dataManagement/ISimulationData.hpp>
 #include <memory>
 
@@ -17,7 +21,11 @@ namespace random {
     {
     public:
         typedef methods::XorMin RNGMethod;
+#if XRT_USE_MAPPED_RNG_BUFFER
+        typedef PMacc::MappedBufferIntern< RNGState<RNGMethod>, simDim > Buffer;
+#else
         typedef PMacc::GridBuffer< RNGState<RNGMethod>, simDim > Buffer;
+#endif
         typedef typename Buffer::DataBoxType DataBoxType;
 
     private:
