@@ -134,8 +134,6 @@ namespace xrt{
     template<typename T_InitFunctor>
     void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor, uint32_t timeStep)
     {
-        PMacc::log< XRTLogLvl::SIM_STATE >("adding particles for species %1%") % FrameType::getName();
-
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space localOffset = subGrid.getLocalDomain().offset;
         /* Add only to first cells */
