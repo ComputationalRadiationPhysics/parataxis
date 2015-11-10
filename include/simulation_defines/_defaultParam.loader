@@ -9,6 +9,7 @@
 #include "simulation_defines/param/seed.param"
 #include "simulation_defines/param/physicalConstants.param"
 #include "simulation_defines/param/gridConfig.param"
+#include "simulation_defines/param/rngConfig.param"
 #include "simulation_defines/param/plugins.param"
 #include "simulation_defines/param/pusherConfig.param"
 #include "simulation_defines/param/scattererConfig.param"

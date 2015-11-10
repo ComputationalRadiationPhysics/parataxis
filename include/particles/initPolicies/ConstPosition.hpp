@@ -16,7 +16,7 @@ namespace initPolicies {
         using Config = T_Config;
 
         HDINLINE void
-        init(Space2D totalCellIdx)
+        init(Space totalCellIdx)
         {}
 
         HDINLINE void

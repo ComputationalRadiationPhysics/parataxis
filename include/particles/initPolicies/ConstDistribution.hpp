@@ -14,10 +14,10 @@ namespace initPolicies {
     {
         static constexpr int32_t numParts = T_numParts;
 
-        ConstDistribution(Space2D totalSize){}
+        ConstDistribution(Space totalSize){}
 
         DINLINE void
-        init(Space2D totalCellIdx) const
+        init(Space totalCellIdx) const
         {}
 
         DINLINE int32_t

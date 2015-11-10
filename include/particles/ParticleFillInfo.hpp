@@ -49,7 +49,7 @@ namespace particles {
         {}
 
         HDINLINE void
-        init(Space2D totalCellIdx)
+        init(Space totalCellIdx)
         {
             getCount_.init(totalCellIdx);
             getPosition.init(totalCellIdx);

@@ -1,0 +1,9 @@
+#pragma once
+
+#include <random/RNGProvider.hpp>
+
+namespace xrt {
+
+    using RNGProvider = PMacc::random::RNGProvider<simDim>;
+
+}  // namespace xrt

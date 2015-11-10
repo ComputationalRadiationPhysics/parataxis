@@ -43,17 +43,16 @@ namespace kernel {
 
         __shared__ int32_t mustShift;
 
-        if(linearThreadIdx == 0)
-            mustShift = 0;
-
         bool isValid;
         FrameType* frame = &particleBox.getLastFrame(superCellIdx, isValid);
 
         auto cachedDensityField = PMacc::CachedBox::create<0, typename DensityBox::ValueType>(BlockWorkArea());
 
-        __syncthreads();
         if(!isValid)
             return; //end kernel if we have no frames
+
+        if(linearThreadIdx == 0)
+            mustShift = 0;
 
         PMacc::ThreadCollective<BlockWorkArea> collective(linearThreadIdx);
         auto shiftedDensityField = densityField.shift(blockCell);

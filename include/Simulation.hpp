@@ -9,7 +9,6 @@
 
 #include "DensityField.hpp"
 #include "generators.hpp"
-#include "random/RNGProvider.tpp"
 #include "TimerIntervallExt.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -23,9 +22,10 @@
 #include <eventSystem/EventSystem.hpp>
 #include <communication/AsyncCommunication.hpp>
 
-#include <boost/program_options.hpp>
 #include <particles/initPolicies/ConstDistribution.hpp>
 #include <particles/initPolicies/EvenDistPosition.hpp>
+#include <mpi/SeedPerRank.hpp>
+#include <boost/program_options.hpp>
 #include <cuda_profiler_api.h>
 #include <memory>
 #include <vector>
@@ -52,7 +52,7 @@ namespace xrt {
 
         std::unique_ptr<DensityField> densityField;
         std::unique_ptr<Detector> detector_;
-        std::unique_ptr<random::RNGProvider> rngProvider_;
+        std::unique_ptr<RNGProvider> rngProvider_;
 
     public:
 
@@ -92,12 +92,16 @@ namespace xrt {
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating buffers");
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
-            rngProvider_.reset(new random::RNGProvider(cellDescription));
+            rngProvider_.reset(new RNGProvider(Environment::get().SubGrid().getLocalDomain().size));
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             /* Init RNGs before mallocMC as the generation requires some additional memory */
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
-            rngProvider_->init(seeds::xorRNG);
+            PMacc::mpi::SeedPerRank<simDim> seedPerRank;
+            seeds::Global globalSeed;
+            uint32_t seed = seeds::xorRNG ^globalSeed();
+            seed = seedPerRank(seed);
+            rngProvider_->init(seed);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");

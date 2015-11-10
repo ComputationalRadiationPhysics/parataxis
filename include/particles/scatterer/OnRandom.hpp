@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "random/Random.hpp"
+#include <random/distributions/Uniform_float.h>
 
 namespace xrt {
 namespace particles {
@@ -17,15 +17,19 @@ namespace scatterer {
     struct OnRandom
     {
         using Config = T_Config;
+        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using RNGHandle = typename RNGProvider::Handle;
+        using Random = typename RNGHandle::GetRandomType<Distribution>::type;
 
         HINLINE explicit
-        OnRandom(uint32_t currentStep)
+        OnRandom(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), randHandle(RNGProvider::createHandle())
         {}
 
         DINLINE void
-        init(Space totalCellIdx)
+        init(Space globalCellIdx)
         {
-            rand.init(totalCellIdx);
+            randHandle.init(globalCellIdx - offset);
+            rand = randHandle.applyDistribution<Distribution>();
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
@@ -37,7 +41,9 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN8(rand, random::Random<>);
+        PMACC_ALIGN8(offset, const Space);
+        PMACC_ALIGN8(randHandle, RNGHandle);
+        PMACC_ALIGN8(rand, Random);
     };
 
 }  // namespace scatterer

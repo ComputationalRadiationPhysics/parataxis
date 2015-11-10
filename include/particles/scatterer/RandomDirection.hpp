@@ -15,15 +15,17 @@ namespace scatterer {
     struct RandomDirection
     {
         using Config = T_Config;
+        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 
         HINLINE explicit
-        RandomDirection(uint32_t currentStep)
+        RandomDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
         {}
 
         DINLINE void
-        init(Space totalCellIdx)
+        init(Space globalCellIdx)
         {
-            rand.init(totalCellIdx);
+            rand.init(globalCellIdx - offset);
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Momentum>
@@ -71,7 +73,8 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN8(rand, random::Random<>);
+        PMACC_ALIGN8(offset, const Space);
+        PMACC_ALIGN8(rand, Random);
     };
 
 }  // namespace scatterer

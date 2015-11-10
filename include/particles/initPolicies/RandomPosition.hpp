@@ -10,15 +10,16 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
-        using Random = random::Random<simDim == 3 ? laserConfig::DIRECTION : -1>;
+        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 
-        HINLINE RandomPosition(uint32_t currentStep)
+        HINLINE RandomPosition(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
         {}
 
         DINLINE void
-        init(Space2D totalCellIdx)
+        init(Space globalCellIdx)
         {
-            rand.init(totalCellIdx);
+            rand.init(globalCellIdx - offset);
         }
 
         HDINLINE void
@@ -34,7 +35,8 @@ namespace initPolicies {
             return result;
         }
     private:
-        Random rand;
+        PMACC_ALIGN8(offset, const Space);
+        PMACC_ALIGN8(rand, Random);
     };
 
 }  // namespace initPolicies

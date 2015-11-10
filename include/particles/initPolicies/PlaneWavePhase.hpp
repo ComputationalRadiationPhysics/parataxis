@@ -16,7 +16,7 @@ namespace initPolicies {
         using Species = T_Species;
 
         DINLINE void
-        init(Space2D totalCellIdx) const
+        init(Space totalCellIdx) const
         {}
 
         DINLINE float_X

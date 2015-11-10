@@ -1,7 +1,6 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "ConditionalShrink.hpp"
 #include "debug/LogLevels.hpp"
 #include "math/Max.hpp"
 #include <nvidia/reduce/Reduce.hpp>
@@ -24,8 +23,7 @@ namespace xrt {
             const Space totalCellIdx = localOffset + localCellIndex;
             if(simDim == 3 && totalCellIdx[laserConfig::DIRECTION] != 0)
                 return;
-            const Space2D totalCellIdx2D = ConditionalShrink<simDim == 2 ? -1 : laserConfig::DIRECTION + 1>()(totalCellIdx);
-            particleFillInfo.init(totalCellIdx2D);
+            particleFillInfo.init(totalCellIdx);
             for(uint32_t timeStep = 0; timeStep < numTimesteps; timeStep++)
             {
                 const uint32_t numParts = particleFillInfo.getCount(timeStep);
@@ -80,7 +78,7 @@ namespace xrt {
         {
            const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
            return particles::getParticleFillInfo(
-                    Distribution(ConditionalShrink<simDim == 2 ? -1 : laserConfig::DIRECTION + 1>()(totalSize)),
+                    Distribution(totalSize),
                     Position(),
                     Phase(),
                     Momentum()
