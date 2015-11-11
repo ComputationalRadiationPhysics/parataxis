@@ -62,8 +62,8 @@ namespace detector {
                 /* We place so that the simulation volume is in the middle -->
                  * Offset = (DetectorSize - SimSize) / 2
                  */
-                float_X xPos = pos.shrink<2>(1).x() + (cellWidth  * size_.x() + cellSize[simDim - 2] * simSize_.x()) / 2.f;
-                float_X yPos = pos.shrink<2>(1).y() + (cellHeight * size_.y() + cellSize[simDim - 1] * simSize_.y()) / 2.f;
+                float_X xPos = pos.shrink<2>(1).x() + (cellWidth  * size_.x() - cellSize[simDim - 2] * simSize_.x()) / float_X(2.);
+                float_X yPos = pos.shrink<2>(1).y() + (cellHeight * size_.y() - cellSize[simDim - 1] * simSize_.y()) / float_X(2.);
                 targetIdx.x() = float2int_rn(xPos / cellWidth);
                 targetIdx.y() = float2int_rn(yPos / cellHeight);
                 /* Check bounds */
