@@ -88,7 +88,7 @@ namespace plugins {
                     for(int x = 0; x < size.x(); ++x)
                     {
                         /* Top left corner is 0,0*/
-                        img(x, y) = PMaccMath::abs(masterBuffer_->getDataBox()(Space2D(x, y)));
+                        img(x, y) = PMaccMath::abs2(masterBuffer_->getDataBox()(Space2D(x, y)));
                     }
                 }
                 img.save();
