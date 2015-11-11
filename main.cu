@@ -1,7 +1,5 @@
-#define BOOST_NO_SFINAE_EXPR
-#include <boost/utility/result_of.hpp>
 #include "mallocMCConfig.hpp"
-#include "include/xrtTypes.hpp"
+#include "xrtTypes.hpp"
 #include "simulationControl/SimulationStarter.hpp"
 #include <mpi.h>
 
