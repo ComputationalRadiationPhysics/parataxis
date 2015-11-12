@@ -4,6 +4,7 @@
 namespace xrt
 {
     namespace precision32Bit{}
+    namespace precision64Bit{}
 
     /*! Select a precision for the simulation data
      *  - precision32Bit : use 32Bit floating point numbers
