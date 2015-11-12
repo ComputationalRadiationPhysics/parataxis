@@ -30,7 +30,7 @@ namespace generators {
         /** Dimension which the line/plan cuts */
         static constexpr uint32_t nDim  = Config::nDim;
         /** Offset where the line/plane is drawn */
-        static constexpr size_t offset  = Config::offset;
+        static constexpr uint32_t offset  = Config::offset;
         /** Value used */
         static constexpr float_64 value = Config::value;
 
@@ -63,6 +63,35 @@ namespace generators {
                 if(idx[i] < Offset::toRT()[i] || idx[i] >= End::toRT()[i])
                     return 0;
             return value;
+        }
+    };
+
+    /**
+     * Generates a Cylinder (in 3D, circle for 2D)
+     * Returns value if the current index is in the cylinder specified by radius and height
+     * Center of first side is given by position
+     */
+    template<typename T, class T_Config>
+    struct Cylinder
+    {
+        using Config = T_Config;
+        using Position = typename Config::Position;
+        static constexpr uint32_t height = Config::height;
+        static constexpr uint32_t radius = Config::radius;
+        /** Value used */
+        static constexpr float_64 value = Config::value;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            if(simDim == 3 && (idx.x() < Position::x::value || idx.x() >= Position::x::value + height))
+                return 0;
+            using PMaccMath::abs2;
+            uint32_t r2 = abs2(idx[simDim - 2] - Position::toRT()[simDim - 2]) + abs2(idx[simDim - 1] - Position::toRT()[simDim - 1]);
+            if(r2 < radius*radius)
+                return value;
+            else
+                return 0;
         }
     };
 

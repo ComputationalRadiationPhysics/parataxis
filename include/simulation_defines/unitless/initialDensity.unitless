@@ -23,6 +23,12 @@ namespace PMacc { namespace traits {
     };
 
     template<>
+    struct Resolve<xrt::initialDensity::AvailableGenerators::Cylinder>
+    {
+        using type  = xrt::generators::Cylinder<xrt::float_X, xrt::initialDensity::AvailableGenerators::Cylinder>;
+    };
+
+    template<>
     struct Resolve<xrt::initialDensity::AvailableGenerators::DoubleSlit>
     {
         using type  = xrt::generators::DoubleSlit<xrt::float_X, xrt::initialDensity::AvailableGenerators::DoubleSlit>;

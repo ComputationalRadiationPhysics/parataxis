@@ -24,6 +24,7 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = 1;
         };
+
         /** Cuboid in 3D or rectangle in 2D */
         struct Cuboid
         {
@@ -46,6 +47,27 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = 1;
         };
+
+        /** Cylinder in 3D or Circle in 2D */
+        struct Cylinder
+        {
+            /** Height in cells */
+            static constexpr uint32_t height = 1;
+            /** Radius in cells */
+            static constexpr uint32_t radius = 56;
+            /** Position of the center point of one side / Middle of circle */
+            using Position = PMacc::math::CT::UInt32<
+                    /** cells in x-direction */
+                    10
+                    /** cells in y-direction */,
+                    256 / 2
+                    /** cells in z-direction */,
+                    256 / 2
+                    >;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+
         /** 2 slits of the same width and infinite height,
          *  extending perpendicular to x-axis in 3D */
         struct DoubleSlit{
@@ -66,7 +88,7 @@ namespace initialDensity {
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::DoubleSlit;
+            AvailableGenerators::Cylinder;
 
 }  // namespace initialDensity
 }  // namespace xrt
