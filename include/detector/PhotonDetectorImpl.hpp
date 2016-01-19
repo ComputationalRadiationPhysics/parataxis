@@ -149,7 +149,7 @@ namespace detector {
             xPosition_ = simSize.x() * CELL_WIDTH + distance;
 
             // Report only for rank 0
-            const bool doReport = Environment::get().SubGrid().getGlobalDomain().offset == Space::create(0);
+            const bool doReport = Environment::get().GridController().getGlobalRank() == 0;
 
             const float_64 wavelength = particles::functors::GetWavelength<Species>()() * UNIT_LENGTH;
             // Angle for first maxima is given by: wavelength = sin(theta) * structSize ~= theta * structSize (theta << 1)
@@ -175,11 +175,11 @@ namespace detector {
 
             if(doReport)
             {
-                PMacc::log< XRTLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px):\n"
-                    "Size: %3%m - %4%m (%5% - %6% px)\n"
-                    "CellSize: %7%µm - %8%µm\n"
-                    "Distance: %9%m - %10%m")
-                            % size.x() % size.y()
+                PMacc::log< XRTLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px) and light of wavelength %3%nm:\n"
+                    "Size: %4%m - %5%m (%6% - %7% px)\n"
+                    "CellSize: %8%µm - %9%µm\n"
+                    "Distance: %10%m - %11%m")
+                            % size.x() % size.y() % (wavelength * 1e9)
                             % minSize % maxSize % PMaccMath::ceil(minSize/PMaccMath::max(Config::cellWidth, Config::cellHeight)) % PMaccMath::ceil(maxSize/PMaccMath::min(Config::cellWidth, Config::cellHeight))
                             % (minCellSize * 1e6) % (maxCellSize * 1e6)
                             % minDistance % maxDistance;
