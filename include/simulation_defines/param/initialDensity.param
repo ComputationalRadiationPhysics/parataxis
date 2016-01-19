@@ -54,15 +54,15 @@ namespace initialDensity {
             /** Height in cells */
             static constexpr uint32_t height = 1;
             /** Radius in cells */
-            static constexpr uint32_t radius = 56;
+            static constexpr uint32_t radius = 1;
             /** Position of the center point of one side / Middle of circle */
             using Position = PMacc::math::CT::UInt32<
                     /** cells in x-direction */
                     10
                     /** cells in y-direction */,
-                    256 / 2
+                    128 / 2
                     /** cells in z-direction */,
-                    256 / 2
+                    128 / 2
                     >;
             /** Value used */
             static constexpr float_64 value = 1;
