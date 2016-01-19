@@ -169,9 +169,9 @@ namespace kernel{
 
                     /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                     {
-                        typedef typename FrameType::ValueTypeSeq ParticleAttrList;
-                        typedef bmpl::vector5<PMacc::multiMask, PMacc::localCellIdx, position<>, momentum, globalId> AttrToIgnore;
-                        typedef typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type ParticleCleanedAttrList;
+                        using ParticleAttrList = typename FrameType::ValueTypeSeq;
+                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, momentum, creationTime, globalId>;
+                        using ParticleCleanedAttrList = typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type;
 
                         PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
                         setToDefault(PMacc::forward(particle));
