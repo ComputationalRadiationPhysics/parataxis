@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "random/Random.hpp"
+#include <random/distributions/Uniform.hpp>
 
 namespace xrt {
 namespace particles {
@@ -10,7 +10,7 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
-        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using Distribution = PMacc::random::distributions::Uniform<float>;
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 
         HINLINE RandomPosition(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())

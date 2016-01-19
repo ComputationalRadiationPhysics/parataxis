@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "random/Random.hpp"
+#include <random/distributions/Uniform.hpp>
 #include <algorithms/math.hpp>
 
 namespace xrt {
@@ -15,7 +15,7 @@ namespace scatterer {
     struct RandomDirection
     {
         using Config = T_Config;
-        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using Distribution = PMacc::random::distributions::Uniform<float>;
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 
         HINLINE explicit
@@ -36,6 +36,7 @@ namespace scatterer {
              * Note that compared to e.g. wikipedia the z and x axis are swapped as our usual propagation direction is X
              * but it does not influence anything as the axis can be arbitrarily named */
             float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
+            azimuthAngle = -PI / 2;
             // Here we'd actually need an adjustment so that the coordinates are evenly distributed on a unit sphere but for very small angles this is ok
             float_X polarAngle   = rand() * float_X(Config::maxPolar - Config::minPolar) + float_X(Config::minPolar);
 

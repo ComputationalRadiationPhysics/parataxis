@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include <random/distributions/Uniform_float.h>
+#include <random/distributions/Uniform.hpp>
 
 namespace xrt {
 namespace particles {
@@ -17,7 +17,7 @@ namespace scatterer {
     struct OnRandom
     {
         using Config = T_Config;
-        using Distribution = PMacc::random::distributions::Uniform_float<>;
+        using Distribution = PMacc::random::distributions::Uniform<float>;
         using RNGHandle = typename RNGProvider::Handle;
         using Random = typename RNGHandle::GetRandomType<Distribution>::type;
 
