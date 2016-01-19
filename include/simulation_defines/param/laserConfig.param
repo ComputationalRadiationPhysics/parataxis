@@ -53,21 +53,21 @@ namespace laserConfig {
         using UsedValue = PlaneWave;
     }  // namespace phase
 
-    namespace momentum {
+    namespace direction {
         /* Possible values: */
-        /** Same momentum at all points */
+        /** Same direction at all points */
         struct Const{
-            /** Momentum in x-direction */
+            /** direction in x-direction */
             static constexpr float_X X = 1;
-            /** Momentum in y-direction */
+            /** direction in y-direction */
             static constexpr float_X Y = 0;
-            /** Momentum in z-direction */
+            /** direction in z-direction */
             static constexpr float_X Z = 0;
         };
 
         /** Value used in the simulation */
         using UsedValue = Const;
-    }  // namespace momentum
+    }  // namespace direction
 
 
     /** Laser pulse length in s */

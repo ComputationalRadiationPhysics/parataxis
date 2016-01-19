@@ -37,27 +37,26 @@ namespace functors{
             {
                 Space blockIdx(PMacc::DataSpaceOperations<simDim>::map(gridDim, linearBlockIdx));
 
-                typedef typename T_PartBox::FrameType FrameType;
+                typedef typename T_PartBox::FramePtr FramePtr;
 
                 const Space superCellIdx = mapper.getSuperCellIndex(blockIdx);
                 const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
                                                 localOffset;
 
-                bool isValid;
-                FrameType* framePtr = &(partBox.getFirstFrame(superCellIdx, isValid));
+                FramePtr framePtr = partBox.getFirstFrame(superCellIdx);
 
-                while (isValid) //move over all Frames
+                while (framePtr.isValid()) //move over all Frames
                 {
                     constexpr int32_t particlePerFrame = PMacc::math::CT::volume<SuperCellSize>::type::value;
                     for (int32_t threadIdx = 0; threadIdx < particlePerFrame; ++threadIdx)
                     {
-                        auto particle = (*framePtr)[threadIdx];
+                        auto particle = framePtr[threadIdx];
                         if (particle[PMacc::multiMask_] == 1)
                         {
                             /*calculate global cell index*/
                             Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particle[PMacc::localCellIdx_]));
                             Space globalCellIdx = superCellPosition + localCell;
-                            if(filter(globalCellIdx, *framePtr, threadIdx))
+                            if(filter(globalCellIdx, framePtr, threadIdx))
                             {
                                 handleParticle(globalCellIdx, particle);
                                 ++counter;
@@ -65,7 +64,7 @@ namespace functors{
                         }
                     }
                     /*get next frame in supercell*/
-                    framePtr = &(partBox.getNextFrame(*framePtr, isValid));
+                    framePtr = partBox.getNextFrame(framePtr);
                 }
             }
         }

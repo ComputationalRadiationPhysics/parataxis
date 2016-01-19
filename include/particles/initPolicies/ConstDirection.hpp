@@ -11,7 +11,7 @@ namespace initPolicies {
      * Same momentum for all particles
      */
     template<class T_Config>
-    struct ConstMomentum
+    struct ConstDirection
     {
         using Config = T_Config;
 
@@ -23,12 +23,12 @@ namespace initPolicies {
         setCount(int32_t particleCount)
         {}
 
-        DINLINE momentum::type
+        DINLINE direction::type
         operator()(uint32_t timeStep)
         {
-            const momentum::type mom =  ToVector<Config, momentum::type::dim>()();
+            const direction::type dir =  ToVector<Config, direction::type::dim>()();
             // We need unit vectors!
-            return mom / PMaccMath::abs(mom);
+            return dir / PMaccMath::abs(dir);
         }
     };
 

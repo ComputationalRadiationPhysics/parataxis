@@ -43,12 +43,11 @@ namespace kernel {
 
         __shared__ int32_t mustShift;
 
-        bool isValid;
-        FrameType* frame = &particleBox.getLastFrame(superCellIdx, isValid);
+        auto frame = particleBox.getLastFrame(superCellIdx);
 
         auto cachedDensityField = PMacc::CachedBox::create<0, typename DensityBox::ValueType>(BlockWorkArea());
 
-        if(!isValid)
+        if(!frame.isValid())
             return; //end kernel if we have no frames
 
         if(linearThreadIdx == 0)
@@ -70,15 +69,15 @@ namespace kernel {
 
         /*move over frames and call frame solver*/
         PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
-        while(isValid)
+        do
         {
             if(linearThreadIdx < particlesInSuperCell)
             {
                 frameSolver(*frame, linearThreadIdx, cachedDensityField, mustShift);
             }
-            frame = &particleBox.getPreviousFrame(*frame, isValid);
+            frame = particleBox.getPreviousFrame(frame);
             particlesInSuperCell = PMacc::math::CT::volume<SuperCellSize>::type::value;
-        }
+        }while(frame.isValid());
         __syncthreads();
 
         /*set in SuperCell the mustShift flag which is a optimization for shift particles and fillGaps*/
@@ -118,16 +117,16 @@ namespace kernel {
         {
             auto particle = frame[particleIdx];
 
-            floatD_X pos = particle[position_];
-            float3_X mom = particle[momentum_];
+            auto pos = particle[position_];
+            float3_X particleMoveDir = particle[direction_];
             const uint32_t particleCellIdx = particle[PMacc::localCellIdx_];
             Space localCell(PMacc::DataSpaceOperations<simDim>::map<SuperCellSize>(particleCellIdx));
 
             auto curDensityBox = densityBox.shift(localCell);
 
-            scatter_(curDensityBox, pos, mom);
-            push_(curDensityBox, pos, mom);
-            particle[momentum_] = mom;
+            scatter_(curDensityBox, pos, particleMoveDir);
+            push_(curDensityBox, pos, particleMoveDir);
+            particle[direction_] = particleMoveDir;
 
             Space dir;
             for(uint32_t i = 0; i < simDim; ++i)
@@ -144,13 +143,13 @@ namespace kernel {
                  * if pos positive and >1 moveDir is set to +1
                  * 0(zero) if particle stays in cell
                  */
-                float_X moveDir = PMaccMath::floor(pos[i]);
+                auto moveDir = PMaccMath::floor(pos[i]);
                 /* shift pos back to cell range [0;1)*/
                 pos[i] -= moveDir;
                 /* check for rounding errors and correct them
                  * if position now is 1 we have a rounding error
                  */
-                const float_X valueCorrector = PMaccMath::floor(pos[i]);
+                const auto valueCorrector = PMaccMath::floor(pos[i]);
                 /* One has also to correct moveDir for the following reason:
                  * Imagine a new particle moves to -1e-20, leaving the cell to the left,
                  * setting moveDir to -1.
@@ -241,24 +240,23 @@ namespace kernel {
                                   T_Mapping mapper)
     {
         typedef T_ParticleBox ParticleBox;
-        typedef typename ParticleBox::FrameType FrameType;
+        using FramePtr = typename PMacc::traits::GetEmptyDefaultConstructibleType<typename T_ParticleBox::FramePtr>::type;
 
         Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
         const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
                                          localOffset;
         const int linearThreadIdx = threadIdx.x;
 
-        __shared__ FrameType *frame;
-        __shared__ bool isValid;
+        __shared__ FramePtr frame;
 
         if (linearThreadIdx == 0)
         {
-            frame = &(particleBox.getLastFrame(superCellIdx, isValid));
+            frame = particleBox.getLastFrame(superCellIdx);
         }
 
         __syncthreads();
 
-        while (isValid)
+        while (frame.isValid())
         {
 
             PMACC_AUTO(particle, ((*frame)[linearThreadIdx]));
@@ -273,7 +271,7 @@ namespace kernel {
             if (linearThreadIdx == 0)
             {
                 //always remove the last frame
-                isValid = getPreviousFrameAndRemoveLastFrame(frame, particleBox, superCellIdx);
+                frame = getPreviousFrameAndRemoveLastFrame(frame, particleBox, superCellIdx);
             }
             __syncthreads();
         }

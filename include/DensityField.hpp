@@ -74,6 +74,11 @@ namespace xrt {
             Environment::get().DataConnector().registerData(*this);
         }
 
+        void reset()
+        {
+            buffer->reset(false);
+        }
+
         template<class T_Generator>
         void createDensityDistribution(T_Generator&& generator)
         {

@@ -5,6 +5,8 @@
 #include "convertToSpace.hpp"
 #include "particles/Particles.tpp"
 #include "particles/ParticleFillInfo.hpp"
+#include "particles/initPolicies/ConstDistribution.hpp"
+#include "particles/initPolicies/EvenDistPosition.hpp"
 #include "LaserSource.hpp"
 
 #include "DensityField.hpp"
@@ -22,8 +24,6 @@
 #include <eventSystem/EventSystem.hpp>
 #include <communication/AsyncCommunication.hpp>
 
-#include <particles/initPolicies/ConstDistribution.hpp>
-#include <particles/initPolicies/EvenDistPosition.hpp>
 #include <mpi/SeedPerRank.hpp>
 #include <boost/program_options.hpp>
 #include <cuda_profiler_api.h>
@@ -83,7 +83,7 @@ namespace xrt {
             return "X-Ray Tracing";
         }
 
-        uint32_t init() override
+        void init() override
         {
 #ifndef NDEBUG
             CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 3 * MiB));
@@ -93,15 +93,6 @@ namespace xrt {
             densityField.reset(new DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
             rngProvider_.reset(new RNGProvider(Environment::get().SubGrid().getLocalDomain().size));
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
-
-            /* Init RNGs before mallocMC as the generation requires some additional memory */
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
-            PMacc::mpi::SeedPerRank<simDim> seedPerRank;
-            seeds::Global globalSeed;
-            uint32_t seed = seeds::xorRNG ^globalSeed();
-            seed = seedPerRank(seed);
-            rngProvider_->init(seed);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
@@ -115,11 +106,8 @@ namespace xrt {
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             size_t freeGpuMem(0);
-            Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
+            Environment::get().MemoryInfo().getMemoryInfo(&freeGpuMem);
             PMacc::log< XRTLogLvl::MEMORY > ("free mem after all mem is allocated %1% MiB") % (freeGpuMem / MiB);
-
-            if (this->restartRequested)
-                std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing density field");
             densityField->init();
@@ -134,14 +122,41 @@ namespace xrt {
             laserSource.init(runSteps, this->cellDescription);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
+            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
+        }
+
+        uint32_t fillSimulation() override
+        {
+            if (this->restartRequested)
+                std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
+
+            TimeIntervallExt timer;
+
+            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
+            PMacc::mpi::SeedPerRank<simDim> seedPerRank;
+            seeds::Global globalSeed;
+            uint32_t seed = seeds::xorRNG ^globalSeed();
+            seed = seedPerRank(seed);
+            rngProvider_->init(seed);
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
             Resolve_t<initialDensity::Generator> generator;
             densityField->createDensityDistribution(generator);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
-            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
-
+            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation filled.");
             return 0;
+        }
+
+        void resetAll(uint32_t currentStep)
+        {
+            if(currentStep > 0)
+                std::cerr << "Cannot reset to a timestep. Resetting to zero" << std::endl;
+            particleStorage->reset(currentStep);
+            laserSource.reset();
+            densityField->reset();
+            detector_->reset();
         }
 
         void movingWindowCheck(uint32_t currentStep) override
@@ -218,7 +233,7 @@ namespace xrt {
         void initMallocMC()
         {
             size_t freeGpuMem(0);
-            Environment::get().EnvMemoryInfo().getMemoryInfo(&freeGpuMem);
+            Environment::get().MemoryInfo().getMemoryInfo(&freeGpuMem);
             if(freeGpuMem < reservedGPUMemorySize)
             {
                 PMacc::log< XRTLogLvl::MEMORY > ("%1% MiB free memory < %2% MiB required reserved memory")
@@ -228,7 +243,7 @@ namespace xrt {
 
             size_t heapSize = freeGpuMem - reservedGPUMemorySize;
 
-            if( Environment::get().EnvMemoryInfo().isSharedMemoryPool() )
+            if( Environment::get().MemoryInfo().isSharedMemoryPool() )
             {
                 heapSize /= 2;
                 PMacc::log< XRTLogLvl::MEMORY > ("Shared RAM between GPU and host detected - using only half of the 'device' memory.");

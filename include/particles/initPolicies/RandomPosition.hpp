@@ -26,10 +26,10 @@ namespace initPolicies {
         setCount(int32_t particleCount)
         {}
 
-        DINLINE floatD_X
+        DINLINE position_pic::type
         operator()(uint32_t numPart)
         {
-            floatD_X result;
+            position_pic::type result;
             for(uint32_t i = 0; i < simDim; ++i)
                 result[i] = rand() * laserConfig::distSize[i] / cellSize[i];
             return result;

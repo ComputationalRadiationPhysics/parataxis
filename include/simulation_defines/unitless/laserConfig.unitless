@@ -27,7 +27,7 @@ namespace laserConfig {
 
 #include "particles/initPolicies/PlaneWavePhase.hpp"
 
-#include "particles/initPolicies/ConstMomentum.hpp"
+#include "particles/initPolicies/ConstDirection.hpp"
 
 #include <traits/Resolve.hpp>
 #include <math/ConstVector.hpp>
@@ -71,12 +71,12 @@ namespace traits {
         using type  = xrt::particles::initPolicies::PlaneWavePhase<xrt::PIC_Photons>;
     };
 
-    /* Momentum */
+    /* Direction */
     template<>
-    struct Resolve<xrt::laserConfig::momentum::Const>
+    struct Resolve<xrt::laserConfig::direction::Const>
     {
-        using Value = xrt::laserConfig::momentum::Const;
-        using type  = xrt::particles::initPolicies::ConstMomentum<Value>;
+        using Value = xrt::laserConfig::direction::Const;
+        using type  = xrt::particles::initPolicies::ConstDirection<Value>;
     };
 
 }  // namespace traits

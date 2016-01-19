@@ -83,10 +83,10 @@ namespace initPolicies {
             partsPerDim = detail::CalcPartsPerDim<simDim>()(particleCount, laserConfig::distSize);
         }
 
-        DINLINE floatD_X
+        DINLINE position_pic::type
         operator()(int32_t numPart)
         {
-            floatD_X result;
+            position_pic::type result;
             for(int32_t i = 0; i < simDim; ++i){
                 int32_t remaining = numPart / partsPerDim[i];
                 int32_t curDimIdx  = numPart - remaining;

@@ -58,7 +58,7 @@ namespace xrt {
     /**
      * Converts a struct with members X, Y, Z to a vector
      */
-    template<class T_Src, int32_t T_dim >
-    using ToVector = detail::ToVector<T_Src, T_dim>;
+    template<class T_Src, int32_t T_dim, typename T_Type = typename std::remove_cv<decltype(T_Src::X)>::type>
+    using ToVector = detail::ToVector<T_Src, T_dim, T_Type>;
 
 }  // namespace xrt

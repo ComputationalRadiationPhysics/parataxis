@@ -44,7 +44,7 @@ namespace xrt {
         using Distribution = Resolve_t<laserConfig::distribution::UsedValue>;
         using Position     = Resolve_t<laserConfig::position::UsedValue>;
         using Phase        = Resolve_t<laserConfig::phase::UsedValue>;
-        using Momentum     = Resolve_t<laserConfig::momentum::UsedValue>;
+        using Direction     = Resolve_t<laserConfig::direction::UsedValue>;
 
         static constexpr uint32_t numTimeStepsLaserPulse = laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T;
         uint32_t timeStepsProcessed = 0;
@@ -72,8 +72,13 @@ namespace xrt {
             }
         }
 
+        void reset()
+        {
+            timeStepsProcessed = 0;
+        }
+
     private:
-        particles::ParticleFillInfo<Distribution, Position, Phase, Momentum>
+        particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
         getInitFunctor() const
         {
            const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
@@ -81,7 +86,7 @@ namespace xrt {
                     Distribution(totalSize),
                     Position(),
                     Phase(),
-                    Momentum()
+                    Direction()
                     );
         }
 

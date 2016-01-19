@@ -42,13 +42,13 @@ namespace detector {
             HDINLINE bool
             operator()(const T_Particle& particle, Space globalIdx, Space2D& targetIdx, float_64& dt) const
             {
-                auto mom = particle[momentum_];
+                auto dir = particle[direction_];
                 /* Not flying towards detector? -> exit */
-                if(mom.x() <= 0)
+                if(dir.x() <= 0)
                     return false;
                 /* Calculate global position */
-                const float_X momAbs = PMaccMath::abs(mom);
-                const auto vel = mom * ( SPEED_OF_LIGHT / momAbs );
+                const float_X dirAbs = PMaccMath::abs(dir);
+                const auto vel = dir * ( SPEED_OF_LIGHT / dirAbs );
                 float3_X pos;
                 // This loop sets x,y,z for 3D and y,z for 2D
                 for(uint32_t i=0; i<simDim; ++i)
@@ -237,6 +237,11 @@ namespace detector {
         void init()
         {
             Environment::get().DataConnector().registerData(*this);
+        }
+
+        void reset()
+        {
+            buffer->reset(false);
         }
 
         typename Buffer::DataBoxType

@@ -23,10 +23,10 @@ namespace initPolicies {
         setCount(int32_t particleCount)
         {}
 
-        DINLINE floatD_X
+        DINLINE position_pic::type
         operator()(uint32_t numPart)
         {
-            return ToVector<Config, simDim>()();
+            return ToVector<Config, simDim, position_pic::type::type>()();
         }
     };
 

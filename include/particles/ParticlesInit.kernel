@@ -37,7 +37,6 @@ namespace kernel{
                                           const T_Mapper mapper)
     {
         static_assert(T_Mapper::AreaType == PMacc::BORDER, "Only borders should be filled");
-        using FrameType = typename T_ParBox::FrameType;
         using FramePtr = typename PMacc::traits::GetEmptyDefaultConstructibleType<typename T_ParBox::FramePtr>::type;
         constexpr uint32_t frameSize = PMacc::math::CT::volume<SuperCellSize>::type::value;
 
@@ -69,14 +68,13 @@ namespace kernel{
             frameHigh = nullptr;
             frameCounter = 0;
             /* Init frameLow if any and not full*/
-            bool hasLastFrame;
-            FrameType& tmpFrame = particleBox.getLastFrame(superCellIdx, hasLastFrame);
-            if(hasLastFrame)
+            auto lastFrame = particleBox.getLastFrame(superCellIdx);
+            if(lastFrame.isValid())
             {
                 lastFrameSize = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
                 if(lastFrameSize < frameSize)
                 {
-                    frameLow = &tmpFrame;
+                    frameLow = lastFrame;
                     frameCounter = lastFrameSize;
                 }
             }else
@@ -124,9 +122,9 @@ namespace kernel{
                     if(!frameLow.isValid())
                     {
                         /* No low frame, this can only happen when we have no or a full last frame */
-                        frameLow = &particleBox.getEmptyFrame();
+                        frameLow = particleBox.getEmptyFrame();
                         if(frameLow.isValid())
-                            particleBox.setAsLastFrame(*frameLow, superCellIdx);
+                            particleBox.setAsLastFrame(frameLow, superCellIdx);
                     }
                     // Check for OOM
                     if(frameLow.isValid())
@@ -134,10 +132,10 @@ namespace kernel{
                         if(frameCounter > frameSize)
                         {
                             /* Not all particles fit into last frame -> Create another one */
-                            frameHigh = &particleBox.getEmptyFrame();
+                            frameHigh = particleBox.getEmptyFrame();
                             if(frameHigh.isValid())
                             {
-                                particleBox.setAsLastFrame(*frameHigh, superCellIdx);
+                                particleBox.setAsLastFrame(frameHigh, superCellIdx);
                                 lastFrameSize = frameCounter - frameSize;
                             }else
                                 lastFrameSize = frameSize; //OOM but we can still fill the current last frame
@@ -165,12 +163,12 @@ namespace kernel{
                 assert(destParticleIdx < frameSize);
                 if(myFrame.isValid())
                 {
-                    auto particle = (*myFrame)[destParticleIdx];
+                    auto particle = myFrame[destParticleIdx];
 
                     /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                     {
-                        using ParticleAttrList = typename FrameType::ValueTypeSeq;
-                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, momentum, creationTime, globalId>;
+                        using ParticleAttrList = typename T_ParBox::FrameType::ValueTypeSeq;
+                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, direction, creationTime, globalId>;
                         using ParticleCleanedAttrList = typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type;
 
                         PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
@@ -178,9 +176,9 @@ namespace kernel{
                     }
                     particle[PMacc::multiMask_] = 1;
                     particle[PMacc::localCellIdx_] = linearThreadIdx;
-                    particle[position_]   = particleFillInfo.getPosition(numParsToCreate);
-                    particle[startPhase_] = particleFillInfo.getPhase(timeStep);
-                    particle[momentum_]   = particleFillInfo.getMomentum(timeStep);
+                    particle[position_]     = particleFillInfo.getPosition(numParsToCreate);
+                    particle[startPhase_]   = particleFillInfo.getPhase(timeStep);
+                    particle[direction_]    = particleFillInfo.getDirection(timeStep);
                     particle[creationTime_] = timeStep;
                     /* Add a global Id for debugging purposes */
                     particle[globalId_] = PMacc::nvidia::atomicAllInc(gId);
