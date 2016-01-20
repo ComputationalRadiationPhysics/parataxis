@@ -44,9 +44,10 @@ namespace xrt {
         using Distribution = Resolve_t<laserConfig::distribution::UsedValue>;
         using Position     = Resolve_t<laserConfig::position::UsedValue>;
         using Phase        = Resolve_t<laserConfig::phase::UsedValue>;
-        using Direction     = Resolve_t<laserConfig::direction::UsedValue>;
+        using Direction    = Resolve_t<laserConfig::direction::UsedValue>;
 
         static constexpr uint32_t numTimeStepsLaserPulse = laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T;
+        static constexpr float_64 phi_0 = 0; // Phase offset at t = 0 (in range [0, 2*PI) )
         uint32_t timeStepsProcessed = 0;
 
         static_assert(laserConfig::DIRECTION >= 0 && laserConfig::DIRECTION <= 2, "Invalid laser direction");
@@ -79,20 +80,20 @@ namespace xrt {
 
     private:
         particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
-        getInitFunctor() const
+        getInitFunctor(uint32_t timeStep) const
         {
            const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
            return particles::getParticleFillInfo(
                     Distribution(totalSize),
                     Position(),
-                    Phase(),
+                    Phase(phi_0, timeStep),
                     Direction()
                     );
         }
 
         void addParticles(uint32_t timeStep)
         {
-            auto initFunctor = getInitFunctor();
+            auto initFunctor = getInitFunctor(timeStep);
             auto& dc = Environment::get().DataConnector();
             Species& particles = dc.getData<Species>(FrameType::getName(), true);
             particles.add(initFunctor, timeStep);
@@ -114,7 +115,7 @@ namespace xrt {
             Space block = MappingDesc::SuperCellSize::toRT();
             if(simDim == 3)
                 block[laserConfig::DIRECTION] = 1;
-            auto initFunctor = getInitFunctor();
+            auto initFunctor = getInitFunctor(0);
             __cudaKernel(kernel::countSpawnedPhotons)
                 (mapper.getGridDim(), block.toDim3())
                 ( ctPerTimestep.getDataBox(),
