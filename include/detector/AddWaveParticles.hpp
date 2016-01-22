@@ -65,9 +65,9 @@ namespace detector {
             // Add the dot product (reduced by 2*PI), the x-Position is 0 so don't use it
             phase += fmod((globalCellIdx.y() * CELL_HEIGHT * dir.y() + globalCellIdx.z() * CELL_DEPTH * dir.z()) * k, static_cast<float_X>(2*PI));
             // Now add the dot product for the remaining in-cell position
-            phase += fmod(( particle[position_].x() * CELL_WIDTH  * dir.x() +
-                            particle[position_].y() * CELL_HEIGHT * dir.y() +
-                            particle[position_].z() * CELL_DEPTH  * dir.z()
+            phase += fmod(( float_X(particle[position_].x()) * CELL_WIDTH  * dir.x() +
+                            float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
+                            float_X(particle[position_].z()) * CELL_DEPTH  * dir.z()
                            ) * k, static_cast<float_X>(2*PI));
 
             float_X sinPhase, cosPhase;
