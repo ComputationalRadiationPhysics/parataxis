@@ -8,6 +8,7 @@ namespace detector {
     class NoDetectorImpl: PMacc::ISimulationData
     {
         using Buffer = PMacc::GridBuffer<int, simDim>;
+    public:
         struct DetectParticle
         {
             template<typename T_Particle, typename T_DetectorBox>
@@ -15,7 +16,6 @@ namespace detector {
             operator()(const T_Particle& particle, const Space superCellPosition, T_DetectorBox& detector) const
             {}
         };
-    public:
 
         static std::string
         getName()

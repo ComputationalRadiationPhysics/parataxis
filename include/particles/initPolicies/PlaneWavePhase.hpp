@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "particles/functors/GetAngFrequency.hpp"
+#include "particles/functors/GetPhaseByTimestep.hpp"
 
 namespace xrt {
 namespace particles {
@@ -18,13 +18,8 @@ namespace initPolicies {
 
         PlaneWavePhase(float_64 phi_0, uint32_t currentStep)
         {
-            /* phase phi = phi_0 - omega * t;
-             * Note: This MUST be calculated in double precision as single precision is inexact after ~100 timesteps
-             *       Double precision is enough for about 10^10 timesteps
-             *       More timesteps (in SP&DP) are possible, if the product is implemented as a summation with summands reduced to 2*PI */
-            static const float_64 omega = particles::functors::GetAngularFrequency<Species>()();
-            static const float_64 phaseDiffPerTimestep = fmod(omega * DELTA_T, 2 * PI);
-            curPhase = fmod(phi_0 - phaseDiffPerTimestep * static_cast<float_64>(currentStep), 2 * PI);
+            // Get current phase (calculated exactly in high precision)
+            curPhase = functors::GetPhaseByTimestep<Species>()(currentStep, phi_0);
         }
 
         DINLINE void

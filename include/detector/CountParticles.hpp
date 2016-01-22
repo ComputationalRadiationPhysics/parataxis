@@ -15,9 +15,12 @@ namespace detector {
     public:
         using Type = uint32_t;
 
+        explicit CountParticles(uint32_t curTimestep)
+        {}
+
         template< typename T_Particle >
         DINLINE void
-        operator()(Type& oldVal, T_Particle& particle, float_64 currentTime) const
+        operator()(Type& oldVal, T_Particle& particle, const Space& globalCellIdx) const
         {
             atomicAdd(&oldVal, 1);
         }
