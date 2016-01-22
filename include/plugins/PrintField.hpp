@@ -2,7 +2,7 @@
 
 #include "xrtTypes.hpp"
 #include "GatherSlice.hpp"
-#include "PngCreator.hpp"
+#include "plugins/imaging/PngCreator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -71,7 +71,7 @@ namespace plugins {
             Field& field = dc.getData<Field>(Field::getName(), false);
             (*gather_)(field);
             if (gather_->hasData()){
-                PngCreator png;
+                imaging::PngCreator png;
                 std::stringstream fileName;
                 fileName << this->fileName
                          << "_" << std::setw(6) << std::setfill('0') << currentStep

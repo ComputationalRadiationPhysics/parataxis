@@ -4,8 +4,10 @@
 #include <pngwriter.h>
 #include <string>
 
-namespace xrt
-{
+namespace xrt {
+namespace plugins {
+namespace imaging {
+
     struct PngCreator
     {
         template<class DBox, class T_Space>
@@ -27,4 +29,6 @@ namespace xrt
         }
     };
 
-}
+}  // namespace imaging
+}  // namespace plugins
+}  // namespace xrt

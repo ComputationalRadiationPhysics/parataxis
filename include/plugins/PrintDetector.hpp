@@ -5,6 +5,8 @@
 #include "debug/LogLevels.hpp"
 #include "ComplexTraits.hpp"
 #include "math/abs.hpp"
+#include "plugins/imaging/TiffCreator.hpp"
+#include "TransformBox.hpp"
 
 #include <dataManagement/DataConnector.hpp>
 #include <debug/VerboseLog.hpp>
@@ -12,7 +14,6 @@
 #include <mpi/reduceMethods/Reduce.hpp>
 #include <nvidia/functors/Add.hpp>
 #include <memory/buffers/HostBufferIntern.hpp>
-#include <tiffWriter/tiffWriter.hpp>
 #include <string>
 #include <sstream>
 
@@ -82,16 +83,8 @@ namespace plugins {
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
                          << ".tif";
 
-                tiffWriter::FloatImage<> img(fileName.str(), size.x(), size.y());
-                for(int y = 0; y < size.y(); ++y)
-                {
-                    for(int x = 0; x < size.x(); ++x)
-                    {
-                        /* Top left corner is 0,0*/
-                        img(x, y) = PMaccMath::abs2(masterBuffer_->getDataBox()(Space2D(x, y)));
-                    }
-                }
-                img.save();
+                imaging::TiffCreator tiff;
+                tiff(fileName.str(), makeTransformBox(masterBuffer_->getDataBox(), PMaccMath::abs2<Type>), size);
             }
 
             dc.releaseData(Detector::getName());
