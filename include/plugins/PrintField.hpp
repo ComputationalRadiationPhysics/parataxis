@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "GatherSlice.hpp"
 #include "plugins/imaging/PngCreator.hpp"
+#include "plugins/imaging/TiffCreator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -29,6 +30,7 @@ namespace plugins {
         std::string prefix;
 
         uint32_t notifyFrequency;
+        std::string format;
         std::string fileName;
         uint32_t slicePoint;
         uint32_t nAxis_;
@@ -36,7 +38,7 @@ namespace plugins {
     public:
         PrintField():
             isMaster(false),
-            name("PrintField: Outputs a slice of a field to a PNG"),
+            name("PrintField: Outputs a slice of a field to a PNG or TIFF"),
             prefix(Field::getName() + std::string("_printSlice")),
             notifyFrequency(0),
             slicePoint(0)
@@ -51,6 +53,7 @@ namespace plugins {
         {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
+                ((prefix + ".format").c_str(), po::value<std::string>(&this->format), "file format (png or tiff)")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("field"), "base file name to store slices in (_step.png will be appended)")
                 ((prefix + ".slicePoint").c_str(), po::value<uint32_t>(&this->slicePoint)->default_value(40), "slice point 0 <= x < simSize[axis]")
                 ((prefix + ".axis").c_str(), po::value<uint32_t>(&this->nAxis_)->default_value(0), "Axis index to slice through (0=>x, 1=>y, 2=>z)")
@@ -71,11 +74,10 @@ namespace plugins {
             Field& field = dc.getData<Field>(Field::getName(), false);
             (*gather_)(field);
             if (gather_->hasData()){
-                imaging::PngCreator png;
                 std::stringstream fileName;
                 fileName << this->fileName
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
-                         << ".png";
+                         << "." << format;
 
                 using Box = PMacc::PitchedBox<typename Field::Type, 2>;
                 PMacc::DataBox<Box> data(Box(
@@ -84,7 +86,15 @@ namespace plugins {
                         Space2D(gather_->getData().size()),
                         gather_->getData().size().x() * sizeof(typename Field::Type)
                         ));
-                png(fileName.str(), data, gather_->getData().size());
+                if(format == "png")
+                {
+                    imaging::PngCreator img;
+                    img(fileName.str(), data, gather_->getData().size());
+                }else
+                {
+                    imaging::TiffCreator img;
+                    img(fileName.str(), data, gather_->getData().size());
+                }
             }
 
             dc.releaseData(Field::getName());
@@ -108,6 +118,9 @@ namespace plugins {
                 std::cerr << "In " << name << " the slicePoint is bigger than the simulation size. Ignored!" << std::endl;
                 return;
             }
+            std::transform(format.begin(), format.end(), format.begin(), ::tolower);
+            if(format != "tiff" && format != "tif")
+                format = "png";
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
             gather_.reset(new UsedGatherSlice(slicePoint, nAxis_));
         }
