@@ -84,11 +84,19 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = 1;
         };
+
+        struct RaisingLine
+        {
+            /** Dimension in which the line extents (1=y, 2=z) */
+            static constexpr uint32_t nDim = 1;
+            static constexpr size_t offsetX = 11;
+            static constexpr size_t offsetOther = 10;
+        };
     };
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::Cylinder;
+            AvailableGenerators::RaisingLine;
 
 }  // namespace initialDensity
 }  // namespace xrt

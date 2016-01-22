@@ -128,5 +128,30 @@ namespace generators {
         }
     };
 
+    /**
+     * Creates a line, which value is the cell index in which the line currently is
+     * (Mainly for testing purposes)
+     */
+    template<typename T, class T_Config>
+    struct RaisingLine{
+        using Config = T_Config;
+        /** Dimension in which the line extents */
+        static constexpr uint32_t nDim  = Config::nDim;
+        /** Offset where the line/plane is drawn */
+        static constexpr uint32_t offsetX  = Config::offsetX;
+        static constexpr uint32_t offsetOther = Config::offsetOther;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            static_assert(nDim < simDim, "Dimension for Line generator must be smaller then total # of dims");
+            if(idx.x() != offsetX)
+                return 0;
+            if(idx[nDim == 1 ? 2 : 1] != offsetOther)
+                return 0;
+            return idx[nDim == 1 ? 1 : 2];
+        }
+    };
+
 }  // namespace generators
 }  // namespace xrt

@@ -34,4 +34,10 @@ namespace PMacc { namespace traits {
         using type  = xrt::generators::DoubleSlit<xrt::float_X, xrt::initialDensity::AvailableGenerators::DoubleSlit>;
     };
 
+    template<>
+    struct Resolve<xrt::initialDensity::AvailableGenerators::RaisingLine>
+    {
+        using type  = xrt::generators::RaisingLine<xrt::float_X, xrt::initialDensity::AvailableGenerators::RaisingLine>;
+    };
+
 }}
