@@ -149,7 +149,7 @@ namespace generators {
                 return 0;
             if(idx[nDim == 1 ? 2 : 1] != offsetOther)
                 return 0;
-            return idx[nDim == 1 ? 1 : 2];
+            return idx[nDim == 1 ? 1 : 2] + 1;
         }
     };
 
