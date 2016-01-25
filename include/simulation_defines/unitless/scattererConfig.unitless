@@ -3,6 +3,7 @@
 #include "particles/scatterer/Never.hpp"
 #include "particles/scatterer/OnThreshold.hpp"
 #include "particles/scatterer/OnRandom.hpp"
+#include "particles/scatterer/Fixed.hpp"
 #include "particles/scatterer/Reflect.hpp"
 #include "particles/scatterer/RandomDirection.hpp"
 
@@ -27,6 +28,13 @@ namespace traits {
     {
         using Config = xrt::particles::scatterer::conditions::OnRandom;
         using type = xrt::particles::scatterer::OnRandom<Config>;
+    };
+
+    template<>
+    struct Resolve<xrt::particles::scatterer::direction::Fixed>
+    {
+        using Config = xrt::particles::scatterer::direction::Fixed;
+        using type = xrt::particles::scatterer::Fixed<Config>;
     };
 
     template<>
