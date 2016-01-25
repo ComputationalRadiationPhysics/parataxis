@@ -50,16 +50,16 @@ namespace detector {
                 using PMacc::algorithms::math::float2int_rd;
 
                 // Calculate angle in "back" dimension (when viewed from front) -> X-dimension of detector
-                float_X angleBack = acos(dir.z() / dir.x());
+                float_X angleBack = atan(dir.z() / dir.x());
                 // Calculate cell index on detector by angle (histogram-like binning)
                 float_X cellIdxX  = angleBack / angleRangeX_ + size_.x() / static_cast<float_X>(2);
                 // Add (usually very small) offset if the volume is not much smaller than a detector cell
-                cellIdxX += (simSize_.y() / 2 - globalIdx.z()) * cellWidth / CELL_DEPTH;
+                cellIdxX += (simSize_.y() / 2 - globalIdx.z()) * CELL_DEPTH / cellWidth;
                 targetIdx.x() = float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
-                float_X angleDown = acos(dir.y() / dir.x());
+                float_X angleDown = atan(dir.y() / dir.x());
                 float_X cellIdxY  = angleDown / angleRangeY_ + size_.y() / static_cast<float_X>(2);
-                cellIdxX += (simSize_.x() / 2 - globalIdx.y()) * cellHeight / CELL_HEIGHT;
+                cellIdxY += (simSize_.x() / 2 - globalIdx.y()) * CELL_HEIGHT / cellHeight;
                 targetIdx.y() = float2int_rd(cellIdxY);
 
                 /* Check bounds */
@@ -207,6 +207,13 @@ namespace detector {
             const Space2D size = getSize();
             // Report only for rank 0
             const bool doReport = Environment::get().GridController().getGlobalRank() == 0;
+
+            if(doReport)
+            {
+                PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %1%/%2% with resolution %3%/%4%")
+                    % (angleRangePerCellX_ * size.x()) % (angleRangePerCellY_ * size.y())
+                    % angleRangePerCellX_ % angleRangePerCellY_;
+            }
 
             const float_64 wavelength = particles::functors::GetWavelength<Species>()() * UNIT_LENGTH;
 
