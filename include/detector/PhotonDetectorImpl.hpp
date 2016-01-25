@@ -6,7 +6,6 @@
 
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
-#include <algorithms/math.hpp>
 
 namespace xrt {
 namespace detector {
@@ -54,12 +53,12 @@ namespace detector {
                 // Calculate cell index on detector by angle (histogram-like binning)
                 float_X cellIdxX  = angleBack / angleRangeX_ + size_.x() / static_cast<float_X>(2);
                 // Add (usually very small) offset if the volume is not much smaller than a detector cell
-                cellIdxX += (simSize_.y() / 2 - globalIdx.z()) * CELL_DEPTH / cellWidth;
+                cellIdxX += (globalIdx.z() - simSize_.y() / 2) * CELL_DEPTH / cellWidth;
                 targetIdx.x() = float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
                 float_X angleDown = atan(dir.y() / dir.x());
                 float_X cellIdxY  = angleDown / angleRangeY_ + size_.y() / static_cast<float_X>(2);
-                cellIdxY += (simSize_.x() / 2 - globalIdx.y()) * CELL_HEIGHT / cellHeight;
+                cellIdxY += (globalIdx.y() - simSize_.x() / 2) * CELL_HEIGHT / cellHeight;
                 targetIdx.y() = float2int_rd(cellIdxY);
 
                 /* Check bounds */
@@ -128,7 +127,8 @@ namespace detector {
         static constexpr float_64 distance   = float_64(Config::distance   / UNIT_LENGTH);
         static constexpr float_64 cellWidth  = float_64(Config::cellWidth  / UNIT_LENGTH);
         static constexpr float_64 cellHeight = float_64(Config::cellHeight / UNIT_LENGTH);
-    using Type = typename AccumPolicy::Type;
+        using Type = typename AccumPolicy::Type;
+        using OutputTransformer = typename AccumPolicy::OutputTransformer;
     private:
         using Buffer = PMacc::GridBuffer< Type, 2 >;
         std::unique_ptr< Buffer > buffer;
