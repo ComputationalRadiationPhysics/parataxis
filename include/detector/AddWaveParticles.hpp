@@ -5,6 +5,7 @@
 #include "particles/functors/GetWavelength.hpp"
 #include "particles/functors/GetAngFrequency.hpp"
 #include <math/Complex.hpp>
+#include <algorithms/math.hpp>
 #include <basicOperations.hpp>
 
 namespace xrt {
@@ -26,6 +27,15 @@ namespace detector {
    public:
         using FloatType = float_64;
         using Type = PMacc::math::Complex<FloatType>;
+
+        struct OutputTransformer
+        {
+            HDINLINE FloatType
+            operator()(const Type& val) const
+            {
+                return PMaccMath::abs2(val);
+            }
+        };
 
         explicit AddWaveParticles(uint32_t curTimestep): curPhase_(particles::functors::GetPhaseByTimestep<Species>()(curTimestep))
         {

@@ -13,7 +13,16 @@ namespace detector {
     class CountParticles
     {
     public:
-        using Type = uint32_t;
+        using Type = PMacc::uint64_cu;
+
+        struct OutputTransformer
+        {
+            HDINLINE Type
+            operator()(const Type val) const
+            {
+                return val;
+            }
+        };
 
         explicit CountParticles(uint32_t curTimestep)
         {}

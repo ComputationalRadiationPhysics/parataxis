@@ -84,7 +84,7 @@ namespace plugins {
                          << ".tif";
 
                 imaging::TiffCreator tiff;
-                tiff(fileName.str(), makeTransformBox(masterBuffer_->getDataBox(), PMaccMath::abs2<Type>), size);
+                tiff(fileName.str(), makeTransformBox(masterBuffer_->getDataBox(), typename Detector::OutputTransformer()), size);
             }
 
             dc.releaseData(Detector::getName());
