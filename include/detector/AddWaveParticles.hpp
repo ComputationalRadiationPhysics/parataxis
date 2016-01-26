@@ -37,8 +37,10 @@ namespace detector {
             }
         };
 
-        explicit AddWaveParticles(uint32_t curTimestep): curPhase_(particles::functors::GetPhaseByTimestep<Species>()(curTimestep))
+        explicit AddWaveParticles(uint32_t curTimestep):
+                curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep) + 2*PI)
         {
+            // Phase should be w*t. GetPhaseByTimestep returns phi_0 - w*t -> Invert it and add 2*PI to make it [0, 2*PI)
             if(std::is_same<float, float_X>::value &&
                     PMaccMath::max(CELL_WIDTH, PMaccMath::max(CELL_HEIGHT, CELL_DEPTH)) > 10e5 * particles::functors::GetWavelength<Species>()())
             {
@@ -65,6 +67,8 @@ namespace detector {
             if(phase > static_cast<float_X>(2*PI))
                 phase -= static_cast<float_X>(2*PI);
 
+            float_X phase2 = phase;
+
             /* The projection is k * (dir * pos)/|dir| (dot product)
              * dir is already the unit vector hence we have don't need the division.
              * For better precision summands are reduced mod 2*PI
@@ -79,6 +83,9 @@ namespace detector {
                             float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
                             float_X(particle[position_].z()) * CELL_DEPTH  * dir.z()
                            ) * k, static_cast<float_X>(2*PI));
+
+            if(dir.z() > 1e-6)
+                printf("%i,%i -> %g+%g=%g -> %g\n", globalCellIdx.y(), globalCellIdx.z(), particle[startPhase_], curPhase_, phase2, phase);
 
             float_X sinPhase, cosPhase;
             PMaccMath::sincos(phase, sinPhase, cosPhase);
