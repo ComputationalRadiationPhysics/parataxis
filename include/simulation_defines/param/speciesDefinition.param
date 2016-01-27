@@ -39,8 +39,8 @@ namespace xrt {
             particleScatterCondition<particles::scatterer::conditions::OnRandom>,
             particleScatterDirection<particles::scatterer::direction::Fixed>,
             particleDetector<detector::PhotonDetector>,
-            //wavelength<wavelengthPhotons>,
-            energy<energyPhotons>,
+            wavelength<wavelengthPhotons>,
+            //energy<energyPhotons>,
             amplitude<amplitudePhotons>
     > ParticleFlagsPhotons;
 
