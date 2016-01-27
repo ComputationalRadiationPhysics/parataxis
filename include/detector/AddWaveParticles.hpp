@@ -38,9 +38,11 @@ namespace detector {
         };
 
         explicit AddWaveParticles(uint32_t curTimestep):
-                curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep) + 2*PI)
+                curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep + 1) + 2*PI)
         {
             // Phase should be w*t. GetPhaseByTimestep returns phi_0 - w*t -> Invert it and add 2*PI to make it [0, 2*PI)
+            // Note that we need the next timestep. The particles are moved, so they have the position they would have at the END of the current ts
+            // -> Use phase from the end of this timestep (start of next ts)
             if(std::is_same<float, float_X>::value &&
                     PMaccMath::max(CELL_WIDTH, PMaccMath::max(CELL_HEIGHT, CELL_DEPTH)) > 10e5 * particles::functors::GetWavelength<Species>()())
             {
@@ -76,16 +78,23 @@ namespace detector {
             const auto dir = particle[direction_];
             const float_X omega = particles::functors::GetAngularFrequency<Species>()();
             const float_X k = omega / SPEED_OF_LIGHT;
-            // Add the dot product (reduced by 2*PI), the x-Position is 0 so don't use it
-            phase += fmod((globalCellIdx.y() * CELL_HEIGHT * dir.y() + globalCellIdx.z() * CELL_DEPTH * dir.z()) * k, static_cast<float_X>(2*PI));
-            // Now add the dot product for the remaining in-cell position
-            phase += fmod(( float_X(particle[position_].x()) * CELL_WIDTH  * dir.x() +
-                            float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
-                            float_X(particle[position_].z()) * CELL_DEPTH  * dir.z()
-                           ) * k, static_cast<float_X>(2*PI));
+            // Add the negated dot product (reduced by 2*PI), negated as the difference to the reference ray gets smaller with increasing index
+            // the x-Position is 0 by definition so don't use it
+            const float_X distDiffG = globalCellIdx.y() * CELL_HEIGHT * dir.y() + globalCellIdx.z() * CELL_DEPTH * dir.z();
+            phase += fmod(-distDiffG * k, static_cast<float_X>(2*PI));
+            // Now add the negated dot product for the remaining in-cell position
+            const float_X distDiffI = float_X(particle[position_].x()) * CELL_WIDTH  * dir.x() +
+                                      float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
+                                      float_X(particle[position_].z()) * CELL_DEPTH  * dir.z();
+            phase += fmod(-distDiffI * k, static_cast<float_X>(2*PI));
 
-            if(dir.z() > 1e-6)
-                printf("%i,%i -> %g+%g=%g -> %g\n", globalCellIdx.y(), globalCellIdx.z(), particle[startPhase_], curPhase_, phase2, phase);
+            /*if(dir.z() > 1e-6)
+            {
+                printf("Dir: %g, %g, %g\n", dir.x(), dir.y(), dir.z());
+                printf("%i,%i -> %g+%g+%g+%g=%g -> %g\n", globalCellIdx.y(), globalCellIdx.z(), particle[startPhase_], curPhase_,
+                        -distDiffG * k,
+                        -distDiffI * k, phase2, phase+2*PI);
+            }*/
 
             float_X sinPhase, cosPhase;
             PMaccMath::sincos(phase, sinPhase, cosPhase);
