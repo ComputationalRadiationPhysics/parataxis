@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "ToVector.hpp"
 #include <algorithms/math.hpp>
+#include <algorithms/TypeCast.hpp>
 
 namespace xrt{
 namespace particles {
@@ -19,10 +20,12 @@ namespace scatterer {
         HINLINE explicit
         Fixed(uint32_t)
         {
-            direction_.x() = T_Config::x;
-            direction_.y() = tan(T_Config::angleY) * T_Config::x;
-            direction_.z() = tan(T_Config::angleZ) * T_Config::x;
-            direction_ /= PMaccMath::abs(direction_);
+            using namespace PMacc::algorithms::precisionCast;
+            float3_64 tmpDir;
+            tmpDir.x() = T_Config::x;
+            tmpDir.y() = tan(T_Config::angleY) * T_Config::x;
+            tmpDir.z() = tan(T_Config::angleZ) * T_Config::x;
+            direction_ = precisionCast<float_X>(tmpDir / PMaccMath::abs(tmpDir));
         }
 
         HDINLINE void
