@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "particles/functors/GetWavelength.hpp"
 #include "debug/LogLevels.hpp"
+#include "math/angleHelpers.hpp"
 
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
@@ -142,8 +143,8 @@ namespace detector {
         PhotonDetectorImpl(const Space2D& size)
         {
             buffer.reset(new Buffer(size));
-            float_64 angleRangeX = acos(size.x() * cellWidth  / distance);
-            float_64 angleRangeY = acos(size.y() * cellHeight / distance);
+            float_64 angleRangeX = atan(size.x() * cellWidth  / distance);
+            float_64 angleRangeY = atan(size.y() * cellHeight / distance);
             angleRangePerCellX_ = angleRangeX / size.x();
             angleRangePerCellY_ = angleRangeY / size.y();
 
@@ -210,9 +211,12 @@ namespace detector {
 
             if(doReport)
             {
-                PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %1%/%2% with resolution %3%/%4%")
-                    % (angleRangePerCellX_ * size.x()) % (angleRangePerCellY_ * size.y())
-                    % angleRangePerCellX_ % angleRangePerCellY_;
+                using math::rad2deg;
+                PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %g/%g(%g°/%g°) with resolution %g/%g(%g°/%g°)")
+                            % (angleRangePerCellX_ * size.x()) % (angleRangePerCellY_ * size.y())
+                            % rad2deg(angleRangePerCellX_ * size.x()) % rad2deg(angleRangePerCellY_ * size.y())
+                            % angleRangePerCellX_ % angleRangePerCellY_
+                            % rad2deg(angleRangePerCellX_) % rad2deg(angleRangePerCellY_);
             }
 
             const float_64 wavelength = particles::functors::GetWavelength<Species>()() * UNIT_LENGTH;
