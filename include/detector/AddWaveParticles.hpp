@@ -69,7 +69,7 @@ namespace detector {
             if(phase > static_cast<float_X>(2*PI))
                 phase -= static_cast<float_X>(2*PI);
 
-            float_X phase2 = phase;
+            //float_X phase2 = phase;
 
             /* The projection is k * (dir * pos)/|dir| (dot product)
              * dir is already the unit vector hence we have don't need the division.
