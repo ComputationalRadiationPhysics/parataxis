@@ -37,8 +37,8 @@ namespace detector {
          * Width and height of each detector cell
          * Unit: meter
          */
-        static constexpr float_64 cellWidth = 3.5e-6;
-        static constexpr float_64 cellHeight = 3.5e-6;
+        static constexpr float_64 cellWidth = 350e-6;
+        static constexpr float_64 cellHeight = 350e-6;
 
         /* Following values are used for constraint checking but do not influence the simulation */
         /** Minimum number of interference patterns (sequences of minima+maxima) that should be observable
@@ -47,8 +47,8 @@ namespace detector {
         /** Number of pixels required per interference pattern */
         static constexpr uint32_t resolutionFactor = 40;
         /** Structure size (in m) range that should be resolved (e.g. slit width, double slit distance, ...) */
-        static constexpr float_64 minStructureSize = 5e-6;
-        static constexpr float_64 maxStructureSize = 5e-6;
+        static constexpr float_64 minStructureSize = 8*4e-9;
+        static constexpr float_64 maxStructureSize = 8*4e-9;
         /** Set to true to abort the simulation when the constraints are violated
          *  False still shows warnings*/
         static constexpr bool abortOnConstraintError = true;

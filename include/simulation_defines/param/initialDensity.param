@@ -76,11 +76,11 @@ namespace initialDensity {
             /** (3D only) width in cells of the volume containing the slit (size in X) */
             static constexpr uint32_t roomWidth = 1;
             /** Offset in cells of the slits */
-            static constexpr uint32_t offset = (256 - 112) / 2;
+            static constexpr uint32_t offset = (256 - 8) / 2;
             /** Width in cells of the slits */
-            static constexpr uint32_t width = 11;
+            static constexpr uint32_t width = 3;
             /** Spacing in cells between the slits */
-            static constexpr uint32_t spacing = 112;
+            static constexpr uint32_t spacing = 8;
             /** Value used */
             static constexpr float_64 value = 1;
         };

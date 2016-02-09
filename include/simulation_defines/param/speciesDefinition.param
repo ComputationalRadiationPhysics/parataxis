@@ -37,7 +37,7 @@ namespace xrt {
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
             particleScatterCondition<particles::scatterer::conditions::OnRandom>,
-            particleScatterDirection<particles::scatterer::direction::Fixed>,
+            particleScatterDirection<particles::scatterer::direction::RandomDirection>,
             particleDetector<detector::PhotonDetector>,
             wavelength<wavelengthPhotons>,
             //energy<energyPhotons>,
