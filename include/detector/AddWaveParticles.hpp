@@ -69,8 +69,6 @@ namespace detector {
             if(phase > static_cast<float_X>(2*PI))
                 phase -= static_cast<float_X>(2*PI);
 
-            //float_X phase2 = phase;
-
             /* The projection is k * (dir * pos)/|dir| (dot product)
              * dir is already the unit vector hence we have don't need the division.
              * For better precision summands are reduced mod 2*PI
@@ -93,7 +91,7 @@ namespace detector {
                 printf("Dir: %g, %g, %g\n", dir.x(), dir.y(), dir.z());
                 printf("%i,%i -> %g+%g+%g+%g=%g -> %g\n", globalCellIdx.y(), globalCellIdx.z(), particle[startPhase_], curPhase_,
                         -distDiffG * k,
-                        -distDiffI * k, phase2, phase+2*PI);
+                        -distDiffI * k, particle[startPhase_] + curPhase_, phase+2*PI);
             }*/
 
             float_X sinPhase, cosPhase;
