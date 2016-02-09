@@ -37,8 +37,8 @@ namespace scatterer {
         struct Reflect;
         struct Fixed{
             static constexpr float_64 x = 1;
-            static constexpr float_64 angleY = 1e-5;
-            static constexpr float_64 angleZ = 0;
+            static constexpr float_64 angleY = 0;
+            static constexpr float_64 angleZ = 3e-3;
         };
         /** Scatter in a random direction specified by evenly distributed spherical coordinates */
         struct RandomDirection{
