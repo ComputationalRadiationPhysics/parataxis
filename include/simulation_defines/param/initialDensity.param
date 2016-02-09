@@ -96,7 +96,7 @@ namespace initialDensity {
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::RaisingLine;
+            AvailableGenerators::DoubleSlit;
 
 }  // namespace initialDensity
 }  // namespace xrt
