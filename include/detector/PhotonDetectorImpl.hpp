@@ -97,9 +97,8 @@ namespace detector {
                 const Space globalCellIdx = superCellPosition + localCell;
                 Space2D targetIdx;
                 /* Get index on detector, if none found -> go out */
-                if(!getTargetCellIdx_(particle, globalCellIdx, targetIdx))
-                    return;
-                accumPolicy_(detector(targetIdx), particle, globalCellIdx);
+                if(getTargetCellIdx_(particle, globalCellIdx, targetIdx))
+                    accumPolicy_(detector(targetIdx), particle, globalCellIdx);
             }
         };
 
@@ -213,8 +212,8 @@ namespace detector {
             {
                 using math::rad2deg;
                 PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %g/%g(%g°/%g°) with resolution %g/%g(%g°/%g°)")
-                            % (angleRangePerCellX_ * size.x()) % (angleRangePerCellY_ * size.y())
-                            % rad2deg(angleRangePerCellX_ * size.x()) % rad2deg(angleRangePerCellY_ * size.y())
+                            % (angleRangePerCellX_ * size.x() / 2) % (angleRangePerCellY_ * size.y() / 2)
+                            % rad2deg(angleRangePerCellX_ * size.x() / 2) % rad2deg(angleRangePerCellY_ * size.y() / 2)
                             % angleRangePerCellX_ % angleRangePerCellY_
                             % rad2deg(angleRangePerCellX_) % rad2deg(angleRangePerCellY_);
             }
