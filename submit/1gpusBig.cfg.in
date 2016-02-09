@@ -1,0 +1,51 @@
+#!/bin/bash
+ 
+# variables which are created by tbg
+# TBG_jobName
+# TBG_jobNameShort
+# TBG_cfgPath
+# TBG_cfgFile
+# TBG_projectPath
+# TBG_dstPath
+
+#################################
+## Section: Required Variables ##
+#################################
+
+TBG_wallTime="3:00:00"
+
+TBG_gpu_x=1
+TBG_gpu_y=1
+TBG_gpu_z=1
+
+TBG_gridSize="-g 32 512 512"
+TBG_steps="-s 40000"
+
+TBG_program="@PROJECT_NAME@"
+
+#################################
+## Section: Optional Variables ##
+#################################
+
+TBG_plugins="--p_position.period 99999                    \
+             --DensityField_printSlice.period 99999       \
+             --DensityField_printSlice.axis 0             \
+             --DensityField_printSlice.slicePoint 10      \
+             --PhotonDetector_print.period 20000          \
+             "
+
+#################################
+## Section: Program Parameters ##
+#################################
+
+TBG_devices="-d !TBG_gpu_x !TBG_gpu_y !TBG_gpu_z"
+
+TBG_programParams="!TBG_devices      \
+                   !TBG_gridSize     \
+                   !TBG_steps        \
+                   !TBG_plugins | tee output"
+
+# TOTAL number of GPUs
+TBG_tasks="$(( TBG_gpu_x * TBG_gpu_y * TBG_gpu_z ))"
+
+"$TBG_cfgPath"/submitAction.sh
