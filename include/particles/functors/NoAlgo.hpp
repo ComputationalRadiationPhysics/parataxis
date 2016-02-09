@@ -11,8 +11,8 @@ namespace functors {
      */
     struct NoAlgo
     {
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
-        HDINLINE void operator()(const T_DensityBox&, T_Position& pos, T_Momentum& mom)
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
+        HDINLINE void operator()(const T_DensityBox&, T_Position& pos, T_Direction& dir)
         {}
     };
 

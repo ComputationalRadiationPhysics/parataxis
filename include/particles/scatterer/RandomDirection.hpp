@@ -9,7 +9,7 @@ namespace particles {
 namespace scatterer {
 
     /**
-     * Scatterer that changes the momentum based on 2 random angles (spherical coordinates)
+     * Scatterer that changes the direction based on 2 random angles (spherical coordinates)
      */
     template<class T_Config, class T_Species = bmpl::_1>
     struct RandomDirection
@@ -28,9 +28,9 @@ namespace scatterer {
             rand.init(globalCellIdx - offset);
         }
 
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
         DINLINE void
-        operator()(const T_DensityBox& density, const T_Position& pos, T_Momentum& mom)
+        operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
         {
             /* Azimuth angle is the angle around the x-axis [0,2PI) and polar angle is the angle around the z-axis [0-PI)
              * Note that compared to e.g. wikipedia the z and x axis are swapped as our usual propagation direction is X
@@ -38,9 +38,8 @@ namespace scatterer {
             float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
             // Here we'd actually need an adjustment so that the coordinates are evenly distributed on a unit sphere but for very small angles this is ok
             float_X polarAngle   = rand() * float_X(Config::maxPolar - Config::minPolar) + float_X(Config::minPolar);
-
             /* Now we have the azimuth and polar angles by which we want to change the current direction. So we need some rotations:
-             * Assume old momentum = A, new momentum = B, |A| = 1
+             * Assume old direction = A, new direction = B, |A| = 1
              * There is a rotation matrix R_A so that A = R_A * e_X (with e_X = [1,0,0] )
              * It is also easy to generate a rotation Matrix R_B which transforms a point in Cartesian coordinates by the azimuth and polar angle
              * So we can say B = R_A * R_B * R_A^T * A (rotate A back to e_X, rotate by R_B and rotate again to As coordinate system)
@@ -55,20 +54,20 @@ namespace scatterer {
             float_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
             PMaccMath::sincos(polarAngle, sinPolar, cosPolar);
             PMaccMath::sincos(azimuthAngle, sinAzimuth, cosAzimuth);
-            const float_X x = mom.x();
-            const float_X y = mom.y();
-            const float_X z = mom.z();
+            const float_X x = dir.x();
+            const float_X y = dir.y();
+            const float_X z = dir.z();
             if(PMaccMath::abs(1 + x) <= std::numeric_limits<float_X>::min())
             {
                 // Special case: x=-1 --> y=z=0 (unit vector), so avoid division by zero
-                mom.x() = -cosPolar;
-                mom.y() = -sinAzimuth * sinPolar;
-                mom.z() = -cosAzimuth * sinPolar;
+                dir.x() = -cosPolar;
+                dir.y() = -sinAzimuth * sinPolar;
+                dir.z() = -cosAzimuth * sinPolar;
             }else
             {
-                mom.x() = x * cosPolar -          z            * cosAzimuth * sinPolar -          y            * sinAzimuth * cosPolar;
-                mom.y() = y * cosPolar -      y * z / (1 + x)  * cosAzimuth * sinPolar + (x + z * z / (1 + x)) * sinAzimuth * sinPolar;
-                mom.z() = z * cosPolar + (x + y * y / (1 + x)) * cosAzimuth * sinPolar -      y * z / (1 + x)  * sinAzimuth * sinPolar;
+                dir.x() = x * cosPolar -          z            * cosAzimuth * sinPolar -          y            * sinAzimuth * cosPolar;
+                dir.y() = y * cosPolar -      y * z / (1 + x)  * cosAzimuth * sinPolar + (x + z * z / (1 + x)) * sinAzimuth * sinPolar;
+                dir.z() = z * cosPolar + (x + y * y / (1 + x)) * cosAzimuth * sinPolar -      y * z / (1 + x)  * sinAzimuth * sinPolar;
             }
         }
 

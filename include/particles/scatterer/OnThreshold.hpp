@@ -26,9 +26,9 @@ namespace scatterer {
         init(Space)
         {}
 
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
         HDINLINE bool
-        operator()(const T_DensityBox& density, const T_Position& pos, const T_Momentum& mom)
+        operator()(const T_DensityBox& density, const T_Position& pos, const T_Direction& dir)
         {
             return density(Space::create(0)) >= threshold;
         }

@@ -7,7 +7,7 @@ namespace particles {
 namespace scatterer {
 
     /**
-     * Scatterer that inverts the momentum
+     * Scatterer that inverts the direction
      */
     template<class T_Species = bmpl::_1>
     struct Reflect
@@ -20,10 +20,10 @@ namespace scatterer {
         init(Space)
         {}
 
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
-        HDINLINE void operator()(const T_DensityBox& density, T_Position& pos, T_Momentum& mom)
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
+        HDINLINE void operator()(const T_DensityBox& density, T_Position& pos, T_Direction& dir)
         {
-            mom *= -1;
+            dir *= -1;
         }
     };
 

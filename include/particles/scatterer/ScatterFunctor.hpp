@@ -9,52 +9,52 @@ namespace scatterer {
     /**
      * General scatter functor composite that handles scattering in 2 steps:
      *     - It first calls the condition functor which should whether
-     *       the particles momentum should be changed
-     *     - If the momentum should be changed, the direction functor is called
-     *       which should then adjust the momentum
+     *       the particles direction should be changed
+     *     - If the direction should be changed, the direction functor is called
+     *       which should then adjust the direction
      * The interface of the functors is similar to this one:
      *     - ctor takes the currentStep
      *     - init(Space totalCellIdx) which is called before the first call to the functor
      *     - functor taking densityBox centered at the particles cell, position and
-     *       momentum of the particle.
+     *       direction of the particle.
      *       The Condition functor should return a bool and gets only const-Refs as the arguments
      *
      * The functors must also support bmpl::apply which passes the Species-Type as the argument
      */
     template<
         class T_Condition,
-        class T_Direction,
+        class T_ChangeDirection,
         class T_Species = bmpl::_1
         >
     struct ScatterFunctor
     {
         using Condition = typename bmpl::apply<T_Condition, T_Species>::type;
-        using Direction = typename bmpl::apply<T_Direction, T_Species>::type;
+        using ChangeDirection = typename bmpl::apply<T_ChangeDirection, T_Species>::type;
 
         HINLINE explicit
-        ScatterFunctor(uint32_t currentStep): condition_(currentStep), direction_(currentStep)
+        ScatterFunctor(uint32_t currentStep): condition(currentStep), changeDirection(currentStep)
         {}
 
         HDINLINE void
         init(Space totalCellIdx)
         {
-            condition_.init(totalCellIdx);
-            direction_.init(totalCellIdx);
+            condition.init(totalCellIdx);
+            changeDirection.init(totalCellIdx);
         }
 
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
         HDINLINE void
-        operator()(const T_DensityBox& density, const T_Position& pos, T_Momentum& mom)
+        operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
         {
-            if(condition_(density, pos, const_cast<const T_Momentum&>(mom)))
+            if(condition(density, pos, const_cast<const T_Direction&>(dir)))
             {
-                direction_(density, pos, mom);
+                changeDirection(density, pos, dir);
             }
         }
 
     private:
-        PMACC_ALIGN8(condition_, Condition);
-        PMACC_ALIGN8(direction_, Direction);
+        PMACC_ALIGN8(condition, Condition);
+        PMACC_ALIGN8(changeDirection, ChangeDirection);
     };
 
 }  // namespace scatterer

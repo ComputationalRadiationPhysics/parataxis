@@ -33,7 +33,7 @@ namespace scatterer {
 
     namespace direction {
 
-        /** Inverts the momentum */
+        /** Inverts the direction */
         struct Reflect;
         struct Fixed{
             static constexpr float_64 x = 1;

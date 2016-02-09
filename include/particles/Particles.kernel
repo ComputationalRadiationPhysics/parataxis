@@ -89,10 +89,10 @@ namespace kernel {
 
     /**
      * Functor that can be used as a frame solver
-     * \tparam T_ScatterAlgo Functor which is used for scattering, that is changing the momentum of the particle
+     * \tparam T_ScatterAlgo Functor which is used for scattering, that is changing the direction of the particle
      * \tparam T_PushAlgo    Functor which is used for moving a particle
      *
-     * Both functors are called for every particle with (curDensityBox, position, momentum) where curDensityBox is the work area part
+     * Both functors are called for every particle with (curDensityBox, position, direction) where curDensityBox is the work area part
      * of the full density field shifted to the particles cell
      */
     template<class T_ScatterAlgo, class T_PushAlgo>

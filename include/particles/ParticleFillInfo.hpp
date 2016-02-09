@@ -8,20 +8,20 @@ namespace particles {
     /**
      * Collection of policies related to filling the grid with particles
      *
-     * \tparam T_Count    Returns the number of particles for a given cell and time
-     *                    init(Space2D totalCellIdx)
-     *                    Functor: int32_t(int32_t timeStep)
-     * \tparam T_Position Returns the in-cell position for a given cell and particle number
-     *                    init(Space2D totalCellIdx)
-     *                    setCount(int32_t particleCount)
-     *                    Functor: float_D(int32_t numParticle), gets called for all particles
+     * \tparam T_Count     Returns the number of particles for a given cell and time
+     *                     init(Space2D totalCellIdx)
+     *                     Functor: int32_t(int32_t timeStep)
+     * \tparam T_Position  Returns the in-cell position for a given cell and particle number
+     *                     init(Space2D totalCellIdx)
+     *                     setCount(int32_t particleCount)
+     *                     Functor: float_D(int32_t numParticle), gets called for all particles
      *                      with i in [0, particleCount)
-     * \tparam T_Phase    Returns the phase of the particles in a given cell at a given time
-     *                    init(Space2D totalCellIdx)
-     *                    Functor: float_X(int32_t timeStep)
-     * \tparam T_Momentum Returns the initial momentum of the particles for a given cell and time
-     *                    init(Space2D totalCellIdx)
-     *                    Functor: float_D(int32_t timeStep)
+     * \tparam T_Phase     Returns the phase of the particles in a given cell at a given time
+     *                     init(Space2D totalCellIdx)
+     *                     Functor: float_X(int32_t timeStep)
+     * \tparam T_Direction Returns the initial direction of the particles for a given cell and time
+     *                     init(Space2D totalCellIdx)
+     *                     Functor: float_D(int32_t timeStep)
      *
      */
     template<

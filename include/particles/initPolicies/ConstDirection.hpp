@@ -8,7 +8,7 @@ namespace particles {
 namespace initPolicies {
 
     /**
-     * Same momentum for all particles
+     * Same direction for all particles
      */
     template<class T_Config>
     struct ConstDirection

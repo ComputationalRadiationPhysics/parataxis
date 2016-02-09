@@ -32,9 +32,9 @@ namespace scatterer {
             rand = randHandle.applyDistribution<Distribution>();
         }
 
-        template<class T_DensityBox, typename T_Position, typename T_Momentum>
+        template<class T_DensityBox, typename T_Position, typename T_Direction>
         DINLINE bool
-        operator()(const T_DensityBox& density, const T_Position& pos, const T_Momentum& mom)
+        operator()(const T_DensityBox& density, const T_Position& pos, const T_Direction& dir)
         {
             float_X probability = Config::calcProbability(density(Space::create(0)));
             return (rand() < probability);
