@@ -119,7 +119,7 @@ namespace xrt {
             particleStorage->init(densityField.get());
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
-            laserSource.init(runSteps, this->cellDescription);
+            laserSource.init();
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
@@ -146,6 +146,10 @@ namespace xrt {
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation filled.");
+
+#ifdef XRT_CHECK_PHOTON_CT
+            laserSource.checkPhotonCt(runSteps, this->cellDescription);
+#endif
             return 0;
         }
 

@@ -54,15 +54,12 @@ namespace xrt {
 
     public:
 
-        void init(uint32_t numTimesteps, MappingDesc cellDescription)
+        void init()
         {
             PMacc::log< XRTLogLvl::DOMAINS >("Laser pulse is %1% timesteps long") % numTimeStepsLaserPulse;
             uint32_t slotsAv = mallocMC::getAvailableSlots(sizeof(FrameType));
             uint64_t numParts = slotsAv * SuperCellSize::toRT().productOfComponents();
             PMacc::log< XRTLogLvl::MEMORY > ("There are %1% slots available that can fit up to %2% particles") % slotsAv % numParts;
-#ifdef XRT_CHECK_PHOTON_CT
-            checkPhotonCt(numTimesteps, cellDescription);
-#endif
         }
 
         void processStep(uint32_t currentStep)
@@ -78,27 +75,6 @@ namespace xrt {
             timeStepsProcessed = 0;
         }
 
-    private:
-        particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
-        getInitFunctor(uint32_t timeStep) const
-        {
-           const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
-           return particles::getParticleFillInfo(
-                    Distribution(totalSize),
-                    Position(),
-                    Phase(phi_0, timeStep),
-                    Direction()
-                    );
-        }
-
-        void addParticles(uint32_t timeStep)
-        {
-            auto initFunctor = getInitFunctor(timeStep);
-            auto& dc = Environment::get().DataConnector();
-            Species& particles = dc.getData<Species>(FrameType::getName(), true);
-            particles.add(initFunctor, timeStep);
-            dc.releaseData(FrameType::getName());
-        }
 
         void checkPhotonCt(uint32_t numTimesteps, MappingDesc cellDescription)
         {
@@ -152,6 +128,28 @@ namespace xrt {
                             % maxPartPerTs
                             % maxPartsPerTsStraight % (maxPartsPerTsStraight < maxPartPerTs ? "(!)":"")
                             % maxPartsPerTsDiagonal % (maxPartsPerTsDiagonal < maxPartPerTs ? "(!)":"");
+        }
+
+    private:
+        particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
+        getInitFunctor(uint32_t timeStep) const
+        {
+           const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
+           return particles::getParticleFillInfo(
+                    Distribution(totalSize),
+                    Position(),
+                    Phase(phi_0, timeStep),
+                    Direction()
+                    );
+        }
+
+        void addParticles(uint32_t timeStep)
+        {
+            auto initFunctor = getInitFunctor(timeStep);
+            auto& dc = Environment::get().DataConnector();
+            Species& particles = dc.getData<Species>(FrameType::getName(), true);
+            particles.add(initFunctor, timeStep);
+            dc.releaseData(FrameType::getName());
         }
     };
 
