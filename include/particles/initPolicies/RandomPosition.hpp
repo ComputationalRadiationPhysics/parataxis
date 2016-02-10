@@ -13,7 +13,7 @@ namespace initPolicies {
         using Distribution = PMacc::random::distributions::Uniform<float>;
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 
-        HINLINE RandomPosition(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
+        HINLINE RandomPosition(): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
         {}
 
         DINLINE void
@@ -30,7 +30,8 @@ namespace initPolicies {
         operator()(uint32_t numPart)
         {
             position_pic::type result;
-            for(uint32_t i = 0; i < simDim; ++i)
+            result.x() = 0;
+            for(uint32_t i = 1; i < simDim; ++i)
                 result[i] = rand() * laserConfig::distSize[i] / cellSize[i];
             return result;
         }

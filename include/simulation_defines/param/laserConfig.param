@@ -40,7 +40,7 @@ namespace laserConfig {
         struct Random;
 
         /** Value used in the simulation */
-        using UsedValue = Const;
+        using UsedValue = Random;
 
     }  // namespace position
 
