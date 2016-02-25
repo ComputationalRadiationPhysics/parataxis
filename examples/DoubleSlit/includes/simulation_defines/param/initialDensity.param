@@ -1,0 +1,102 @@
+#pragma once
+
+#include "math/vector/compile-time/UInt32.hpp"
+
+namespace xrt {
+namespace initialDensity {
+
+    namespace AvailableGenerators{
+        /* List of possible generators: */
+        /** Constant value at every point */
+        struct Const
+        {
+            /** Value used */
+            static constexpr float_64 value = 0;
+        };
+
+        /** Simple line(2D)/plane(3D) */
+        struct Line
+        {
+            /** Dimension which the line/plan cuts */
+            static constexpr uint32_t nDim = 0;
+            /** Offset in cells where the line/plane is drawn */
+            static constexpr size_t offset = 50;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+
+        /** Cuboid in 3D or rectangle in 2D */
+        struct Cuboid
+        {
+            using Offset = PMacc::math::CT::UInt32<
+                    /** Offset in cells in x-direction */
+                    10
+                    /** Offset in cells in y-direction */,
+                    0
+                    /** Offset in cells in z-direction */,
+                    0
+                    >;
+            using Size = PMacc::math::CT::UInt32<
+                    /** Size in cells in x-direction */
+                    2048
+                    /** Size in cells in y-direction */,
+                    2048
+                    /** Size in cells in z-direction */,
+                    2048
+                    >;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+
+        /** Cylinder in 3D or Circle in 2D */
+        struct Cylinder
+        {
+            /** Height in cells */
+            static constexpr uint32_t height = 1;
+            /** Radius in cells */
+            static constexpr uint32_t radius = 1;
+            /** Position of the center point of one side / Middle of circle */
+            using Position = PMacc::math::CT::UInt32<
+                    /** cells in x-direction */
+                    10
+                    /** cells in y-direction */,
+                    128 / 2
+                    /** cells in z-direction */,
+                    128 / 2
+                    >;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+
+        /** 2 slits of the same width and infinite height,
+         *  extending perpendicular to x-axis in 3D */
+        struct DoubleSlit{
+            /** (3D only) offset in cells into the room (X-direction) */
+            static constexpr uint32_t roomPos = 10;
+            /** (3D only) width in cells of the volume containing the slit (size in X) */
+            static constexpr uint32_t roomWidth = 1;
+            /** Offset in cells of the slits */
+            static constexpr uint32_t offset = (PARAM_NUM_CELLS - PARAM_SLIT_SPACING) / 2;
+            /** Width in cells of the slits */
+            static constexpr uint32_t width = PARAM_SLIT_WIDTH;
+            /** Spacing in cells between the slits */
+            static constexpr uint32_t spacing = PARAM_SLIT_SPACING;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+
+        struct RaisingLine
+        {
+            /** Dimension in which the line extents (1=y, 2=z) */
+            static constexpr uint32_t nDim = 1;
+            static constexpr size_t offsetX = 11;
+            static constexpr size_t offsetOther = 10;
+        };
+    };
+
+    using Generator =
+            /** Generator used */
+            AvailableGenerators::DoubleSlit;
+
+}  // namespace initialDensity
+}  // namespace xrt
