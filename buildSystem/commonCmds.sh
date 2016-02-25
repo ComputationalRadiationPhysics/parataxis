@@ -2,7 +2,7 @@
 
 printError()
 {
-    echo -e "\033[0;31mERROR: $1\033[0m" >&2
+    echo_r "ERROR: $1" >&2
 }
 
 errorAndExit()

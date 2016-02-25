@@ -34,6 +34,8 @@ parseTestOptions()
     eval set -- "$OPTS"
 
     isExampleList=0
+    srcDir=""
+    destinationDir=""
 
     while true ; do
         case "$1" in
@@ -56,6 +58,12 @@ parseTestOptions()
         esac
         shift
     done
+    
+    if [ "$srcDir" == "" ] || [ "$destinationDir" == "" ]; then
+        printError "Missing src and/or destination directory."
+        helpTests
+        exit 1
+    fi
     
     testOptions="$@"
 
