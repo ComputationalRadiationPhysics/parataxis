@@ -246,6 +246,16 @@ set(PMACC_VERBOSE "0" CACHE STRING "Set verbosity level for libPMacc")
 add_definitions(-DPMACC_VERBOSE_LVL=${PMACC_VERBOSE})
 
 ################################################################################
+# PARAM (overwrite) defines
+################################################################################
+
+if(PARAM_OVERWRITES)
+    foreach(param ${PARAM_OVERWRITES})
+       add_definitions(${param})
+    endforeach(param)
+endif(PARAM_OVERWRITES)
+
+################################################################################
 # XRT
 ################################################################################
 
@@ -328,8 +338,8 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 ################################################################################
 
 find_path(XRT_EXTENSION_PATH
-    NAMES extension/simulation_defines
-    PATHS "${CMAKE_CURRENT_BINARY_DIR}"
+    NAMES include/simulation_defines/param/precision.param
+    PATHS "${CMAKE_CURRENT_SOURCE_DIR}"
     DOC "search PATH to extension folder"
     NO_DEFAULT_PATH
     NO_CMAKE_ENVIRONMENT_PATH
@@ -338,7 +348,10 @@ find_path(XRT_EXTENSION_PATH
 
 include_directories(include)
 if(XRT_EXTENSION_PATH)
-    include_directories(BEFORE ${XRT_EXTENSION_PATH}/extension)
+    include_directories(BEFORE ${XRT_EXTENSION_PATH}/include)
+    file(GLOB CFG_Files_Ext "${XRT_EXTENSION_PATH}/submit/*.cfg.in")
+else()
+    SET(CFG_Files_Ext)
 endif()
 
 ################################################################################
@@ -376,7 +389,10 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         PATTERN *.in EXCLUDE)
 
-file(GLOB CFG_Files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "submit/*.cfg.in")
+file(GLOB CFG_Files "submit/*.cfg.in")
+list(APPEND CFG_Files ${CFG_Files_Ext})
+list(REMOVE_DUPLICATES CFG_Files)
+
 foreach(file ${CFG_Files})
     get_filename_component(fileNoExt ${file} NAME_WE)
     configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
