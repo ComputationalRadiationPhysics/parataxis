@@ -1,0 +1,28 @@
+# Description
+example:
+  name:        Double Slit
+  short:       DoubleSlit
+  author:      Alexander Grund
+
+  description: |
+               Simulates a pair of slits with a density of 1!
+
+# Run-Time Tests
+tests:
+  - name: 256CellsConstPos
+    description: |
+               Double slit is in the middle of Nx256x256 volume
+               Particles are placed in the middle of the cells
+    cmakeflag:   0
+    cfgFile:     0004gpus.cfg
+
+    pre-run:
+        - echo "Just printing something here..."
+    post-run:
+        - echo "Check number of particles..."
+        - echo "Check total energy..."
+        - echo "Creating Energy(B_z) over time plot..."
+        - echo "Fit to expected growth rate..."
+        - echo "Check charge conservation..."
+        - echo "ok / failed"
+        
