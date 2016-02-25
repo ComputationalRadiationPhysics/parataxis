@@ -8,7 +8,9 @@ help()
     echo ""
     echo "usage: $0 [OPTIONS] <example name/directory> <build directory>"
     echo "-h | --help   - Show help"
-    echo "-t<num>       - Use cmake preset <num>"
+    echo "-t <num>      - Use cmake preset <num>"
+    echo "-c <param>    - Parameter to pass to cmake (e.g. '-DCMAKE_BUILD_TYPE=Release')"
+    echo "                Can be used multiple times"
     echo "-f            - Force overwrite of build directory"
     echo ""
 }
@@ -24,17 +26,16 @@ errorAndExit()
     exit 2
 }
 
+params="$@"
+
 # options may be followed by one colon to indicate they have a required argument
-OPTS=`getopt -o ht:f -l help -- "$@"`
+OPTS=`getopt -o ht:c:f -l help -- "$@"`
 if [ $? != 0 ] ; then
     # something went wrong, getopt will put out an error message for us
     exit 1
 fi
 
 eval set -- "$OPTS"
-
-force_param=""
-cmakeFlagsNr=0
 
 while true ; do
     case "$1" in
@@ -43,11 +44,12 @@ while true ; do
             exit 1
             ;;
         -t)
-            cmakeFlagsNr="$2"
+            shift
+            ;;
+        -c)
             shift
             ;;
         -f)
-            force_param="-f"
             ;;
         --) shift; break;;
     esac
@@ -64,7 +66,7 @@ example=$1
 destinationDir=$2
 
 echo "Configuring..."
-$this_dir/configureExample.sh -t$cmakeFlagsNr $force_param $example $destinationDir
+$this_dir/configureExample.sh $params
 
 if [ $? -ne 0 ]; then
     result=$?

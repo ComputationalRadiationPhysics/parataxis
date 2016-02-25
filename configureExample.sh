@@ -8,7 +8,9 @@ help()
     echo ""
     echo "usage: $0 [OPTIONS] <example name/directory> <build directory>"
     echo "-h | --help   - Show help"
-    echo "-t<num>       - Use cmake preset <num>"
+    echo "-t <num>      - Use cmake preset <num>"
+    echo "-c <param>    - Parameter to pass to cmake (e.g. '-DCMAKE_BUILD_TYPE=Release')"
+    echo "                Can be used multiple times"
     echo "-f            - Force overwrite of build directory"
     echo ""
 }
@@ -25,7 +27,7 @@ errorAndExit()
 }
 
 # options may be followed by one colon to indicate they have a required argument
-OPTS=`getopt -o ht:fj: -l help -- "$@"`
+OPTS=`getopt -o ht:fj:c: -l help -- "$@"`
 if [ $? != 0 ] ; then
     # something went wrong, getopt will put out an error message for us
     exit 1
@@ -35,7 +37,8 @@ eval set -- "$OPTS"
 
 force_param=0
 numParallel=1
-cmakeFlagsNr=0
+cmakeFlagsNr=-1
+cmakeFlags=""
 
 while true ; do
     case "$1" in
@@ -49,6 +52,10 @@ while true ; do
             ;;
         -f)
             force_param=1                       
+            ;;
+        -c)
+            cmakeFlags="$cmakeFlags $2"
+            shift
             ;;
         --) shift; break;;
     esac
@@ -83,7 +90,10 @@ if [ ! -d "$destinationDir" ]; then
     errorAndExit "Destination dir $destinationDir could not be created!"
 fi
 
-cmake_flags=`$exampleDir/cmakeFlags $cmakeFlagsNr`
+if [ -f "$exampleDir/cmakeFlags" ] && [ $cmakeFlagsNr -ge 0 ]; then
+    cmakeFlagsDefault=`$exampleDir/cmakeFlags $cmakeFlagsNr`
+    cmakeFlags="$cmakeFlagsDefault $cmakeFlags"
+fi
 
 cd $destinationDir
 
