@@ -2,11 +2,11 @@
 
 import argparse
 import yaml
-import subprocess
 from contextlib import contextmanager
 import os
 import sys
 import shutil
+from execHelpers import execCmds, execCmd
 
 @contextmanager
 def cd(newdir):
@@ -16,24 +16,7 @@ def cd(newdir):
         yield
     finally:
         os.chdir(prevdir)
-        
-def execCmds(cmds):
-    for cmd in cmds:
-        proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while True:
-            output = proc.stdout.readline()
-            if output:
-                print(output.decode(), end='')
-            else:
-                break
-        retCode = proc.poll()
-        if(retCode != 0):
-            print("Executing \"" + cmd + "\" failed with code " + str(retCode))
-            return retCode
-    return 0
 
-def execCmd(cmd):
-    return execCmds([cmd])
 
 def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
     #exampleDir = "/home/grund59/Dokumente/XRayTracing/src/examples/DoubleSlit"
@@ -60,14 +43,16 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
         buildDir = buildBaseDir + "/build_" + shortName + "_cmakePreset_" + str(test["cmakeflag"])
         compileCmd = compileScript + " -f -t " + str(test["cmakeflag"]) + " \"" + exampleDir + "\" \"" + buildDir + "\""
         print("Compiling via " + compileCmd)
-        if(execCmd(compileCmd) != 0):
+        (returnCode, output) = execCmd(compileCmd)
+        if(returnCode != 0):
             print("Compiling failed!")
             errorCode = 1
             continue
         print("Changing to build directory " + buildDir)
         with(cd(buildDir)):
             print("Executing pre-run commands...")
-            if(execCmds(test['pre-run']) != 0):
+            (returnCode, output) = execCmds(test['pre-run'])
+            if(returnCode != 0):
                 errorCode = 2
                 break
             outputDir = "out_" + test["name"]
@@ -75,7 +60,8 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
                 shutil.rmtree(outputDir)
             tbgCmd = "tbg -s \"" + submitCmd + "\" -c submit/" + test["cfgFile"] + " -t " + submitTemplate + " " + outputDir
             print("Submitting to queue: " + tbgCmd)
-            if(execCmd(tbgCmd) != 0):
+            (returnCode, output) = execCmd(tbgCmd)
+            if(returnCode != 0):
                 print("Submit or execution failed!")
                 errorCode = 3
                 break
