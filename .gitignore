@@ -29,3 +29,5 @@
 
 *.project
 *.cproject
+
+buildSystem/__pycache__
