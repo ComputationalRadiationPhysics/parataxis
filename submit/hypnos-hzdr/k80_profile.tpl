@@ -49,6 +49,7 @@ TBG_nodes="$(( ( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 #PBS -o stdout
 #PBS -e stderr
 
+set -o pipefail
 echo 'Running program...'
 
 cd !TBG_dstPath
