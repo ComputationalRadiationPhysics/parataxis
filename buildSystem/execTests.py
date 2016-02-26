@@ -41,7 +41,8 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
     #submitCmd = "qsub"
     #submitTemplate = "submit/hypnos-hzdr/k80_profile.tpl"
 
-    srcDir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+    selfDir = os.path.dirname(os.path.realpath(__file__))
+    srcDir = os.path.dirname(selfDir)
     compileScript = srcDir + "/compileExampleSet.sh"
     if(not os.path.isfile(compileScript)):
         print("Compile script at " + compileScript + " does not exist")
@@ -72,7 +73,7 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
             outputDir = "out_" + test["name"]
             if(os.path.isdir(outputDir)):
                 shutil.rmtree(outputDir)
-            tbgCmd = "tbg -s " + submitCmd + " -c submit/" + test["cfgFile"] + " -t " + submitTemplate + " " + outputDir
+            tbgCmd = "tbg -s \"" + submitCmd + "\" -c submit/" + test["cfgFile"] + " -t " + submitTemplate + " " + outputDir
             print("Submitting to queue: " + tbgCmd)
             if(execCmd(tbgCmd) != 0):
                 print("Submit or execution failed!")
