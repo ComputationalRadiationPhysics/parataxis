@@ -7,6 +7,7 @@ import os
 import sys
 import shutil
 from execHelpers import execCmds, execCmd
+import statusMonitors
 
 @contextmanager
 def cd(newdir):
@@ -43,16 +44,16 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
         buildDir = buildBaseDir + "/build_" + shortName + "_cmakePreset_" + str(test["cmakeflag"])
         compileCmd = compileScript + " -f -t " + str(test["cmakeflag"]) + " \"" + exampleDir + "\" \"" + buildDir + "\""
         print("Compiling via " + compileCmd)
-        (returnCode, output) = execCmd(compileCmd)
-        if(returnCode != 0):
+        res = execCmd(compileCmd)
+        if(res.result != 0):
             print("Compiling failed!")
             errorCode = 1
             continue
         print("Changing to build directory " + buildDir)
         with(cd(buildDir)):
             print("Executing pre-run commands...")
-            (returnCode, output) = execCmds(test['pre-run'])
-            if(returnCode != 0):
+            res = execCmds(test['pre-run'])
+            if(res.result != 0):
                 errorCode = 2
                 break
             outputDir = "out_" + test["name"]
@@ -60,12 +61,14 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
                 shutil.rmtree(outputDir)
             tbgCmd = "tbg -s \"" + submitCmd + "\" -c submit/" + test["cfgFile"] + " -t " + submitTemplate + " " + outputDir
             print("Submitting to queue: " + tbgCmd)
-            (returnCode, output) = execCmd(tbgCmd)
-            if(returnCode != 0):
+            res = execCmd(tbgCmd)
+            if(res.result != 0):
                 print("Submit or execution failed!")
                 errorCode = 3
                 break
             
+            statusMonitors.GetMonitor(submitCmd, res.stdout, res.stderr)
+                        
     return errorCode
             
 def main():
