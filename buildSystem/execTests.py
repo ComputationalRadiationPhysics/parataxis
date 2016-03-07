@@ -8,6 +8,7 @@ import sys
 import shutil
 from execHelpers import execCmds, execCmd
 import statusMonitors
+import time
 
 @contextmanager
 def cd(newdir):
@@ -67,7 +68,43 @@ def runTests(exampleDir, buildBaseDir, submitCmd, submitTemplate):
                 errorCode = 3
                 break
             
-            statusMonitors.GetMonitor(submitCmd, res.stdout, res.stderr)
+            monitor = statusMonitors.GetMonitor(submitCmd, res.stdout, res.stderr)
+            if(monitor.isWaiting):
+                print("Waiting for program to be executed")
+                while (monitor.isWaiting):
+                    time.sleep(5)
+                    monitor.update()
+            if(not monitor.isFinished):
+                print("Waiting for program to be finished")
+                while (not monitor.isFinished):
+                    time.sleep(5)
+                    monitor.update()
+            if(monitor.isWaiting) or (not monitor.isFinished):
+                errorCode = 4
+                break
+            
+            outputFile = outputDir + "/simOutput/output"
+            if(not os.path.isfile(outputFile)):
+                print("Note: " + outputFile + " not found. Check your template so this file is created!\n Skipping check")
+            else:
+                simulationFinished = False
+                with open(outputFile, 'r') as inF:
+                    for line in inF:
+                        if 'full simulation time' in line:
+                            simulationFinished = True
+                            break
+                if(not simulationFinished):
+                    errorCode = 5
+                    print("Test does not seem to have finished successfully!")
+                    continue
+                    
+            print("Executing post-run commands...")
+            res = execCmds(test['post-run'])
+            if(res.result != 0):
+                errorCode = 2
+                break                
+           
+        print("Test \"" + test["name"] + "\" finished successfully!")
                         
     return errorCode
             

@@ -1,7 +1,7 @@
 import subprocess
 import collections
 
-def execCmds(cmds):
+def execCmds(cmds, silent = False):
     """Executes the given commands one by one and returns a tuple consisting of the return code, stdout and stderr"""
     ReturnType = collections.namedtuple('ExecReturn', ['result', 'stdout', 'stderr'])
     output = ""
@@ -13,19 +13,23 @@ def execCmds(cmds):
             errorLine = proc.stderr.readline()
             if outputLine:
                 outputLine = outputLine.decode()
-                print(outputLine, end='')
+                if(not silent):
+                    print(outputLine, end='')
                 output += outputLine
                 
+            if errorLine:
                 errorLine = errorLine.decode()
-                print(errorLine, end='')
+                if(not silent):
+                    print(errorLine, end='')
                 error += errorLine
-            else:
+            if(not outputLine) and (not errorLine):
                 break
         retCode = proc.poll()
         if(retCode != 0):
-            print("Executing `" + cmd + "` failed with code " + str(retCode))
+            if(not silent):
+                print("Executing `" + cmd + "` failed with code " + str(retCode))
             return ReturnType(retCode, output, error)
     return ReturnType(0, output, error)
 
-def execCmd(cmd):
-    return execCmds([cmd])
+def execCmd(cmd, silent = False):
+    return execCmds([cmd], silent)
