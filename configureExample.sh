@@ -99,7 +99,7 @@ fi
 
 cd $destinationDir
 
-cmake_command="cmake $cmake_flags -DXRT_EXTENSION_PATH=$exampleDir $this_dir"
+cmake_command="cmake $cmakeFlags -DXRT_EXTENSION_PATH=$exampleDir $this_dir"
 echo -e "\033[32mcmake command:\033[0m $cmake_command"
 $cmake_command
 result=$?
