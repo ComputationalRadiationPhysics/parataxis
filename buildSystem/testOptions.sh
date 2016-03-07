@@ -47,11 +47,11 @@ parseTestOptions()
                 isExampleList=1
                 ;;
             -e)
-                srcDir="$2"
+                srcDir=${2%/}
                 shift
                 ;;
             -o)
-                destinationDir="$2"
+                destinationDir=${2%/}
                 shift
                 ;;
             --) shift; break;;

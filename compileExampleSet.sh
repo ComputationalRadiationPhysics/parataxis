@@ -62,8 +62,8 @@ if [ $# -ne 2 ] ; then
     exit 1
 fi
 
-example=$1
-destinationDir=$2
+example=${1%/}
+destinationDir=${2%/}
 
 echo "Configuring..."
 $this_dir/configureExample.sh $params

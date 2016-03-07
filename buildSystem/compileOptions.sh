@@ -57,8 +57,8 @@ parseCompileOptions()
         exit 1
     fi
 
-    srcDir=$1
-    destinationDir=$2
+    srcDir=${1%/}
+    destinationDir=${2%/}
 
     if [ $isExampleList -ne 1 ]; then
         # single test

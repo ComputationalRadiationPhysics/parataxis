@@ -68,8 +68,8 @@ if [ $# -ne 2 ] ; then
     exit 1
 fi
 
-example=$1
-destinationDir=$2
+example=${1%/}
+destinationDir=${2%/}
 
 if [ ! -d "$example" ]; then
     exampleDir="$this_dir/examples/$example"
@@ -79,6 +79,8 @@ if [ ! -d "$example" ]; then
 else
     exampleDir=$example
 fi
+
+exampleDir="$( cd "$example" ; pwd )"
 
 if [ ! -d "$destinationDir" ]; then
     mkdir -p "$destinationDir"
