@@ -7,17 +7,19 @@ example:
   description: |
                Simulates a pair of slits with a density of 1!
 
+compile:
+  - cmakeFlags:
+        - 0-7
+
 # Run-Time Tests
 tests:
   - name: 256CellsConstPos
     description: |
                Double slit is in the middle of Nx256x256 volume
                Particles are placed in the middle of the cells
-    cmakeflag:   0
+    cmakeFlag:   0
     cfgFile:     0004gpus.cfg
 
-    pre-run:
-        - echo "Just printing something here..."
     post-run:
         - echo "Check number of particles..."
         - echo "Check total energy..."
@@ -26,3 +28,6 @@ tests:
         - echo "Check charge conservation..."
         - echo "ok / failed"
         
+  - name: Test2
+    cmakeFlag:   0
+    cfgFile:     0004gpus.cfg
