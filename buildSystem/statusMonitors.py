@@ -14,20 +14,18 @@ class BashMonitor(BaseMonitor):
         
 class QSubMonitor(BaseMonitor):
     def __init__(self, stdout, stderr):
-        outLines = stdout.splitlines()
-        if(len(outLines) != 1):
+        if(len(stdout) != 1):
             raise Exception("Unexpected output from qsub command: " + stdout)
-        self.jobId = outLines[0]
+        self.jobId = stdout[0]
         self.update()
     
     def update(self):
         if(self.jobId != None):
             res = execCmd("qstat " + self.jobId, True)
             if(res.result == 0):
-                outLines = res.stdout.splitlines()
-                if(len(outLines) < 2):
+                if(len(res.stdout) < 2):
                     raise Exception("Unexpected output from qstat: " + res.stdout)
-                jobStatus = outLines[-1].split()
+                jobStatus = res.stdout[-1].split()
                 if(len(jobStatus) != 6):
                     raise Exception("Unexpected output from qstat: " + res.stdout)
                 jobState = jobStatus[4]
