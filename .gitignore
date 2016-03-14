@@ -31,3 +31,5 @@
 *.cproject
 
 buildSystem/__pycache__
+*.pyc
+
