@@ -32,4 +32,5 @@
 
 buildSystem/__pycache__
 *.pyc
+testBuilds
 
