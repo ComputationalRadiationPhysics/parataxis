@@ -117,11 +117,13 @@ def main(argv):
     parser.add_argument('-e', '--example', default=exampleFolder, help='Example name, path to one example or example folder (if --all is used)')
     parser.add_argument('-o', '--output', default="testBuilds", help='Path to directory with build directories. If a build directory does not exist, the example will be build automatically')
     parser.add_argument('-a', '--all', action='store_true', help='Process all examples in the folder')
-    parser.add_argument('-j', type=int, default=1, help='Compile in parallel using N processes', metavar='N')
+    parser.add_argument('-j', type=int, default=1, const=-1, nargs='?', help='Compile in parallel using N processes', metavar='N')
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
     parser.add_argument('-t', '--test', action='append', nargs='+', help='Compile and execute only tests with given names')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     options = parser.parse_args(argv)
+    if options.j < 0:
+        options.j = multiprocessing.cpu_count()
     if options.example == exampleFolder and not options.all and len(argv) > 0:
         sys.stdout.write("Path to default example folder given.\n\nShall I process all examples in that folder? [y/n]")
         options.all = strtobool(input().lower())
@@ -141,7 +143,10 @@ def main(argv):
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
-    print("Compiling examples...")
+    if options.j > 1:
+        print("Compiling examples using", options.j, "processes...")
+    else:
+        print("Compiling examples...")
     numErrors = processCompilations(compilations, srcDir, options.dry_run, options.j)
     if(numErrors > 0):
         print(str(numErrors) + " compile errors occured!")
