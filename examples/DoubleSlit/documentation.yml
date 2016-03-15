@@ -27,7 +27,4 @@ tests:
         - echo "Fit to expected growth rate..."
         - echo "Check charge conservation..."
         - echo "ok / failed"
-        
-  - name: Test2
-    cmakeFlag:   0
-    cfgFile:     0004gpus.cfg
+
