@@ -4,7 +4,7 @@
 #include <identifier/value_identifier.hpp>
 #include <particles/Identifier.hpp>
 
-#include <types.h>
+#include <pmacc_types.hpp>
 
 namespace xrt {
 

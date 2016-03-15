@@ -230,7 +230,7 @@ list(APPEND LIBS ${mallocMC_LIBRARIES})
 ################################################################################
 
 find_path(PMACC_ROOT_DIR
-  NAMES include/types.h
+  NAMES include/pmacc_types.hpp
   PATHS "${PICONGPU_ROOT}/src/libPMacc"
   DOC "libPMacc root location."
   )

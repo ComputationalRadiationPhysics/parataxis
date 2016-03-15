@@ -7,7 +7,6 @@
 #include <eventSystem/EventSystem.hpp>
 #include <dataManagement/ISimulationData.hpp>
 
-#include "types.h"
 #include <memory>
 
 namespace xrt {
