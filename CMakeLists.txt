@@ -389,16 +389,16 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         PATTERN *.in EXCLUDE)
 
-file(GLOB CFG_Files "submit/*.cfg.in")
+file(GLOB CFG_Files "${CMAKE_CURRENT_SOURCE_DIR}/submit/*.cfg.in")
 list(APPEND CFG_Files ${CFG_Files_Ext})
 list(REMOVE_DUPLICATES CFG_Files)
 
 foreach(file ${CFG_Files})
     get_filename_component(fileNoExt ${file} NAME_WE)
     configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/submit/${fileNoExt}.cfg" DESTINATION "${CMAKE_INSTALL_PREFIX}/submit")
 endforeach()
 
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/submit/"
-        PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE GROUP_READ GROUP_EXECUTE)
+install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/submit/")
 
