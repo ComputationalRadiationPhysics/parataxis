@@ -4,6 +4,7 @@ import argparse
 import sys
 import os
 import multiprocessing
+from distutils.util import strtobool
 from execHelpers import execCmd
 import Example
 
@@ -121,8 +122,15 @@ def main(argv):
     parser.add_argument('-t', '--test', action='append', nargs='+', help='Compile and execute only tests with given names')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     options = parser.parse_args(argv)
-    if options.example == exampleFolder:
+    if options.example == exampleFolder and not options.all and len(argv) > 0:
+        sys.stdout.write("Path to default example folder given.\n\nShall I process all examples in that folder? [y/n]")
+        options.all = strtobool(input().lower())
+    if len(argv) == 0:
+        sys.stdout.write("No parameters given. Taking default:\nLoad all examples from " + options.example + ", compile and run them.\n\nContinue? [y/n]")
+        if not strtobool(input().lower()):
+            return 1
         options.all = True
+    
     print("Getting examples...")
     exampleDirs = getExampleFolders(options.example, options.all)
     if(len(exampleDirs) == 0):
