@@ -27,7 +27,7 @@ class RuntimeTest:
         If outputDir is set, it will also be set in the compilation and a new compilation will be created if none is found.
         Otherwise the compilations buildPath will not be checked and None will be returned if no matching one is found
         """
-        for c in example.getCompilations():
+        for c in self.example.getCompilations():
             if((self.cmakeFlag, self.env) == c.getConfig()):
                 if(outputDir != None and c.getParentBuildPath() != outputDir):
                     c.setParentBuildPath(outputDir)

@@ -36,12 +36,12 @@ def execCmds(cmds, silent = False):
         proc.stdin.write(str.encode(cmd))
         proc.stdin.flush()
         proc.stdin.close()
-        while True:
+        retCode = None
+        while retCode == None:
             outEOF = readAndOutputLine(proc.stdout, output, silent)
             errEOF = readAndOutputLine(proc.stderr, error, silent)
             if(outEOF and errEOF):
-                break
-        retCode = proc.poll()
+                retCode = proc.poll()
         if(retCode != 0):
             if(not silent):
                 print("Executing `" + cmd + "` failed with code " + str(retCode))
