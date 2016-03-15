@@ -72,7 +72,7 @@ def getRuntimeTests(examples, names = None):
     """
     result = []
     for example in examples:
-        if names == None or (len(names) == 1 and names[0] == '*'):
+        if names == None or (len(names) == 1 and names[0] == '+'):
             result.extend(example.getRuntimeTests())
         else:
             for test in example.getRuntimeTests():

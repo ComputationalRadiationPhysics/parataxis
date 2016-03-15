@@ -2,6 +2,7 @@ import os
 import time
 import statusMonitors
 from execHelpers import execCmd, cd
+from Compilation import Compilation
 
 class RuntimeTest:
     """Represents a specific configuration of an example that is executed and potentially validated
@@ -28,7 +29,7 @@ class RuntimeTest:
         Otherwise the compilations buildPath will not be checked and None will be returned if no matching one is found
         """
         for c in self.example.getCompilations():
-            if((self.cmakeFlag, self.env) == c.getConfig()):
+            if((self.example, self.cmakeFlag, self.env) == c.getConfig()):
                 if(outputDir != None and c.getParentBuildPath() != outputDir):
                     c.setParentBuildPath(outputDir)
                 return c
@@ -118,7 +119,7 @@ class RuntimeTest:
         compilation = self.findCompilation(parentBuildPath)
         if(compilation.lastResult == None):
             print("Did not find pre-compiled program. Compiling...")
-            result = compilation.configAndCompile(srcDir, dryRun)
+            result = compilation.configAndCompile(srcDir, dryRun, False)
         else:
             result = compilation.lastResult
         if(result != None and result.result != 0):
