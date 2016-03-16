@@ -24,10 +24,10 @@ class QSubMonitor(BaseMonitor):
             res = execCmd("qstat " + self.jobId, True)
             if(res.result == 0):
                 if(len(res.stdout) < 2):
-                    raise Exception("Unexpected output from qstat: " + res.stdout)
+                    raise Exception("Unexpected output from qstat: " + str(res.stdout))
                 jobStatus = res.stdout[-1].split()
                 if(len(jobStatus) != 6):
-                    raise Exception("Unexpected output from qstat: " + res.stdout)
+                    raise Exception("Unexpected output from qstat: " + str(res.stdout))
                 jobState = jobStatus[4]
                 if(jobState == "C" or jobState == "E"):
                     self.isWaiting = False
@@ -40,11 +40,11 @@ class QSubMonitor(BaseMonitor):
                     self.isFinished = False
                 else:
                     raise Exception("Invalid job state: " + jobState)
-            elif("Unknown Job Id" in res.stderr):
+            elif("Unknown Job Id" in res.stderr[-1]):
                 self.isWaiting = False
                 self.isFinished = True
             else:
-                raise Exception("Failed to execute qstat: " + res.stdout + "\n" + res.stderr)
+                raise Exception("Failed to execute qstat: " + str(res.stdout) + "\n" + str(res.stderr))
                 
                 
             

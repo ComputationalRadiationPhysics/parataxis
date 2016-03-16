@@ -4,6 +4,7 @@ import argparse
 import sys
 import os
 import multiprocessing
+import shutil
 from distutils.util import strtobool
 from execHelpers import execCmd
 import Example
@@ -121,6 +122,7 @@ def main(argv):
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
     parser.add_argument('-t', '--test', action='append', help='Compile and execute only tests with given names\n"+" Compiles only compilations required by runtime tests')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
+    parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
     options = parser.parse_args(argv)
     if options.j < 0:
         options.j = max(1, min(multiprocessing.cpu_count(), 8))
@@ -143,6 +145,11 @@ def main(argv):
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
+    if not options.no_install_clean:
+        print("Cleaning install directories")
+        for c in compilations:
+            print(c.getInstallPath())
+            shutil.rmtree(c.getInstallPath(), True)
     if options.j > 1:
         print("Compiling examples using", options.j, "processes...")
     else:

@@ -49,12 +49,12 @@ class RuntimeTest:
         startTime = time.time()
         if(self.monitor.isWaiting):
             print("Waiting for program to be executed")
-            while (self.monitor.isWaiting and not __isTimeout(startTime, timeout)):
+            while (self.monitor.isWaiting and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
-        if(not self.monitor.isFinished and not __isTimeout(startTime, timeout)):
+        if(not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
             print("Waiting for program to be finished")
-            while (not self.monitor.isFinished and not __isTimeout(startTime, timeout)):
+            while (not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
         if(self.monitor.isWaiting) or (not self.monitor.isFinished):
@@ -141,7 +141,7 @@ class RuntimeTest:
         """
         if self.lastOutputDir == None:
             return 1
-        compilation = self.__findCompilation()
+        compilation = self.findCompilation()
         if compilation == None:
             return 1
         with(cd(self.lastOutputDir)):
@@ -161,8 +161,8 @@ class RuntimeTest:
                     print(cmd)
                 else:
                     result = execCmd(envSetupCmd + cmd)
-                    if(res.result != 0):
-                        return res.result
+                    if(result.result != 0):
+                        return result.result
            
         print("Test \"" + self.name + "\" finished successfully!")
         return 0
@@ -179,7 +179,7 @@ class RuntimeTest:
         """Submit test to tbg"""
         if(os.path.isdir(outputDir)):
             shutil.rmtree(outputDir)
-        tbgCmd = "tbg -c submit/" + self.cfgFile + " " + outputDir
+        tbgCmd = "tbg -t -s -o 'TBG_profile_file=foo' -c submit/" + self.cfgFile + " " + outputDir
         print("Submitting to queue")
         if(dryRun):
             print(tbgCmd)
@@ -192,7 +192,8 @@ class RuntimeTest:
 
             self.monitor = statusMonitors.GetMonitor(os.environ['TBG_SUBMIT'], res.stdout, res.stderr)
         return 0
-    
+
+    @staticmethod
     def __isTimeout(startTime, timeout):
         """Check if timeout occured (for timeout >=0)"""
         return timeout >= 0 and time.time() - startTime >= timeout
