@@ -121,6 +121,7 @@ def main(argv):
     parser.add_argument('-j', type=int, default=1, const=-1, nargs='?', help='Compile in parallel using N processes', metavar='N')
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
     parser.add_argument('-t', '--test', action='append', help='Compile and execute only tests with given names\n"+" Compiles only compilations required by runtime tests')
+    parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
     options = parser.parse_args(argv)
@@ -141,7 +142,7 @@ def main(argv):
         print("No examples found")
         return 1
     print("Loading examples...")
-    examples = Example.loadExamples(exampleDirs)
+    examples = Example.loadExamples(exampleDirs, options.profil_file)
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)

@@ -8,19 +8,19 @@ class RuntimeTest:
     """Represents a specific configuration of an example that is executed and potentially validated
     
     """
-    def __init__(self, example, testDocu):
+    def __init__(self, example, testDocu, profileFile = None):
         """Create a new runtime test for a given example.
     
         Takes the example and the dictionary defining the test.
-        Requires "name", "cmakeFlag", "cfgFile" and optionally "description", "env", "post-run
+        Requires "name", "cmakeFlag", "cfgFile" and optionally "description", "post-run
         """
         self.example = example
         self.name = testDocu['name']
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
-        self.env = testDocu.get('env')
         self.postRunCmds = testDocu.get('post-run', [])
+        self.profileFile = profileFile
         
     def findCompilation(self, outputDir = None):
         """Return the compilation instance required for this test.
@@ -29,14 +29,14 @@ class RuntimeTest:
         Otherwise the compilations buildPath will not be checked and None will be returned if no matching one is found
         """
         for c in self.example.getCompilations():
-            if((self.example, self.cmakeFlag, self.env) == c.getConfig()):
+            if((self.example, self.cmakeFlag, self.profileFile) == c.getConfig()):
                 if(outputDir != None and c.getParentBuildPath() != outputDir):
                     c.setParentBuildPath(outputDir)
                 return c
         if outputDir == None:
             return None
         else:
-            return Compilation(self.example, self.cmakeFlag, outputDir, self.env)
+            return Compilation(self.example, self.cmakeFlag, outputDir, self.profileFile)
     
     def wait(self, timeout = -1):
         """Wait for the test to finish.
@@ -179,7 +179,10 @@ class RuntimeTest:
         """Submit test to tbg"""
         if(os.path.isdir(outputDir)):
             shutil.rmtree(outputDir)
-        tbgCmd = "tbg -t -s -o 'TBG_profile_file=foo' -c submit/" + self.cfgFile + " " + outputDir
+        tbgCmd = "tbg -t -s";
+        if(self.profileFile):
+            tbgCmd += " -o 'TBG_profile_file='" + self.profileFile + "'"
+        tbgCmd += " -c submit/" + self.cfgFile + " " + outputDir
         print("Submitting to queue")
         if(dryRun):
             print(tbgCmd)

@@ -4,7 +4,6 @@ import sys
 import traceback
 import re
 from execHelpers import execCmd
-from EnvironmentSetup import EnvironmentSetup
 from Compilation import Compilation
 from RuntimeTest import RuntimeTest
 
@@ -30,12 +29,12 @@ def expandList(lst):
                 result.extend([y for y in range(int(match.group(1)), int(match.group(3)) + 1)])
     return result
     
-def loadExamples(exampleDirs):
+def loadExamples(exampleDirs, profileFile = None):
     """Load all examples from the list of directories"""
     result = []
     for exampleDir in exampleDirs:
         try:
-            result.append(Example(exampleDir))
+            result.append(Example(exampleDir, profileFile))
         except Exception as e:
             (etype, eVal, bt) = sys.exc_info()
             strException = traceback.format_exception_only(etype, eVal)
@@ -82,20 +81,21 @@ def getRuntimeTests(examples, names = None):
     
 class Example:
     """Represents an example with its different configurations and tests"""
-    def __init__(self, folder):
-        """Create a new example from a folder. This must contain the documentation.yml"""
+    def __init__(self, folder, profileFile = None):
+        """Create a new example from a folder. This must contain the documentation.yml
+        
+        folder      -- Folder containing the example (especially the documentation.yml)
+        profileFile -- Profile file to be sourced into build/run env
+        """
         docuFile = folder + "/documentation.yml"
         if(not os.path.isfile(docuFile)):
             raise Exception("File " + docuFile + " not found!")
         self.folder = folder
+        self.profileFile = profileFile
         with open(docuFile, 'r') as stream:
             docu = yaml.safe_load(stream)
             
         self.metaData = docu['example']
-        self.env = {}
-        if('env' in docu):
-            for env in docu['env']:
-                self.env[env] = EnvironmentSetup(docu['env'][env])
         self.cmakeFlags = self.__queryCMakeFlags()
         self.compilations = self.__createCompilations(docu)
         self.runtimeTests = self.__createRuntimeTests(docu)
@@ -139,18 +139,15 @@ class Example:
         result = []
         configs = []
         for compilation in docu['compile']:
-            cEnv = compilation.get('env')
-            if(cEnv != None and not cEnv in self.env):
-                raise Exception("Environment definition not found: " + cEnv)
             cmakePresets = expandList(compilation['cmakeFlags'])
             for cmakePreset in cmakePresets:
                 if(cmakePreset < 0):
                     raise Exception("Invalid cmakePreset: " + str(cmakePreset))
                 if(cmakePreset >= len(self.cmakeFlags)):
                     raise Exception("cmakePreset does not exist: " + str(cmakePreset))
-                c = Compilation(self, cmakePreset, env = cEnv)
+                c = Compilation(self, cmakePreset, profileFile = self.profileFile)
                 if(c.getConfig() in configs):
-                    print("Skipping duplicate config " + c.getConfig() + " in " + self.metaData['name'])
+                    print("Skipping duplicate config " + str(c.getConfig()) + " in " + self.metaData['name'])
                 else:
                     result.append(c)
                     configs.append(c.getConfig())
@@ -162,6 +159,6 @@ class Example:
             return []
         result = []
         for test in docu['tests']:
-            result.append(RuntimeTest(self, test))
+            result.append(RuntimeTest(self, test, self.profileFile))
         return result
     

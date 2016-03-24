@@ -3,27 +3,23 @@ from execHelpers import execCmd, ExecReturn
 
 class Compilation:
     """Represents a specific configuration of an example that can be compiled into a given folder"""
-    def __init__(self, example, cmakePreset, parentBuildPath = 'build', env = None):
+    def __init__(self, example, cmakePreset, parentBuildPath = 'build', profileFile = None):
         """Create a new compilation of an example with a cmakePreset
         
         parentBuildPath -- Parent directory where a subfolder for the build will be created. Defaults to 'build'
-        env             -- Name of the environment from the example to use for the build. Defaults to None (current env)
+        profileFile     -- Path to profile file to use (gets sourced into build env). Defaults to None (current env)
         """
         self.example = example
-        self.env = env
+        self.profileFile = profileFile
         self.cmakePreset = cmakePreset
-        if(env == None):
-            envName = ''
-        else:
-            envName = '_' + env
         self.setParentBuildPath(parentBuildPath)
-        self.buildFolderName = "build_" + example.getMetaData()['short'] + envName + "_cmake" + str(cmakePreset)
+        self.buildFolderName = "build_" + example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
         # Remove non-alphanumeric chars
         self.buildFolderName = re.sub("\W", "", self.buildFolderName)
         
     def getConfig(self):
-        """Return the tuple (example, cmakePreset, env) that identifies this Compilation"""
-        return (self.example, self.cmakePreset, self.env)
+        """Return the tuple (example, cmakePreset, profileFile) that identifies this Compilation"""
+        return (self.example, self.cmakePreset, self.profileFile)
         
     def setParentBuildPath(self, parentBuildPath):
         """Set the parent directory for builds. Reset also lastResult to None"""
@@ -35,10 +31,10 @@ class Compilation:
     
     def getSetupCmd(self):
         """Return the string for setting up the environment (can be empty)"""
-        if(self.env == None):
+        if(self.profileFile == None):
             return ''
         else:
-            return self.example.env[self.env].getSetupCmd()
+            return 'source ' + self.profileFile
         
     def getBuildPath(self):
         """Get the path where this is build"""
