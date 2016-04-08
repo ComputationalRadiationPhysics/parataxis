@@ -32,9 +32,33 @@ def expandList(lst):
 def loadExamples(exampleDirs, profileFile = None):
     """Load all examples from the list of directories"""
     result = []
+    names = []
+    shortNames = []
     for exampleDir in exampleDirs:
         try:
-            result.append(Example(exampleDir, profileFile))
+            example = Example(exampleDir, profileFile)
+            name = example.getMetaData()["name"]
+            shortName = example.getMetaData()["short"]
+            if name in names:
+                print("Duplicate name '" + name + "'. Cannot procceed!")
+                return None
+            if shortName in shortNames:
+                newShortName = None
+                for i in range(1000):
+                    if not (shortName + str(i)) in shortNames:
+                        newShortName = shortName + str(i)
+                        break
+                if newShortname == None:
+                    print("Duplicate short name '" + shortName + "'. Cannot procceed!")
+                    return None
+                else:
+                    print("Duplicate short name '" + shortName + "'. Renaming to '" + newShortname + "'.")
+                    shortName = newShortName
+                    example.getMetaData()["short"] = shortName
+
+            names.append(name)
+            shortNames.append(shortName)
+            result.append(example)
         except Exception as e:
             (etype, eVal, bt) = sys.exc_info()
             strException = traceback.format_exception_only(etype, eVal)
