@@ -5,7 +5,7 @@ example:
   author:      Alexander Grund
 
   description: |
-               Simulates a pair of slits with a density of 1!
+               Simulates a pair of slits with a density of 1
 
 compile:
   - cmakeFlags:
@@ -20,8 +20,8 @@ tests:
     cmakeFlag:   0
     cfgFile:     0004gpus.cfg
 
-    post-run:
-        - echo "Test should have succeeded"
+    post-run: &simplePostRun
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_040000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
   - name: 256CellsRandPos
     description: |
                Double slit is in the middle of Nx256x256 volume
@@ -29,8 +29,7 @@ tests:
     cmakeFlag:   2
     cfgFile:     0004gpus.cfg
 
-    post-run:
-        - echo "Test should have succeeded"
+    post-run: *simplePostRun
   - name: 256CellsConstPosDouble
     description: |
                Double slit is in the middle of Nx256x256 volume
@@ -39,6 +38,5 @@ tests:
     cmakeFlag:   6
     cfgFile:     0004gpus.cfg
 
-    post-run:
-        - echo "Test should have succeeded"
+    post-run: *simplePostRun
 
