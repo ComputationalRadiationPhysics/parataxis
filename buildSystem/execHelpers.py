@@ -58,12 +58,19 @@ def execCmd(cmd, silent = False):
     return execCmds([cmd], silent)
     
 @contextmanager
-def cd(newdir):
+def cd(newDir):
     """Change the current directory and switch back at and of `with` block"""
-    prevdir = os.getcwd()
-    os.chdir(os.path.expanduser(newdir))
+    prevDir = os.getcwd()
+    newDir2 = os.path.expanduser(newDir)
+    if not os.path.isdir(newDir2):
+        if os.path.isabs(newDir2):
+            absNewDir = newDir2
+        else:
+            absNewDir = os.path.abspath(newDir2)
+        raise Exception("Cannot change to " + newDir + ": " + absNewDir + " does not exist")
+    os.chdir(newDir2)
     try:
         yield
     finally:
-        os.chdir(prevdir)
+        os.chdir(prevDir)
 
