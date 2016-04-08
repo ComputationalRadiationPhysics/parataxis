@@ -182,7 +182,12 @@ class Example:
         if docu.get('tests') == None:
             return []
         result = []
-        for test in docu['tests']:
-            result.append(RuntimeTest(self, test, self.profileFile))
+        names = []
+        for testEntry in docu['tests']:
+            test = RuntimeTest(self, testEntry, self.profileFile)
+            if test.name in names:
+                raise Exception("Duplicate test '" + test.name + "'")
+            names.append(test.name)
+            result.append(test)
         return result
     
