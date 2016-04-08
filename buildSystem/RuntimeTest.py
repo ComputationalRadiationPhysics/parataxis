@@ -22,6 +22,10 @@ class RuntimeTest:
         self.postRunCmds = testDocu.get('post-run', [])
         self.profileFile = profileFile
         
+    def getConfig(self):
+        """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this RuntimeTest"""
+        return (self.example.getMetaData()["name"], self.cmakeFlag, self.profileFile)
+
     def findCompilation(self, outputDir = None):
         """Return the compilation instance required for this test.
         
@@ -29,7 +33,7 @@ class RuntimeTest:
         Otherwise the compilations buildPath will not be checked and None will be returned if no matching one is found
         """
         for c in self.example.getCompilations():
-            if((self.example, self.cmakeFlag, self.profileFile) == c.getConfig()):
+            if(self.getConfig() == c.getConfig()):
                 if(outputDir != None and c.getParentBuildPath() != outputDir):
                     c.setParentBuildPath(outputDir)
                 return c
@@ -126,12 +130,16 @@ class RuntimeTest:
             return result.result
         
         print("Changing to install directory " + compilation.getInstallPath())
-        with(cd(compilation.getInstallPath())):
-            outputDir = "out_" + self.name
-            self.lastOutputDir = compilation.getInstallPath() + '/' + outputDir
+        outputDir = "out_" + self.name
+        self.lastOutputDir = compilation.getInstallPath() + '/' + outputDir
+        if not os.path.isabs(self.lastOutputDir):
+            self.lastOutputDir = os.path.abspath(self.lastOutputDir)
+        
+        with(cd(compilation.getInstallPath() if not dryRun else ".")):
             result = self.__submit(compilation, outputDir, dryRun)
-            if result:
-                return result
+            
+        if result:
+            return result
         return 0
     
     def finishTest(self, dryRun):
@@ -144,15 +152,16 @@ class RuntimeTest:
         compilation = self.findCompilation()
         if compilation == None:
             return 1
-        with(cd(self.lastOutputDir)):
-            if(not self.wait()):
-                return 2
-            
-            if not dryRun:
-                result = self.checkFinished()
-                if result:
-                    return result
+
+        if(not self.wait()):
+            return 2
+        
+        if not dryRun:
+            result = self.checkFinished()
+            if result:
+                return result
                     
+        with(cd(self.lastOutputDir if not dryRun else ".")):
             print("Executing post-run commands...")
             envSetupCmd = compilation.getSetupCmd()
             
@@ -175,7 +184,7 @@ class RuntimeTest:
                 return False
         return True
     
-    def __submit(self, compilation, outputDir, dryRun):
+    def __submit(self, compilation, outputDir, dryRun = False):
         """Submit test to tbg"""
         if(os.path.isdir(outputDir)):
             shutil.rmtree(outputDir)

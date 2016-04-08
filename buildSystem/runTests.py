@@ -71,10 +71,10 @@ def compileWorker(input, output):
     for compilation, args in iter(input.get, 'STOP'):
         try:
             result = doCompile(compilation, args)
-            output.put(result)
+            output.put((result, compilation))
         except Exception as e:
             print("Error during compilation: " + str(e))
-            output.put(False)
+            output.put((False, compilation))
         
 def processCompilations(compilations, srcDir, dryRun, numParallel):
     """Compile the compilations passed
@@ -100,9 +100,18 @@ def processCompilations(compilations, srcDir, dryRun, numParallel):
         for i in range(numParallel):
             multiprocessing.Process(target=compileWorker, args=(taskQueue, doneQueue)).start()
             taskQueue.put('STOP')
-            
+        
         for i in range(len(compilations)):
-            res = doneQueue.get() # Potentially blocks
+            (res, compilation) = doneQueue.get() # Potentially blocks
+            # Write back result into original compilation (subprocess uses and returns a copy)
+            found = False
+            for c in compilations:
+                if c.getConfig() == compilation.getConfig():
+                    c.lastResult = compilation.lastResult
+                    found = True
+                    break
+            if not found:
+                raise Exception("Did not find compilation " + str(compilation.getConfig()))
             if(not res):
                 numErrors += 1
     return numErrors
@@ -142,7 +151,7 @@ def main(argv):
         print("No examples found")
         return 1
     print("Loading examples...")
-    examples = Example.loadExamples(exampleDirs, options.profil_file)
+    examples = Example.loadExamples(exampleDirs, options.profile_file)
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)

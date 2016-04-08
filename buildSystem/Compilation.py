@@ -1,4 +1,5 @@
 import re
+import os
 from execHelpers import execCmd, ExecReturn
 
 class Compilation:
@@ -18,8 +19,8 @@ class Compilation:
         self.buildFolderName = re.sub("\W", "", self.buildFolderName)
         
     def getConfig(self):
-        """Return the tuple (example, cmakePreset, profileFile) that identifies this Compilation"""
-        return (self.example, self.cmakePreset, self.profileFile)
+        """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this Compilation"""
+        return (self.example.getMetaData()["name"], self.cmakePreset, self.profileFile)
         
     def setParentBuildPath(self, parentBuildPath):
         """Set the parent directory for builds. Reset also lastResult to None"""
@@ -53,12 +54,16 @@ class Compilation:
         Return None for dryRuns or the result tuple from execCmd (result, stdout, stderr)
         """
         buildPath = self.getBuildPath()
+        # Get absolute install path as we change the directory before configure
+        installPath = self.getInstallPath()
+        if not os.path.isabs(installPath):
+            installPath = os.path.abspath(installPath)
         cmd = self.getSetupCmd()
         cmd += 'mkdir -p "' + buildPath + '" && cd "' + buildPath + '"\n'
         cmd += "cmake"
         cmd += " " + self.example.getCMakeFlags()[self.cmakePreset].replace(";", "\\;")
         cmd += ' -DXRT_EXTENSION_PATH="' + self.example.getFolder() + '"'
-        cmd += ' -DCMAKE_INSTALL_PREFIX="' + self.getInstallPath() + '"'
+        cmd += ' -DCMAKE_INSTALL_PREFIX="' + installPath + '"'
         cmd += ' "' + pathToCMakeLists + '"'
         if(dryRun):
             print(cmd)
