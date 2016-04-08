@@ -6,6 +6,7 @@ import os
 import multiprocessing
 import shutil
 from distutils.util import strtobool
+from termHelpers import cprint, thumbsUp, thumbsDown
 from execHelpers import execCmd
 import Example
 
@@ -17,7 +18,7 @@ def getExampleFolders(exampleNameOrFolder, getAll):
     """
     if(getAll):
         if(not os.path.isdir(exampleNameOrFolder)):
-            print("Path to example does not exist: " + exampleNameOrFolder)
+            cprint("Path to example does not exist: " + exampleNameOrFolder, "red")
             sys.exit(1)
         exampleDirs = os.listdir(exampleNameOrFolder)
         parentDir = exampleNameOrFolder
@@ -30,7 +31,7 @@ def getExampleFolders(exampleNameOrFolder, getAll):
             exampleDirs = [exampleFolder]
             parentDir = ""
         else:
-            print("Path to example or example does not exist: " + exampleNameOrFolder)
+            cprint("Path to example or example does not exist: " + exampleNameOrFolder, "red")
             sys.exit(1)
     result = [os.path.abspath(parentDir + "/" + dir) for dir in exampleDirs]
     return result
@@ -73,7 +74,7 @@ def compileWorker(input, output):
             result = doCompile(compilation, args)
             output.put((result, compilation))
         except Exception as e:
-            print("Error during compilation: " + str(e))
+            cprint("Error during compilation: " + str(e), "red")
             output.put((False, compilation))
         
 def processCompilations(compilations, srcDir, dryRun, numParallel):
@@ -119,7 +120,7 @@ def processCompilations(compilations, srcDir, dryRun, numParallel):
 def main(argv):
     srcDir = os.path.abspath(os.path.dirname(__file__) + "../..")
     if not os.path.isfile(srcDir + "/CMakeLists.txt"):
-        print("Unexpected file location. CMakeLists.txt not found in " + srcDir)
+        cprint("Unexpected file location. CMakeLists.txt not found in " + srcDir, "red")
         return 1
     exampleFolder = srcDir + '/examples'
     # Parse the command line.
@@ -145,40 +146,43 @@ def main(argv):
             return 1
         options.all = True
     
-    print("Getting examples...")
+    cprint("Getting examples...", "yellow")
     exampleDirs = getExampleFolders(options.example, options.all)
     if(len(exampleDirs) == 0):
-        print("No examples found")
+        cprint("No examples found", "red")
         return 1
-    print("Loading examples...")
+    cprint("Loading examples...", "yellow")
     examples = Example.loadExamples(exampleDirs, options.profile_file)
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
     if not options.no_install_clean:
-        print("Cleaning install directories")
+        cprint("Cleaning install directories", "yellow")
         for c in compilations:
             print(c.getInstallPath())
             shutil.rmtree(c.getInstallPath(), True)
     if options.j > 1:
-        print("Compiling examples using", options.j, "processes...")
+        cprint("Compiling examples using", options.j, "processes...", "yellow")
     else:
-        print("Compiling examples...")
+        cprint("Compiling examples...", "yellow")
     numErrors = processCompilations(compilations, srcDir, options.dry_run, options.j)
     if(numErrors > 0):
-        print(str(numErrors) + " compile errors occured!")
+        cprint(str(numErrors) + " compile errors occured!", "red")
         return 1
     if(options.compile_only):
         return 0
-    print("Running examples...")
+    cprint("Running examples...", "yellow")
     runtimeTests = Example.getRuntimeTests(examples, options.test)
     for test in runtimeTests:
         if test.execute(srcDir, options.output, options.dry_run) != 0:
             numErrors += 1
     if(numErrors > 0):
-        print(str(numErrors) + " run errors occured!")
+        cprint(str(numErrors) + " run errors occured!", "red")
+        thumbsDown()
         return 1
-    return 0
+    else:
+        thumbsUp()
+        return 0
     
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

@@ -24,18 +24,25 @@ class Compilation:
         
     def setParentBuildPath(self, parentBuildPath):
         """Set the parent directory for builds. Reset also lastResult to None"""
-        self.parentBuildPath = parentBuildPath
+        self.parentBuildPath = os.path.abspath(parentBuildPath)
         self.lastResult = None
     
     def getParentBuildPath(self):
+        assert os.path.isabs(self.parentBuildPath)
         return self.parentBuildPath
     
     def getSetupCmd(self):
-        """Return the string for setting up the environment (can be empty)"""
-        if(self.profileFile == None):
-            return ''
-        else:
-            return 'source ' + self.profileFile
+        """Return command required to setup environment. Includes terminating newline if non-empty"""
+        cmd = ''
+        if(self.profileFile != None):
+            cmd += 'source ' + self.profileFile + '\n'
+        variables = [('BASE_BUILD_PATH', self.getParentBuildPath()),
+                     ('BUILD_PATH',      self.getBuildPath()),
+                     ('INSTALL_PATH',    self.getInstallPath())
+                    ]
+        for (name, value) in variables:
+            cmd += 'export TEST_' + name + '="' + value + '"\n'
+        return cmd
         
     def getBuildPath(self):
         """Get the path where this is build"""
@@ -54,16 +61,12 @@ class Compilation:
         Return None for dryRuns or the result tuple from execCmd (result, stdout, stderr)
         """
         buildPath = self.getBuildPath()
-        # Get absolute install path as we change the directory before configure
-        installPath = self.getInstallPath()
-        if not os.path.isabs(installPath):
-            installPath = os.path.abspath(installPath)
         cmd = self.getSetupCmd()
         cmd += 'mkdir -p "' + buildPath + '" && cd "' + buildPath + '"\n'
         cmd += "cmake"
         cmd += " " + self.example.getCMakeFlags()[self.cmakePreset].replace(";", "\\;")
         cmd += ' -DXRT_EXTENSION_PATH="' + self.example.getFolder() + '"'
-        cmd += ' -DCMAKE_INSTALL_PREFIX="' + installPath + '"'
+        cmd += ' -DCMAKE_INSTALL_PREFIX="' + self.getInstallPath() + '"'
         cmd += ' "' + pathToCMakeLists + '"'
         if(dryRun):
             print(cmd)

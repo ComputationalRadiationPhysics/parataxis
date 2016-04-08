@@ -1,6 +1,8 @@
 import os
 import time
+import re
 import statusMonitors
+from termHelpers import cprint
 from execHelpers import execCmd, cd
 from Compilation import Compilation
 
@@ -16,11 +18,15 @@ class RuntimeTest:
         """
         self.example = example
         self.name = testDocu['name']
+        self.profileFile = profileFile
+        # Check for non-alphanumeric chars
+        if re.match("\W", self.name) != None:
+            raise Exception("Name for runtime test is invalid (only alphanumeric chars are allowed): " + self.name)
+        
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
         self.postRunCmds = testDocu.get('post-run', [])
-        self.profileFile = profileFile
         
     def getConfig(self):
         """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this RuntimeTest"""
@@ -32,6 +38,9 @@ class RuntimeTest:
         If outputDir is set, it will also be set in the compilation and a new compilation will be created if none is found.
         Otherwise the compilations buildPath will not be checked and None will be returned if no matching one is found
         """
+        if outputDir != None:
+            outputDir = os.path.abspath(outputDir)
+
         for c in self.example.getCompilations():
             if(self.getConfig() == c.getConfig()):
                 if(outputDir != None and c.getParentBuildPath() != outputDir):
@@ -52,12 +61,12 @@ class RuntimeTest:
             return True
         startTime = time.time()
         if(self.monitor.isWaiting):
-            print("Waiting for program to be executed")
+            cprint("Waiting for program to be executed", "yellow")
             while (self.monitor.isWaiting and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
         if(not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
-            print("Waiting for program to be finished")
+            cprint("Waiting for program to be finished", "yellow")
             while (not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
@@ -77,9 +86,9 @@ class RuntimeTest:
         if not self.wait(0):
             return 1
         
-        outputFile = self.lastOutputDir + "/simOutput/output"
+        outputFile = self.getSimOutputPath() + "/output"
         if(not os.path.isfile(outputFile)):
-            print("Note: " + outputFile + " not found. Check your template so this file is created!\n Skipping check")
+            cprint("Note: " + outputFile + " not found. Check your template so this file is created!\n Skipping check", "red")
         else:
             simulationFinished = False
             with open(outputFile, 'r') as inF:
@@ -88,7 +97,7 @@ class RuntimeTest:
                         simulationFinished = True
                         break
             if(not simulationFinished):
-                print("Test does not seem to have finished successfully!")
+                cprint("Test does not seem to have finished successfully!", "red")
                 return 2
         return 0
             
@@ -115,25 +124,26 @@ class RuntimeTest:
         """        
         
         self.monitor = None
-        self.lastOutputDir = None
+        self.lastOutputPath = None
         
         if not self.__checkTBGCfg():
             return 1
+            
+        # Print newline for separation
+        print("")
         
         compilation = self.findCompilation(parentBuildPath)
         if(compilation.lastResult == None):
-            print("Did not find pre-compiled program. Compiling...")
+            cprint("Did not find pre-compiled program. Compiling...", "yellow")
             result = compilation.configAndCompile(srcDir, dryRun, False)
         else:
             result = compilation.lastResult
         if(result != None and result.result != 0):
             return result.result
         
-        print("Changing to install directory " + compilation.getInstallPath())
+        cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         outputDir = "out_" + self.name
-        self.lastOutputDir = compilation.getInstallPath() + '/' + outputDir
-        if not os.path.isabs(self.lastOutputDir):
-            self.lastOutputDir = os.path.abspath(self.lastOutputDir)
+        self.lastOutputPath = os.path.abspath(compilation.getInstallPath() + '/' + outputDir)
         
         with(cd(compilation.getInstallPath() if not dryRun else ".")):
             result = self.__submit(compilation, outputDir, dryRun)
@@ -147,7 +157,7 @@ class RuntimeTest:
         
         dryRun -- Just show commands
         """
-        if self.lastOutputDir == None:
+        if self.lastOutputPath == None:
             return 1
         compilation = self.findCompilation()
         if compilation == None:
@@ -161,9 +171,9 @@ class RuntimeTest:
             if result:
                 return result
                     
-        with(cd(self.lastOutputDir if not dryRun else ".")):
-            print("Executing post-run commands...")
-            envSetupCmd = compilation.getSetupCmd()
+        with(cd(self.lastOutputPath if not dryRun else ".")):
+            cprint("Executing post-run commands...", "yellow")
+            envSetupCmd = self.getSetupCmd(compilation)
             
             for cmd in self.postRunCmds:
                 if dryRun:
@@ -173,14 +183,33 @@ class RuntimeTest:
                     if(result.result != 0):
                         return result.result
            
-        print("Test \"" + self.name + "\" finished successfully!")
+        cprint("Test \"" + self.name + "\" finished successfully!", "green")
         return 0
+        
+    def getOutputPath(self):
+        assert (self.lastOutputPath != None), "Runtime test was not started"            
+        return self.lastOutputPath
+        
+    def getSimOutputPath(self):        
+        return self.getOutputPath() + "/simOutput"
+        
+    def getSetupCmd(self, compilation):
+        """Return command required to setup environment. Includes terminating newline if non-empty"""
+        assert os.path.isabs(self.getOutputPath()), "Need absolute path"
+        cmd = compilation.getSetupCmd()
+        variables = [('NAME',           self.name),
+                     ('OUTPUT_PATH',    self.getOutputPath()),
+                     ('SIMOUTPUT_PATH', self.getSimOutputPath())
+                    ]
+        for (name, value) in variables:
+            cmd += 'export TEST_' + name + '="' + value + '"\n'
+        return cmd
 
     def __checkTBGCfg(self):
         """Check if required TBG variables are set in the environment"""
         for var in ('TBG_SUBMIT', 'TBG_TPLFILE'):
             if(not os.environ.get(var)):
-                print("Missing " + var +" definition")
+                cprint("Missing " + var + " definition", "red")
                 return False
         return True
     
@@ -192,14 +221,14 @@ class RuntimeTest:
         if(self.profileFile):
             tbgCmd += " -o 'TBG_profile_file='" + self.profileFile + "'"
         tbgCmd += " -c submit/" + self.cfgFile + " " + outputDir
-        print("Submitting to queue")
+        cprint("Submitting to queue", "yellow")
         if(dryRun):
             print(tbgCmd)
             self.monitor = None
         else:
-            res = execCmd(compilation.getSetupCmd() + tbgCmd)
+            res = execCmd(self.getSetupCmd(compilation) + tbgCmd)
             if(res.result != 0):
-                print("Submit or execution failed!")
+                cprint("Submit or execution failed!", "red")
                 return res.result
 
             self.monitor = statusMonitors.GetMonitor(os.environ['TBG_SUBMIT'], res.stdout, res.stderr)
