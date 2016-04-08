@@ -62,7 +62,7 @@ cd !TBG_dstPath
 export MODULES_NO_OUTPUT=1
 source $profileFile
 if [ $? -ne 0 ] ; then
-  echo "Error: ~/picongpu.profile not found!"
+  echo "Error: $profileFile not found!"
   exit 1
 fi
 unset MODULES_NO_OUTPUT

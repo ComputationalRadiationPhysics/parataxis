@@ -33,6 +33,10 @@ TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
 TBG_nodes="$(( ( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 ## end calculations ##
 
+# overwrite .profile (next 2 lines set to TBG var or nothing)
+TBG_profileFile=$TBG_profileFile
+ profileFile=!TBG_profileFile
+ profileFile=${profileFile:-"$HOME/picongpu.profile"}
 
 set -o pipefail
 echo 'Running program...'
@@ -40,7 +44,11 @@ echo 'Running program...'
 cd !TBG_dstPath
 
 export MODULES_NO_OUTPUT=1
-. ~/picongpu.profile
+source $profileFile
+if [ $? -ne 0 ] ; then
+  echo "Error: $profileFile not found!"
+  exit 1
+fi
 unset MODULES_NO_OUTPUT
     
 #set user rights to u=rwx;g=r-x;o=---
