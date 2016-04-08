@@ -21,10 +21,24 @@ tests:
     cfgFile:     0004gpus.cfg
 
     post-run:
-        - echo "Check number of particles..."
-        - echo "Check total energy..."
-        - echo "Creating Energy(B_z) over time plot..."
-        - echo "Fit to expected growth rate..."
-        - echo "Check charge conservation..."
-        - echo "ok / failed"
+        - echo "Test should have succeeded"
+  - name: 256CellsRandPos
+    description: |
+               Double slit is in the middle of Nx256x256 volume
+               Particles are placed randomly in the cells
+    cmakeFlag:   2
+    cfgFile:     0004gpus.cfg
+
+    post-run:
+        - echo "Test should have succeeded"
+  - name: 256CellsConstPosDouble
+    description: |
+               Double slit is in the middle of Nx256x256 volume
+               Particles are placed randomly in the cells
+               Using double precision
+    cmakeFlag:   6
+    cfgFile:     0004gpus.cfg
+
+    post-run:
+        - echo "Test should have succeeded"
 
