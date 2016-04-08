@@ -129,7 +129,7 @@ def main(argv):
     parser.add_argument('-a', '--all', action='store_true', help='Process all examples in the folder')
     parser.add_argument('-j', type=int, default=1, const=-1, nargs='?', help='Compile in parallel using N processes', metavar='N')
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
-    parser.add_argument('-t', '--test', action='append', help='Compile and execute only tests with given names\n"+" Compiles only compilations required by runtime tests')
+    parser.add_argument('-t', '--test', action='append', const="+", nargs='?', help='Compile and execute only tests with given names. Without names it compiles only compilations required by runtime tests')
     parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
