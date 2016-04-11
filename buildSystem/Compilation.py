@@ -52,7 +52,7 @@ class Compilation:
         """Get the path to which this is installed"""
         return self.getBuildPath() + '/installed'
     
-    def configure(self, pathToCMakeLists, dryRun, silent):
+    def configure(self, pathToCMakeLists, dryRun, verbose, silent):
         """Configure the example via CMake
         
         pathToCMakeLists -- Folder that contains the CMakeLists.txt
@@ -61,35 +61,37 @@ class Compilation:
         Return None for dryRuns or the result tuple from execCmd (result, stdout, stderr)
         """
         buildPath = self.getBuildPath()
-        cmd = self.getSetupCmd()
-        cmd += 'mkdir -p "' + buildPath + '" && cd "' + buildPath + '"\n'
+        setupCmd = self.getSetupCmd()
+        cmd = 'mkdir -p "' + buildPath + '" && cd "' + buildPath + '"\n'
         cmd += "cmake"
         cmd += " " + self.example.getCMakeFlags()[self.cmakePreset].replace(";", "\\;")
         cmd += ' -DXRT_EXTENSION_PATH="' + self.example.getFolder() + '"'
         cmd += ' -DCMAKE_INSTALL_PREFIX="' + self.getInstallPath() + '"'
         cmd += ' "' + pathToCMakeLists + '"'
-        if(dryRun):
+        if dryRun or verbose:
             print(cmd)
+        if dryRun:
             return None
         else:
-            return execCmd(cmd, silent)
+            return execCmd(setupCmd + cmd, silent)
         
-    def compile(self, dryRun, silent):
+    def compile(self, dryRun, verbose, silent):
         """Compile the example (after configuring)        
         dryRun -- Only print the commands
         silent -- Do not print progress to stdout
         Return None for dryRuns or the result tuple from execCmd (result, stdout, stderr)
         """
-        cmd = self.getSetupCmd()
-        cmd += 'cd "' + self.getBuildPath() + '"\n'
+        setupCmd = self.getSetupCmd()
+        cmd = 'cd "' + self.getBuildPath() + '"\n'
         cmd += 'make install'
-        if(dryRun):
+        if dryRun or verbose:
             print(cmd)
+        if dryRun:
             return None
         else:
-            return execCmd(cmd, silent)
+            return execCmd(setupCmd + cmd, silent)
         
-    def configAndCompile(self, pathToCMakeLists, dryRun, silent):
+    def configAndCompile(self, pathToCMakeLists, dryRun, verbose, silent):
         """Compile and configure the example (execute both of them)
         
         pathToCMakeLists -- Folder that contains the CMakeLists.txt
@@ -97,10 +99,10 @@ class Compilation:
         silent           -- Do not print progress to stdout
         Return None for dryRuns or the result tuple from execCmd (result, stdout, stderr)
         """
-        cfgResult = self.configure(pathToCMakeLists, dryRun, silent)
+        cfgResult = self.configure(pathToCMakeLists, dryRun, verbose, silent)
         if(cfgResult != None and cfgResult.result != 0):
             return cfgResult
-        compileResult = self.compile(dryRun, silent)
+        compileResult = self.compile(dryRun, verbose, silent)
         if(compileResult == None):
             return None
         result = ExecReturn(compileResult.result,

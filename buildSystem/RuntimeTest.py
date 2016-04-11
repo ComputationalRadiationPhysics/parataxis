@@ -103,19 +103,19 @@ class RuntimeTest:
                 return 2
         return 0
             
-    def execute(self, srcDir, parentBuildPath, dryRun):
+    def execute(self, srcDir, parentBuildPath, dryRun, verbose):
         """Execute the test and returns 0 on success.
         
         srcDir          -- Path to dir containing the CMakeLists.txt
         parentBuildPath -- Parent path which should contain build folders
         dryRun          -- Just print commands
         """
-        result = self.startTest(srcDir, parentBuildPath, dryRun)
+        result = self.startTest(srcDir, parentBuildPath, dryRun, verbose)
         if result:
             return result
-        return self.finishTest(dryRun)
+        return self.finishTest(dryRun, verbose)
         
-    def startTest(self, srcDir, parentBuildPath, dryRun):
+    def startTest(self, srcDir, parentBuildPath, dryRun, verbose):
         """Start the test (submit to batch system or actually execute it)
         
         Requires 'TBG_SUBMIT' and 'TBG_TPLFILE' to be set in the environment
@@ -138,24 +138,24 @@ class RuntimeTest:
         compilation = self.findCompilation(parentBuildPath)
         if(compilation.lastResult == None):
             cprint("Did not find pre-compiled program. Compiling...", "yellow")
-            result = compilation.configAndCompile(srcDir, dryRun, False)
+            result = compilation.configAndCompile(srcDir, dryRun, verbose, False)
         else:
             result = compilation.lastResult
         if(result != None and result.result != 0):
             return result.result
         
-        cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         outputDir = "out_" + self.name
         self.lastOutputPath = os.path.abspath(compilation.getInstallPath() + '/' + outputDir)
         
+        cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         with(cd(compilation.getInstallPath() if not dryRun else ".")):
-            result = self.__submit(compilation, outputDir, dryRun)
+            result = self.__submit(compilation, outputDir, dryRun, verbose)
             
         if result:
             return result
         return 0
     
-    def finishTest(self, dryRun):
+    def finishTest(self, dryRun, verbose):
         """Finish test after starting it (wait for completion and execute post-build commands)
         
         dryRun -- Just show commands
@@ -179,9 +179,9 @@ class RuntimeTest:
             envSetupCmd = self.getSetupCmd(compilation)
             
             for cmd in self.postRunCmds:
-                if dryRun:
+                if dryRun or verbose:
                     print(cmd)
-                else:
+                if not dryRun:
                     result = execCmd(envSetupCmd + cmd)
                     if(result.result != 0):
                         return result.result
@@ -217,7 +217,7 @@ class RuntimeTest:
                 return False
         return True
     
-    def __submit(self, compilation, outputDir, dryRun = False):
+    def __submit(self, compilation, outputDir, dryRun = False, verbose = False):
         """Submit test to tbg"""
         if(os.path.isdir(outputDir)):
             shutil.rmtree(outputDir)
@@ -226,8 +226,10 @@ class RuntimeTest:
             tbgCmd += " -o 'TBG_profile_file='" + self.profileFile + "'"
         tbgCmd += " -c submit/" + self.cfgFile + " " + outputDir
         cprint("Submitting to queue", "yellow")
-        if(dryRun):
-            print(tbgCmd)
+        if dryRun or verbose:
+            tbgVars = "TBG_SUBMIT="+os.environ.get("TBG_SUBMIT") + " TBG_TPLFILE="+os.environ.get("TBG_TPLFILE")
+            print(tbgVars + " " + tbgCmd)
+        if dryRun:
             self.monitor = None
         else:
             res = execCmd(self.getSetupCmd(compilation) + tbgCmd)

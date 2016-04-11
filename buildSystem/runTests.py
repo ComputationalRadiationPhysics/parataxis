@@ -77,18 +77,19 @@ def compileWorker(input, output):
             cprint("Error during compilation: " + str(e), "red")
             output.put((False, compilation))
         
-def processCompilations(compilations, srcDir, dryRun, numParallel):
+def processCompilations(compilations, srcDir, dryRun, verbose, numParallel):
     """Compile the compilations passed
     
     srcDdir     -- Path to folder with CMakeLists.txt
     dryRun      -- Show only commands
+    verbose     -- Verbose output
     numParallel -- Execute in parallel using N processes
     Return number of errors
     """
     numErrors = 0
     if(numParallel < 2):
         for c in compilations:
-            result = doCompile(c, (srcDir, dryRun, False))
+            result = doCompile(c, (srcDir, dryRun, verbose, False))
             if(not result):
                 numErrors += 1
     else:
@@ -96,7 +97,7 @@ def processCompilations(compilations, srcDir, dryRun, numParallel):
         doneQueue = multiprocessing.Queue()
 
         for c in compilations:
-            taskQueue.put((c, (srcDir, dryRun, True)))
+            taskQueue.put((c, (srcDir, dryRun, verbose, True)))
 
         for i in range(numParallel):
             multiprocessing.Process(target=compileWorker, args=(taskQueue, doneQueue)).start()
@@ -150,6 +151,7 @@ def main(argv):
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
     parser.add_argument('-t', '--test', action='append', const="+", nargs='?', help='Compile and execute only tests with given names. Without names it compiles only compilations required by runtime tests')
     parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
     options = parser.parse_args(argv)
@@ -179,7 +181,7 @@ def main(argv):
     if not options.no_install_clean:
         cprint("Cleaning install directories", "yellow")
         for c in compilations:
-            print(c.getInstallPath())
+            print("\t" + c.getInstallPath())
             shutil.rmtree(c.getInstallPath(), True)
     # Compile
     ############################################################################
@@ -187,7 +189,7 @@ def main(argv):
         cprint("Compiling examples using up to " + str(options.j) + " processes...", "yellow")
     else:
         cprint("Compiling examples...", "yellow")
-    numErrors = processCompilations(compilations, srcDir, options.dry_run, options.j)
+    numErrors = processCompilations(compilations, srcDir, options.dry_run, options.verbose, options.j)
     if(numErrors > 0):
         cprint(str(numErrors) + " compile errors occured!", "red")
         printFailures(compilations = compilations)
@@ -204,16 +206,16 @@ def main(argv):
     if options.k:
         startedTests = []
         for test in runtimeTests:
-            if test.startTest(srcDir, options.output, options.dry_run) != 0:
+            if test.startTest(srcDir, options.output, options.dry_run, options.verbose) != 0:
                 numErrors += 1
             else:
                 startedTests.append(test)
         for test in startedTests:
-            if test.finishTest(options.dry_run) != 0:
+            if test.finishTest(options.dry_run, options.verbose) != 0:
                 numErrors += 1   
     else:
         for test in runtimeTests:
-            if test.execute(srcDir, options.output, options.dry_run) != 0:
+            if test.execute(srcDir, options.output, options.dry_run, options.verbose) != 0:
                 numErrors += 1
     if(numErrors > 0):
         cprint(str(numErrors) + " run errors occured!", "red")
