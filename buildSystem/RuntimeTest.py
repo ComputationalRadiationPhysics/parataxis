@@ -62,12 +62,12 @@ class RuntimeTest:
             return True
         startTime = time.time()
         if(self.monitor.isWaiting):
-            cprint("Waiting for program to be executed", "yellow")
+            cprint("Waiting for " + self.name + " to be executed", "yellow")
             while (self.monitor.isWaiting and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
         if(not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
-            cprint("Waiting for program to be finished", "yellow")
+            cprint("Waiting for " + self.name + " to be finished", "yellow")
             while (not self.monitor.isFinished and not self.__isTimeout(startTime, timeout)):
                 time.sleep(5)
                 self.monitor.update()
@@ -99,7 +99,7 @@ class RuntimeTest:
                         simulationFinished = True
                         break
             if(not simulationFinished):
-                cprint("Test does not seem to have finished successfully!", "red")
+                cprint("Test " + self.name + " does not seem to have finished successfully!", "red")
                 return 2
         return 0
             
