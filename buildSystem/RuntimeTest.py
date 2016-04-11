@@ -27,6 +27,7 @@ class RuntimeTest:
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
         self.postRunCmds = testDocu.get('post-run', [])
+        self.lastResult = False
         
     def getConfig(self):
         """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this RuntimeTest"""
@@ -88,7 +89,8 @@ class RuntimeTest:
         
         outputFile = self.getSimOutputPath() + "/output"
         if(not os.path.isfile(outputFile)):
-            cprint("Note: " + outputFile + " not found. Check your template so this file is created!\n Skipping check", "red")
+            cprint("Note: " + outputFile + " not found. Test was probably not started or template is wrong", "red")
+            return 3
         else:
             simulationFinished = False
             with open(outputFile, 'r') as inF:
@@ -125,6 +127,7 @@ class RuntimeTest:
         
         self.monitor = None
         self.lastOutputPath = None
+        self.lastResult = False
         
         if not self.__checkTBGCfg():
             return 1
@@ -184,10 +187,11 @@ class RuntimeTest:
                         return result.result
            
         cprint("Test \"" + self.name + "\" finished successfully!", "green")
+        self.lastResult = True
         return 0
         
-    def getOutputPath(self):
-        assert (self.lastOutputPath != None), "Runtime test was not started"            
+    def getOutputPath(self, checkStarted = True):
+        assert (not checkStarted or self.lastOutputPath != None), "Runtime test was not started"            
         return self.lastOutputPath
         
     def getSimOutputPath(self):        

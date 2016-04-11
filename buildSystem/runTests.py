@@ -116,6 +116,23 @@ def processCompilations(compilations, srcDir, dryRun, numParallel):
             if(not res):
                 numErrors += 1
     return numErrors
+    
+def printFailures(compilations = None, runtimeTests = None):
+    if compilations:
+        print("Compile tests:")
+        for compilation in compilations:
+            if compilation.lastResult != None and compilation.lastResult.result != 0:
+                print("\t" + str(compilation.getConfig()) + ": " + compilation.getBuildPath())
+    if runtimeTests:
+        print("Runtime tests:")
+        for test in runtimeTests:
+            if not test.lastResult:
+                folder = test.getOutputPath()
+                if folder != None:
+                    folder = ": " + folder
+                else:
+                    folder = ""
+                print("\t" + str(test.getConfig()) + folder)
 
 def main(argv):
     srcDir = os.path.abspath(os.path.dirname(__file__) + "../..")
@@ -129,6 +146,7 @@ def main(argv):
     parser.add_argument('-o', '--output', default="testBuilds", help='Path to directory with build directories. If a build directory does not exist, the example will be build automatically')
     parser.add_argument('-a', '--all', action='store_true', help='Process all examples in the folder')
     parser.add_argument('-j', type=int, default=1, const=-1, nargs='?', help='Compile in parallel using N processes', metavar='N')
+    parser.add_argument('-k', action='store_true', help='Submit all tests at once before waiting for their completion (usefull for batch systems)')
     parser.add_argument('-d', '--dry-run', action='store_true', help='Just print commands and exit')
     parser.add_argument('-t', '--test', action='append', const="+", nargs='?', help='Compile and execute only tests with given names. Without names it compiles only compilations required by runtime tests')
     parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
@@ -146,6 +164,8 @@ def main(argv):
             return 1
         options.all = True
     
+    # Prepare
+    ############################################################################
     cprint("Getting examples...", "yellow")
     exampleDirs = getExampleFolders(options.example, options.all)
     if(len(exampleDirs) == 0):
@@ -161,23 +181,43 @@ def main(argv):
         for c in compilations:
             print(c.getInstallPath())
             shutil.rmtree(c.getInstallPath(), True)
+    # Compile
+    ############################################################################
     if options.j > 1:
-        cprint("Compiling examples using", options.j, "processes...", "yellow")
+        cprint("Compiling examples using up to " + str(options.j) + " processes...", "yellow")
     else:
         cprint("Compiling examples...", "yellow")
     numErrors = processCompilations(compilations, srcDir, options.dry_run, options.j)
     if(numErrors > 0):
         cprint(str(numErrors) + " compile errors occured!", "red")
+        printFailures(compilations = compilations)
+        thumbsDown()
         return 1
     if(options.compile_only):
+        cprint(str(len(compilations)) + " compile tests finished!", "green")    
         return 0
+    # Run
+    ############################################################################
     cprint("Running examples...", "yellow")
     runtimeTests = Example.getRuntimeTests(examples, options.test)
-    for test in runtimeTests:
-        if test.execute(srcDir, options.output, options.dry_run) != 0:
-            numErrors += 1
+    errorTests = []
+    if options.k:
+        startedTests = []
+        for test in runtimeTests:
+            if test.startTest(srcDir, options.output, options.dry_run) != 0:
+                numErrors += 1
+            else:
+                startedTests.append(test)
+        for test in startedTests:
+            if test.finishTest(options.dry_run) != 0:
+                numErrors += 1   
+    else:
+        for test in runtimeTests:
+            if test.execute(srcDir, options.output, options.dry_run) != 0:
+                numErrors += 1
     if(numErrors > 0):
         cprint(str(numErrors) + " run errors occured!", "red")
+        printFailures(runtimeTests = runtimeTests)
         thumbsDown()
         return 1
     else:
