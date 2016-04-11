@@ -35,6 +35,15 @@ tests:
                Double slit is in the middle of Nx256x256 volume
                Particles are placed randomly in the cells
                Using double precision
+    cmakeFlag:   4
+    cfgFile:     0004gpus.cfg
+
+    post-run: *simplePostRun
+  - name: 256CellsRandPosDouble
+    description: |
+               Double slit is in the middle of Nx256x256 volume
+               Particles are placed randomly in the cells
+               Using double precision
     cmakeFlag:   6
     cfgFile:     0004gpus.cfg
 
