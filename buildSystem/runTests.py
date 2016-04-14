@@ -23,13 +23,13 @@ def getExampleFolders(exampleNameOrFolder, getAll):
         exampleDirs = os.listdir(exampleNameOrFolder)
         parentDir = exampleNameOrFolder
     elif(os.path.isdir(exampleNameOrFolder)):
-        exampleDirs = ['exampleNameOrFolder']
-        parentDir = ""
+        exampleDirs = [exampleNameOrFolder]
+        parentDir = "."
     else:
         exampleFolder = "examples/" + exampleNameOrFolder
         if(os.path.isdir(exampleFolder)):
             exampleDirs = [exampleFolder]
-            parentDir = ""
+            parentDir = "."
         else:
             cprint("Path to example or example does not exist: " + exampleNameOrFolder, "red")
             sys.exit(1)
@@ -128,7 +128,7 @@ def printFailures(compilations = None, runtimeTests = None):
         print("Runtime tests:")
         for test in runtimeTests:
             if not test.lastResult:
-                folder = test.getOutputPath()
+                folder = test.getOutputPath(False)
                 if folder != None:
                     folder = ": " + folder
                 else:
