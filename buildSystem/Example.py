@@ -120,6 +120,11 @@ class Example:
             docu = yaml.safe_load(stream)
             
         self.metaData = docu['example']
+        # Default shortname used if not set
+        if(not 'short' in self.metaData):
+            shortName = self.metaData['name']
+            re.sub("\W", "", shortName)
+            self.metaData['short'] = shortName
         self.cmakeFlags = self.__queryCMakeFlags()
         self.compilations = self.__createCompilations(docu)
         self.runtimeTests = self.__createRuntimeTests(docu)
