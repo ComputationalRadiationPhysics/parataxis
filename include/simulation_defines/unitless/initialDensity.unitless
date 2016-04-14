@@ -2,6 +2,21 @@
 
 #include "generators.hpp"
 
+namespace xrt {
+namespace initialDensity {
+namespace AvailableGenerators {
+
+    struct Const;
+    struct Line;
+    struct Cuboid;
+    struct Cylinder;
+    struct DoubleSlit;
+    struct RaisingLine;
+
+}  // namespace AvailableGenerators
+}  // namespace initialDensity
+}  // namespace xrt
+
 namespace PMacc { namespace traits {
 
     template<>
