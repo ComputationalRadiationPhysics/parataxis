@@ -239,6 +239,13 @@ class RuntimeTest:
 
             self.monitor = statusMonitors.GetMonitor(os.environ['TBG_SUBMIT'], res.stdout, res.stderr)
         return 0
+    
+    def __str__(self):
+        (exName, cmakeCfg, profileFile) = self.getConfig()
+        result = "Runtime test for " + exName + ", cmakeCfg: " + str(cmakeCfg)
+        if profileFile:
+            result += ", profileFile: " + profileFile
+        return result
 
     @staticmethod
     def __isTimeout(startTime, timeout):

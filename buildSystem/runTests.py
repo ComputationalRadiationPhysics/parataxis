@@ -123,7 +123,7 @@ def printFailures(compilations = None, runtimeTests = None):
         print("Compile tests:")
         for compilation in compilations:
             if compilation.lastResult != None and compilation.lastResult.result != 0:
-                print("\t" + str(compilation.getConfig()) + ": " + compilation.getBuildPath())
+                print("\t" + str(compilation) + ": " + compilation.getBuildPath())
     if runtimeTests:
         print("Runtime tests:")
         for test in runtimeTests:
@@ -133,7 +133,7 @@ def printFailures(compilations = None, runtimeTests = None):
                     folder = ": " + folder
                 else:
                     folder = ""
-                print("\t" + str(test.getConfig()) + folder)
+                print("\t" + str(test) + folder)
 
 def main(argv):
     srcDir = os.path.abspath(os.path.dirname(__file__) + "../..")

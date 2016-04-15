@@ -112,3 +112,10 @@ class Compilation:
         self.lastResult = result
         return result
 
+    def __str__(self):
+        (exName, cmakeCfg, profileFile) = self.getConfig()
+        result = "Compilation of " + exName + ", cmakeCfg: " + str(cmakeCfg)
+        if profileFile:
+            result += ", profileFile: " + profileFile
+        return result
+
