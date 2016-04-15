@@ -1,0 +1,39 @@
+#pragma once
+
+#include "math/vector/compile-time/UInt32.hpp"
+
+namespace xrt {
+namespace initialDensity {
+
+    namespace AvailableGenerators{
+
+        /** Cuboid in 3D or rectangle in 2D */
+        struct Cuboid
+        {
+            using Offset = PMacc::math::CT::UInt32<
+                    /** Offset in cells in x-direction */
+                    31
+                    /** Offset in cells in y-direction */,
+                    31
+                    /** Offset in cells in z-direction */,
+                    31
+                    >;
+            using Size = PMacc::math::CT::UInt32<
+                    /** Size in cells in x-direction */
+                    1
+                    /** Size in cells in y-direction */,
+                    1
+                    /** Size in cells in z-direction */,
+                    1
+                    >;
+            /** Value used */
+            static constexpr float_64 value = 1;
+        };
+    };
+
+    using Generator =
+            /** Generator used */
+            AvailableGenerators::Cuboid;
+
+}  // namespace initialDensity
+}  // namespace xrt

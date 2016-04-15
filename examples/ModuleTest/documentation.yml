@@ -1,0 +1,50 @@
+# Description
+example:
+  name:        ModuleTest
+  author:      Alexander Grund
+
+  description: |
+               Tests functionality of code parts or the whole system.
+               No real case simulated
+               Volume Size: 32x64x64 cells
+
+compile:
+  - cmakeFlags:
+        - 0-3
+
+# Run-Time Tests
+tests:
+  - name: SingleCellCt
+    description: |
+               Single point of density at [31, 31, 31]
+               Count particles on detector
+    cmakeFlag:   0
+    cfgFile:     0001gpus.cfg
+    post-run: &simplePostRun
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_000200.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+
+  - name: SingleCellCtDouble
+    description: |
+               Single point of density at [31, 31, 31]
+               Count particles on detector
+               Double precision
+    cmakeFlag:   1
+    cfgFile:     0001gpus.cfg
+    post-run: *simplePostRun
+
+  - name: SingleCellWave
+    description: |
+               Single point of density at [31, 31, 31]
+               Regular (wave) detector
+    cmakeFlag:   2
+    cfgFile:     0001gpus.cfg
+    post-run: *simplePostRun
+    
+  - name: SingleCellWaveDouble
+    description: |
+               Single point of density at [31, 31, 31]
+               Regular (wave) detector
+               Double precision
+    cmakeFlag:   3
+    cfgFile:     0001gpus.cfg
+    post-run: *simplePostRun
