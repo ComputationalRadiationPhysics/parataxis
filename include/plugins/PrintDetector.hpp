@@ -30,6 +30,7 @@ namespace plugins {
 
         uint32_t notifyFrequency;
         std::string fileName;
+        bool noBeamstop;
 
         PMacc::mpi::MPIReduce reduce_;
         using ReduceMethod = PMacc::mpi::reduceMethods::Reduce;
@@ -50,7 +51,8 @@ namespace plugins {
         {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
-                ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
+                ((prefix + ".fileName").c_str(), po::value<std::string>(&fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
+                ((prefix + ".noBeamstop").c_str(), po::value<bool>(&noBeamstop)->default_value(false), "Do not delete 'shadow' of target")
                 ;
         }
 
@@ -78,6 +80,8 @@ namespace plugins {
                    );
 
             if (isMaster){
+                if(!noBeamstop)
+                    doBeamstop(masterBuffer_->getDataBox(), size);
                 std::stringstream fileName;
                 fileName << this->fileName
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
@@ -103,6 +107,22 @@ namespace plugins {
         void pluginUnload() override
         {
             masterBuffer_.reset();
+        }
+    private:
+        template<class T_DataBox>
+        void doBeamstop(T_DataBox&& data, const Space2D& size)
+        {
+            const Space simSize = Environment::get().SubGrid().getTotalDomain().size;
+            float_X numBeamCellsX = CELL_DEPTH * simSize.z() / Detector::cellWidth;
+            float_X numBeamCellsY = CELL_HEIGHT * simSize.y() / Detector::cellHeight;
+            const Space2D start((size.x() - numBeamCellsX) / 2, (size.y() - numBeamCellsY) / 2);
+            const Space2D end((size.x() + numBeamCellsX) / 2, (size.y() + numBeamCellsY) / 2);
+            PMacc::log< XRTLogLvl::IN_OUT >("Applying beamstop in range %1%-%2%/%3%-%4%") % start.x() % end.x() % start.y() % end.y();
+            for(unsigned y = start.y(); y < end.y(); y++)
+            {
+                for(unsigned x = start.x(); x < end.x(); x++)
+                    data(Space2D(x, y)) = 0;
+            }
         }
     };
 
