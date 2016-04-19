@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "debug/LogLevels.hpp"
 #include "math/Max.hpp"
+#include "math/round.hpp"
 #include <nvidia/reduce/Reduce.hpp>
 #include <algorithms/TypeCast.hpp>
 
@@ -46,7 +47,8 @@ namespace xrt {
         using Phase        = Resolve_t<laserConfig::phase::UsedValue>;
         using Direction    = Resolve_t<laserConfig::direction::UsedValue>;
 
-        static constexpr uint32_t numTimeStepsLaserPulse = laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T;
+        // Calculate the number of timesteps the laser is active. It is rounded to the nearest timestep (so error is at most half a timestep)
+        static constexpr uint32_t numTimeStepsLaserPulse = math::floatToIntRound(laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T);
         static constexpr float_64 phi_0 = 0; // Phase offset at t = 0 (in range [0, 2*PI) )
         uint32_t timeStepsProcessed = 0;
 
