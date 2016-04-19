@@ -2,22 +2,19 @@ import subprocess
 import collections
 from contextlib import contextmanager
 import os
+import threading
 
-def readAndOutputLine(fileHandle, output, silent):
-    """Read and print a line from the file
+def __readAndOutput(fileHandle, output, silent):
+    """Read and print a content from the file(handle)
     
     If anything is read, append to output (list) and print it if silent is not false
-    Returns whether EOF was reached
     """
-    outputLine = fileHandle.readline()
-    if outputLine:
-        outputLine = outputLine.decode('UTF-8').rstrip()
-        if(not silent):
-            print(outputLine)
-        output.append(outputLine)
-        return False
-    else:
-        return True
+    for line in fileHandle:
+        if line:
+            line = line.decode('UTF-8').rstrip()
+            if(not silent):
+                print(line)
+            output.append(line)
 
 ExecReturn = collections.namedtuple('ExecReturn', ['result', 'stdout', 'stderr'])
 
@@ -33,15 +30,19 @@ def execCmds(cmds, silent = False):
     retCode = 0
     for cmd in cmds:
         proc = subprocess.Popen(["bash", "-e"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+        # Start threads to avoid deadlocking on many output
+        stdoutThread = threading.Thread(target=__readAndOutput, args=(proc.stdout, output, silent))
+        stdoutThread.setDaemon(True)
+        stdoutThread.start()
+        stdoutThread = threading.Thread(target=__readAndOutput, args=(proc.stderr, error, silent))
+        stdoutThread.setDaemon(True)
+        stdoutThread.start()
+        # Write commands
         proc.stdin.write(str.encode(cmd))
         proc.stdin.flush()
         proc.stdin.close()
-        retCode = None
-        while retCode == None:
-            outEOF = readAndOutputLine(proc.stdout, output, silent)
-            errEOF = readAndOutputLine(proc.stderr, error, silent)
-            if(outEOF and errEOF):
-                retCode = proc.poll()
+        # Wait till finish
+        retCode = proc.wait()
         if(retCode != 0):
             if(not silent):
                 print("Executing `" + cmd + "` failed with code " + str(retCode))
