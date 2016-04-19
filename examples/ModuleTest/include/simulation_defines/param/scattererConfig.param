@@ -1,0 +1,29 @@
+#pragma once
+
+namespace xrt {
+namespace particles {
+namespace scatterer {
+
+    namespace conditions {
+
+        /** Scattering when density field is above threshold */
+        struct OnThreshold
+        {
+            /** Threshold to use */
+            static constexpr float_X threshold = 1e-10;
+        };
+
+    }  // namespace conditions
+
+    namespace direction {
+        /** Scatter to a fixed direction given by the angle in Y and Z */
+        struct Fixed{
+            static constexpr float_64 angleY = 0;
+            static constexpr float_64 angleZ = 3e-3;
+        };
+
+    }  // namespace direction
+
+}  // namespace scatterer
+}  // namespace particles
+}  // namespace xrt

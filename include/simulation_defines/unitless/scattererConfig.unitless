@@ -7,6 +7,22 @@
 #include "particles/scatterer/Reflect.hpp"
 #include "particles/scatterer/RandomDirection.hpp"
 
+namespace xrt { namespace particles { namespace scatterer {
+
+    namespace conditions {
+        struct Never;
+        struct OnTreshold;
+        struct OnRandom;
+    }  // namespace conditions
+
+    namespace direction {
+        struct Reflect;
+        struct Fixed;
+        struct RandomDirection;
+    }  // namespace direction
+
+}}}  // namespace xrt
+
 namespace PMacc {
 namespace traits {
 

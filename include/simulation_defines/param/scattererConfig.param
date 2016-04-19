@@ -35,8 +35,8 @@ namespace scatterer {
 
         /** Inverts the direction */
         struct Reflect;
+        /** Scatter to a fixed direction given by the angle in Y and Z */
         struct Fixed{
-            static constexpr float_64 x = 1;
             static constexpr float_64 angleY = 0;
             static constexpr float_64 angleZ = 3e-3;
         };

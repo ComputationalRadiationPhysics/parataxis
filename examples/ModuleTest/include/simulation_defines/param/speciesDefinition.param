@@ -1,0 +1,57 @@
+#pragma once
+
+#include "simulation_defines.hpp"
+#include "particles/Particles.hpp"
+#include "particles/XrtParticleDescription.hpp"
+#include <compileTime/conversion/MakeSeq.hpp>
+#include <boost/mpl/vector.hpp>
+#include <boost/mpl/string.hpp>
+
+namespace xrt {
+
+    /*########################### define particle attributes #####################*/
+
+    /* describe attributes of a particle*/
+    typedef PMacc::MakeSeq<
+            position<position_pic>,
+            direction,
+            globalId,
+            creationTime,
+            startPhase
+    >::type DefaultParticleAttributes;
+
+    typedef PMacc::MakeSeq<
+            DefaultParticleAttributes
+    >::type DefaultAttributesSeq;
+
+    /*########################### end particle attributes ########################*/
+
+    /*########################### define species #################################*/
+
+    /* wave length for photons in m */
+    value_identifier(float_X, wavelengthPhotons, 0.1 * 1e-9);
+    /* energy for photons in J */
+    value_identifier(float_X, energyPhotons, 8 * UNITCONV_keV_to_Joule);
+    value_identifier(float_X, amplitudePhotons, 1);
+
+    typedef bmpl::vector<
+            particlePusher<particles::pusher::Photon>,
+            particleScatterCondition<particles::scatterer::conditions::OnThreshold>,
+            particleScatterDirection<particles::scatterer::direction::Fixed>,
+            particleDetector<detector::PhotonDetector>,
+            wavelength<wavelengthPhotons>,
+            //energy<energyPhotons>,
+            amplitude<amplitudePhotons>
+    > ParticleFlagsPhotons;
+
+    /*define species photons*/
+    typedef Particles<
+        xrt::particles::ParticleDescription<
+            bmpl::string<'p'>,
+            SuperCellSize,
+            DefaultAttributesSeq,
+            ParticleFlagsPhotons
+        >
+    > PIC_Photons;
+
+}  // namespace xrt
