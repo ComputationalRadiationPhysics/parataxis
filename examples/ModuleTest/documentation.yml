@@ -21,7 +21,7 @@ tests:
     cmakeFlag:   0
     cfgFile:     0001gpus.cfg
     post-run: &simplePostRun
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_000200.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_000100.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
 
   - name: SingleCellCtDouble
     description: |
