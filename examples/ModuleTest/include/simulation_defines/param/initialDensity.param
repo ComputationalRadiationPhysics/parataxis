@@ -2,6 +2,16 @@
 
 #include "math/vector/compile-time/UInt32.hpp"
 
+#ifndef PARAM_CUBE_X
+#   define PARAM_CUBE_X 31
+#endif
+#ifndef PARAM_CUBE_Y
+#   define PARAM_CUBE_Y 31
+#endif
+#ifndef PARAM_CUBE_Z
+#   define PARAM_CUBE_Z 31
+#endif
+
 namespace xrt {
 namespace initialDensity {
 
@@ -12,11 +22,11 @@ namespace initialDensity {
         {
             using Offset = PMacc::math::CT::UInt32<
                     /** Offset in cells in x-direction */
-                    31
+                    PARAM_CUBE_X
                     /** Offset in cells in y-direction */,
-                    31
+                    PARAM_CUBE_Y
                     /** Offset in cells in z-direction */,
-                    31
+                    PARAM_CUBE_Z
                     >;
             using Size = PMacc::math::CT::UInt32<
                     /** Size in cells in x-direction */
