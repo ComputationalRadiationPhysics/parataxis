@@ -52,14 +52,20 @@ namespace detector {
                 // Calculate angle in "back" dimension (when viewed from front) -> X-dimension of detector
                 float_X angleBack = atan(dir.z() / dir.x());
                 // Calculate cell index on detector by angle (histogram-like binning)
-                float_X cellIdxX  = angleBack / angleRangeX_ + size_.x() / static_cast<float_X>(2);
-                // Add (usually very small) offset if the volume is not much smaller than a detector cell
+                float_X cellIdxX  = angleBack / angleRangeX_;
+                // The angles are taken from the center of the volume. If the volume is larger than 1 detector cell
+                // particles from the outside of the volume might hit another detector cell.
+                // So add this additional distance from the volume center
+                // Note: Might produce slightly inaccurate results as e.g. 512(half size) + 1e-5(1 simcell offset) is still 512 for float32
                 cellIdxX += (globalIdx.z() - simSize_.y() / 2) * CELL_DEPTH / cellWidth;
+                // Origin is the center of the detector
+                cellIdxX += size_.x() / static_cast<float_X>(2);
                 targetIdx.x() = float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
                 float_X angleDown = atan(dir.y() / dir.x());
-                float_X cellIdxY  = angleDown / angleRangeY_ + size_.y() / static_cast<float_X>(2);
+                float_X cellIdxY  = angleDown / angleRangeY_;
                 cellIdxY += (globalIdx.y() - simSize_.x() / 2) * CELL_HEIGHT / cellHeight;
+                cellIdxY += size_.y() / static_cast<float_X>(2);
                 targetIdx.y() = float2int_rd(cellIdxY);
 
                 /* Check bounds */
