@@ -118,9 +118,9 @@ namespace plugins {
             const Space2D start((size.x() - numBeamCellsX) / 2, (size.y() - numBeamCellsY) / 2);
             const Space2D end((size.x() + numBeamCellsX) / 2, (size.y() + numBeamCellsY) / 2);
             PMacc::log< XRTLogLvl::IN_OUT >("Applying beamstop in range %1%-%2%/%3%-%4%") % start.x() % end.x() % start.y() % end.y();
-            for(unsigned y = start.y(); y < end.y(); y++)
+            for(unsigned y = start.y(); y <= end.y(); y++)
             {
-                for(unsigned x = start.x(); x < end.x(); x++)
+                for(unsigned x = start.x(); x <= end.x(); x++)
                     data(Space2D(x, y)) = 0;
             }
         }
