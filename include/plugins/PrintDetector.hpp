@@ -52,7 +52,7 @@ namespace plugins {
             desc.add_options()
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
-                ((prefix + ".noBeamstop").c_str(), po::value<bool>(&noBeamstop)->default_value(false), "Do not delete 'shadow' of target")
+                ((prefix + ".noBeamstop").c_str(), po::bool_switch(&noBeamstop)->default_value(false), "Do not delete 'shadow' of target")
                 ;
         }
 
