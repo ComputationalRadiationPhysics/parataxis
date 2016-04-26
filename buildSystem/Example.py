@@ -140,6 +140,17 @@ class Example:
     def getCMakeFlags(self):
         """Return list of CMake presets (each contains a string of flags)"""
         return self.cmakeFlags
+        
+    def addCompilation(self, compilation):
+        config = compilation.getConfig()
+        if (self.metaData['name'] != config[0]):
+            print("Wrong example in ecompilation")
+            return
+        for c in self.compilations:
+            if config == c.getConfig():
+                print("Skipped adding duplicate compilation")
+                return
+        self.compilations.append(compilation)
     
     def getCompilations(self, parentBuildPath = None):
         """Return a list of compilations of this example

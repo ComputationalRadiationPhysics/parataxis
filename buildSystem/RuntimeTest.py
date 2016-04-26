@@ -1,6 +1,7 @@
 import os
 import time
 import re
+import shutil
 import statusMonitors
 from termHelpers import cprint
 from execHelpers import execCmd, cd
@@ -50,7 +51,9 @@ class RuntimeTest:
         if outputDir == None:
             return None
         else:
-            return Compilation(self.example, self.cmakeFlag, outputDir, self.profileFile)
+            c = Compilation(self.example, self.cmakeFlag, outputDir, self.profileFile)
+            self.example.addCompilation(c)
+            return c
     
     def wait(self, timeout = -1):
         """Wait for the test to finish.
@@ -109,6 +112,8 @@ class RuntimeTest:
         srcDir          -- Path to dir containing the CMakeLists.txt
         parentBuildPath -- Parent path which should contain build folders
         dryRun          -- Just print commands
+
+        Return 0 on success
         """
         result = self.startTest(srcDir, parentBuildPath, dryRun, verbose)
         if result:
@@ -123,6 +128,8 @@ class RuntimeTest:
                            (only used if compiled version could not be found)
         parentBuildPath -- Parent path which should contain build folders
         dryRun          -- Just print commands
+
+        Return 0 on success
         """        
         
         self.monitor = None
@@ -137,7 +144,7 @@ class RuntimeTest:
         
         compilation = self.findCompilation(parentBuildPath)
         if(compilation.lastResult == None):
-            cprint("Did not find pre-compiled program. Compiling...", "yellow")
+            cprint("Did not find pre-compiled program for " + self.name+ ". Compiling...", "yellow")
             result = compilation.configAndCompile(srcDir, dryRun, verbose, False)
         else:
             result = compilation.lastResult
@@ -159,23 +166,33 @@ class RuntimeTest:
         """Finish test after starting it (wait for completion and execute post-build commands)
         
         dryRun -- Just show commands
+
+        Return 0 on success
         """
         if self.lastOutputPath == None:
+            if(verbose):
+                cprint("Output path not set, maybe this was not run yet", "red")
             return 1
         compilation = self.findCompilation()
         if compilation == None:
+            if(verbose):
+                cprint("Did not find a compilation.", "red")
             return 1
 
         if(not self.wait()):
+            if(verbose):
+                cprint("Unknown error during wait for program finish", "red")
             return 2
         
         if not dryRun:
             result = self.checkFinished()
             if result:
+                if(verbose):
+                    cprint("Program did not finish successfully", "red")
                 return result
                     
         with(cd(self.lastOutputPath if not dryRun else ".")):
-            cprint("Executing post-run commands...", "yellow")
+            cprint("Executing post-run commands for " + self.name+ "...", "yellow")
             envSetupCmd = self.getSetupCmd(compilation)
             
             for cmd in self.postRunCmds:

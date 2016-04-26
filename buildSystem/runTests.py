@@ -173,7 +173,7 @@ def main(argv):
     if(len(exampleDirs) == 0):
         cprint("No examples found", "red")
         return 1
-    cprint("Loading examples...", "yellow")
+    cprint("Loading " + str(len(exampleDirs)) + " examples...", "yellow")
     examples = Example.loadExamples(exampleDirs, options.profile_file)
     if(examples == None):
         return 1
@@ -186,9 +186,9 @@ def main(argv):
     # Compile
     ############################################################################
     if options.j > 1:
-        cprint("Compiling examples using up to " + str(options.j) + " processes...", "yellow")
+        cprint("Compiling examples with " + str(len(compilations)) + " compilations using up to " + str(options.j) + " processes...", "yellow")
     else:
-        cprint("Compiling examples...", "yellow")
+        cprint("Compiling examples with " + str(len(compilations)) + " compilations...", "yellow")
     numErrors = processCompilations(compilations, srcDir, options.dry_run, options.verbose, options.j)
     if(numErrors > 0):
         cprint(str(numErrors) + " compile errors occured!", "red")
@@ -212,7 +212,7 @@ def main(argv):
                 startedTests.append(test)
         for test in startedTests:
             if test.finishTest(options.dry_run, options.verbose) != 0:
-                numErrors += 1   
+                numErrors += 1
     else:
         for test in runtimeTests:
             if test.execute(srcDir, options.output, options.dry_run, options.verbose) != 0:
