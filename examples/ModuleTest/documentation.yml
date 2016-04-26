@@ -20,7 +20,7 @@ tests:
                No density
                Particle counter
     cmakeFlag: 0
-    cfgFile:   0001gpus.cfg
+    cfgFile:   0001gpusNoBeamstop.cfg
     post-run: &simplePostRun
         - cp "${TEST_SIMOUTPUT_PATH}/detector_000100.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
 
@@ -30,7 +30,7 @@ tests:
                Particle counter
                Double precision
     cmakeFlag: 1
-    cfgFile:   0001gpus.cfg
+    cfgFile:   0001gpusNoBeamstop.cfg
     post-run: *simplePostRun
 
   - name: SingleCellCt
