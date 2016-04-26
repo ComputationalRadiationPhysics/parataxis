@@ -22,7 +22,7 @@
 cd $TBG_dstPath
 #mkdir picongpu
 cp -r $TBG_projectPath/bin .
-#cp -r $TBG_projectPath/include picongpu
+cp -r $TBG_projectPath/simulation_defines .
 cp -r $TBG_projectPath/submit .
 cp -a $TBG_cfgPath/openib.conf tbg
 cp $TBG_cfgPath/cuda.filter tbg

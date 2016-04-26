@@ -349,9 +349,6 @@ find_path(XRT_EXTENSION_PATH
 include_directories(include)
 if(XRT_EXTENSION_PATH)
     include_directories(BEFORE ${XRT_EXTENSION_PATH}/include)
-    file(GLOB CFG_Files_Ext "${XRT_EXTENSION_PATH}/submit/*.cfg.in")
-else()
-    SET(CFG_Files_Ext)
 endif()
 
 ################################################################################
@@ -380,25 +377,60 @@ if(SCOREP_ENABLE)
 endif(SCOREP_ENABLE)
 
 ################################################################################
+# Configure
+################################################################################
+
+set(XRT_BASE_CFG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/submit")
+file(GLOB CFG_Files RELATIVE "${XRT_BASE_CFG_PATH}" "${XRT_BASE_CFG_PATH}/*.cfg.in")
+if(XRT_EXTENSION_PATH)
+    set(XRT_EXTENSION_CFG_PATH "${XRT_EXTENSION_PATH}/submit")
+    file(GLOB CFG_Files_Ext RELATIVE "${XRT_EXTENSION_CFG_PATH}" "${XRT_EXTENSION_CFG_PATH}/*.cfg.in")
+    list(APPEND CFG_Files ${CFG_Files_Ext})
+    list(REMOVE_DUPLICATES CFG_Files)
+endif()
+
+foreach(fileName ${CFG_Files})
+    get_filename_component(fileNoExt ${fileName} NAME_WE)
+    if(XRT_EXTENSION_PATH AND EXISTS "${XRT_EXTENSION_CFG_PATH}/${fileName}")
+        set(file "${XRT_EXTENSION_CFG_PATH}/${fileName}")
+    else()
+        set(file "${XRT_BASE_CFG_PATH}/${fileName}")
+    endif()
+    configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
+endforeach()
+
+
+################################################################################
 # Install
 ################################################################################
 
+function(CopyOnInstall BASE_SRC_PATH SUB_DIR)
+    file(GLOB_RECURSE _FILES "${BASE_SRC_PATH}/${SUB_DIR}/*")
+    foreach(file ${_FILES})
+        string(REPLACE "${BASE_SRC_PATH}/" "" destFile "${file}")
+        # Installing with rename will overwrite the target file
+        install(FILES "${file}" DESTINATION "${CMAKE_INSTALL_PREFIX}" RENAME "${destFile}")
+    endforeach()
+endfunction()
+
+# Binaries
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin)
+# Submit files
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
         DESTINATION ${CMAKE_INSTALL_PREFIX}
+        USE_SOURCE_PERMISSIONS
         PATTERN *.in EXCLUDE)
-
-file(GLOB CFG_Files "${CMAKE_CURRENT_SOURCE_DIR}/submit/*.cfg.in")
-list(APPEND CFG_Files ${CFG_Files_Ext})
-list(REMOVE_DUPLICATES CFG_Files)
-
-foreach(file ${CFG_Files})
-    get_filename_component(fileNoExt ${file} NAME_WE)
-    configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/submit/${fileNoExt}.cfg" DESTINATION "${CMAKE_INSTALL_PREFIX}/submit")
-endforeach()
-
-install(PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/submit/submitAction.sh"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/submit/")
+# Configured submit files (cfgs)
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/submit"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}")
+# Config files for reference what was compiled (might be changed after compile)
+# Base simulation config
+install(DIRECTORY "include/simulation_defines"
+        DESTINATION ${CMAKE_INSTALL_PREFIX})
+# Extension simulation config (overwrite base)
+if(XRT_EXTENSION_PATH)
+    # Overwrite with extension files
+    CopyOnInstall("${XRT_EXTENSION_PATH}/include" "simulation_defines")
+endif()
 
