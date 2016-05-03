@@ -2,10 +2,20 @@ import os
 import time
 import re
 import shutil
+import itertools
 import statusMonitors
 from termHelpers import cprint
 from execHelpers import execCmd, cd
 from Compilation import Compilation
+
+def flattenList(lst):
+    """Generates a simple list out of a list (possibly) of lists"""
+    for x in lst:
+        if hasattr(x, '__iter__') and not isinstance(x, str):
+            for y in flattenList(x):
+                yield y
+        else:
+            yield x
 
 class RuntimeTest:
     """Represents a specific configuration of an example that is executed and potentially validated
@@ -27,7 +37,8 @@ class RuntimeTest:
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
-        self.postRunCmds = testDocu.get('post-run', [])
+        self.postRunCmds = flattenList(testDocu.get('post-run', []))
+        
         self.lastResult = False
         
     def getConfig(self):
@@ -217,10 +228,16 @@ class RuntimeTest:
     def getSetupCmd(self, compilation):
         """Return command required to setup environment. Includes terminating newline if non-empty"""
         assert os.path.isabs(self.getOutputPath()), "Need absolute path"
+        with open(os.path.join(compilation.getInstallPath(), "submit", self.cfgFile), 'r') as cfgFile:
+            content = cfgFile.read()
+            gridSize = re.search("TBG_gridSize=\"-g (\\d+( \\d+)*)\"", content)
+            assert(gridSize, "Gridsize not found. Please define it in your cfg file using TBG_gridSize")
+            gridSize = gridSize.group(1)
         cmd = compilation.getSetupCmd()
         variables = [('NAME',           self.name),
                      ('OUTPUT_PATH',    self.getOutputPath()),
-                     ('SIMOUTPUT_PATH', self.getSimOutputPath())
+                     ('SIMOUTPUT_PATH', self.getSimOutputPath()),
+                     ('GRID_SIZE',      gridSize)
                     ]
         for (name, value) in variables:
             cmd += 'export TEST_' + name + '="' + value + '"\n'
