@@ -39,7 +39,9 @@ tests:
                Count particles on detector
     cmakeFlag: 2
     cfgFile:   0001gpus.cfg
-    post-run: *simplePostRun
+    post-run: &SingleCellValidation
+        - *simplePostRun
+        - python3 "${TEST_INSTALL_PATH}/testData/validateSingleCell.py"
 
   - name: SingleCellCtDouble
     description: |
@@ -48,7 +50,7 @@ tests:
                Double precision
     cmakeFlag: 3
     cfgFile:   0001gpus.cfg
-    post-run: *simplePostRun
+    post-run: *SingleCellValidation
 
   - name: SingleCellWave
     description: |
@@ -56,7 +58,7 @@ tests:
                Regular (wave) detector
     cmakeFlag: 4
     cfgFile:   0001gpus.cfg
-    post-run: *simplePostRun
+    post-run: *SingleCellValidation
 
   - name: SingleCellWaveDouble
     description: |
@@ -65,5 +67,5 @@ tests:
                Double precision
     cmakeFlag: 5
     cfgFile:   0001gpus.cfg
-    post-run: *simplePostRun
+    post-run: *SingleCellValidation
 
