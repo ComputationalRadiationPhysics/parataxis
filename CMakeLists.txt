@@ -416,6 +416,10 @@ endfunction()
 # Binaries
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/buildSystem"
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+        PATTERN *.pyc EXCLUDE
+        PATTERN __pycache__ EXCLUDE)
 # Submit files
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submit"
         DESTINATION ${CMAKE_INSTALL_PREFIX}
@@ -432,5 +436,9 @@ install(DIRECTORY "include/simulation_defines"
 if(XRT_EXTENSION_PATH)
     # Overwrite with extension files
     CopyOnInstall("${XRT_EXTENSION_PATH}/include" "simulation_defines")
+    if(EXISTS "${XRT_EXTENSION_PATH}/testData")
+        install(DIRECTORY "${XRT_EXTENSION_PATH}/testData"
+                DESTINATION ${CMAKE_INSTALL_PREFIX})
+    endif()
 endif()
 
