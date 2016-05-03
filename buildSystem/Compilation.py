@@ -38,7 +38,8 @@ class Compilation:
             cmd += 'source ' + self.profileFile + '\n'
         variables = [('BASE_BUILD_PATH', self.getParentBuildPath()),
                      ('BUILD_PATH',      self.getBuildPath()),
-                     ('INSTALL_PATH',    self.getInstallPath())
+                     ('INSTALL_PATH',    self.getInstallPath()),
+                     ('CMAKE_FLAGS',     self.example.getCMakeFlags()[self.cmakePreset])
                     ]
         for (name, value) in variables:
             cmd += 'export TEST_' + name + '="' + value + '"\n'
