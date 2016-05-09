@@ -148,10 +148,8 @@ namespace detector {
         PhotonDetectorImpl(const Space2D& size)
         {
             buffer.reset(new Buffer(size));
-            float_64 angleRangeX = atan(size.x() * cellWidth  / distance);
-            float_64 angleRangeY = atan(size.y() * cellHeight / distance);
-            angleRangePerCellX_ = angleRangeX / size.x();
-            angleRangePerCellY_ = angleRangeY / size.y();
+            angleRangePerCellX_ = atan(cellWidth / distance);
+            angleRangePerCellY_ = atan(cellHeight / distance);;
 
             validateConstraints();
         }
