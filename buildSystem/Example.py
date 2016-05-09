@@ -72,7 +72,7 @@ def getCompilations(examples, parentBuildPath = None, runtimeTestNames = None):
     """Return list of compilations from the examples
     
     parentBuildPath  -- Path to place the build folders in or none to not change the existing compilations
-    runtimeTestNames -- If given, return only required compilation for runtime tests with given name
+    runtimeTestNames -- If given, return only required compilation for runtime tests with given name pattern
     """
     result = []
     if runtimeTestNames == None:
@@ -91,7 +91,7 @@ def getCompilations(examples, parentBuildPath = None, runtimeTestNames = None):
 def getRuntimeTests(examples, names = None):
     """Return runtime tests from list of examples
     
-    If names is given, return only the ones with the given name
+    If names is given, return only the ones with the given name (part)
     """
     result = []
     for example in examples:
@@ -99,8 +99,9 @@ def getRuntimeTests(examples, names = None):
             result.extend(example.getRuntimeTests())
         else:
             for test in example.getRuntimeTests():
-                if test.name in names:
-                    result.append(test)
+                for name in names:
+                    if re.match(name.replace("*", ".*"), test.name):
+                        result.append(test)
     return result
     
 class Example:
