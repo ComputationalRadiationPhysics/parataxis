@@ -346,7 +346,7 @@ def GetNumber(name, mainScope, node = None, lvl = 0):
     valType = node['__type']
     if valType.startswith("float"):
         isFloat = True
-    elif valType.startswith("int") or valType.startswith("uint") or valType.startswith("unsigned"):
+    elif valType.startswith("int") or valType.startswith("uint") or valType.startswith("unsigned") or valType == "size_t":
         isFloat = False
     else:
         return None
