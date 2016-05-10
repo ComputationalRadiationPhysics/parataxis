@@ -40,6 +40,11 @@ namespace scatterer {
             static constexpr float_64 angleY = 0;
             static constexpr float_64 angleZ = 3e-3;
         };
+        /** This scatters in a direction linear to the density at the point (angle = factorX|Y * density) */
+        struct LinearDensity{
+            static constexpr float_64 factorY = 0;
+            static constexpr float_64 factorZ = 0;
+        };
         /** Scatter in a random direction specified by evenly distributed spherical coordinates */
         struct RandomDirection{
             /** Minimum and maximum value for the polar angle (range should be <= PI) */

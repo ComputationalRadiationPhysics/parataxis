@@ -4,6 +4,7 @@
 #include "particles/scatterer/OnThreshold.hpp"
 #include "particles/scatterer/OnRandom.hpp"
 #include "particles/scatterer/Fixed.hpp"
+#include "particles/scatterer/LinearDensity.hpp"
 #include "particles/scatterer/Reflect.hpp"
 #include "particles/scatterer/RandomDirection.hpp"
 
@@ -18,6 +19,7 @@ namespace xrt { namespace particles { namespace scatterer {
     namespace direction {
         struct Reflect;
         struct Fixed;
+        struct LinearDensity;
         struct RandomDirection;
     }  // namespace direction
 
@@ -51,6 +53,13 @@ namespace traits {
     {
         using Config = xrt::particles::scatterer::direction::Fixed;
         using type = xrt::particles::scatterer::Fixed<Config>;
+    };
+
+    template<>
+    struct Resolve<xrt::particles::scatterer::direction::LinearDensity>
+    {
+        using Config = xrt::particles::scatterer::direction::LinearDensity;
+        using type = xrt::particles::scatterer::LinearDensity<Config>;
     };
 
     template<>
