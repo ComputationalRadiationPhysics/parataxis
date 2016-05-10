@@ -100,7 +100,7 @@ def getRuntimeTests(examples, names = None):
         else:
             for test in example.getRuntimeTests():
                 for name in names:
-                    if re.match(name.replace("*", ".*"), test.name):
+                    if re.match(name.replace("*", ".*") + "$", test.name):
                         result.append(test)
     return result
     
