@@ -53,20 +53,30 @@ namespace detector {
                 float_X angleBack = atan(dir.z() / dir.x());
                 // Calculate cell index on detector by angle (histogram-like binning)
                 float_X cellIdxX  = angleBack / angleRangeX_;
+                targetIdx.x() = float2int_rd(cellIdxX);
                 // The angles are taken from the center of the volume. If the volume is larger than 1 detector cell
                 // particles from the outside of the volume might hit another detector cell.
                 // So add this additional distance from the volume center
-                // Note: Might produce slightly inaccurate results as e.g. 512(half size) + 1e-5(1 simcell offset) is still 512 for float32
+                // Note: Offset is really small compared to index. So adding directly might produce slightly inaccurate results
+                // as e.g. 512(half size) + 1e-5(1 simcell offset) is still 512 for float32
+                // Hence we strip off the large (integer) part, use the remainder and then put integers together again (see Kahan summation)
+                cellIdxX -= targetIdx.x();
                 cellIdxX += (globalIdx.z() - simSize_.y() / 2) * CELL_DEPTH / cellWidth;
-                // Origin is the center of the detector
-                cellIdxX += size_.x() / static_cast<float_X>(2);
-                targetIdx.x() = float2int_rd(cellIdxX);
+                targetIdx.x() += float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
                 float_X angleDown = atan(dir.y() / dir.x());
                 float_X cellIdxY  = angleDown / angleRangeY_;
-                cellIdxY += (globalIdx.y() - simSize_.x() / 2) * CELL_HEIGHT / cellHeight;
-                cellIdxY += size_.y() / static_cast<float_X>(2);
                 targetIdx.y() = float2int_rd(cellIdxY);
+                cellIdxY -= targetIdx.y();
+                cellIdxY += (globalIdx.y() - simSize_.x() / 2) * CELL_HEIGHT / cellHeight;
+                targetIdx.y() += float2int_rd(cellIdxY);
+
+                // Origin is the center of the detector
+                targetIdx.x() += size_.x() / 2;
+                targetIdx.y() += size_.y() / 2;
+
+                if(targetIdx.x() == 717 && targetIdx.y() == 449)
+                    printf("Src: %u/%u angle: %.9f\n", globalIdx.y(), globalIdx.z(), angleBack);
 
                 /* Check bounds */
                 return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
