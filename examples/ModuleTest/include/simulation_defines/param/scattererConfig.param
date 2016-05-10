@@ -1,5 +1,12 @@
 #pragma once
 
+#ifndef PARAM_FACTORY
+#   define PARAM_FACTORY 0
+#endif
+#ifndef PARAM_FACTORZ
+#   define PARAM_FACTORZ 0
+#endif
+
 namespace xrt {
 namespace particles {
 namespace scatterer {
@@ -21,7 +28,11 @@ namespace scatterer {
             static constexpr float_64 angleY = 0;
             static constexpr float_64 angleZ = 3e-3;
         };
-
+        /** This scatters in a direction linear to the density at the point (angle = factorY|Z * density) */
+        struct LinearDensity{
+            static constexpr float_64 factorY = PARAM_FACTORY;
+            static constexpr float_64 factorZ = PARAM_FACTORZ;
+        };
     }  // namespace direction
 
 }  // namespace scatterer

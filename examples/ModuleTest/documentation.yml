@@ -68,4 +68,15 @@ tests:
     cmakeFlag: 5
     cfgFile:   0001gpus.cfg
     post-run: *SingleCellValidation
+  - name: ScatterOnLineDensity
+    description: |
+               Line of density at [31, n, 10] with density n+1.
+               Scattering in z direction proportional to n which should result in a line on the detector
+               Regular (wave) detector
+               Double precision
+    cmakeFlag: 6
+    cfgFile:   0001gpus.cfg
+    post-run:
+        - *simplePostRun
+        - python3 "${TEST_INSTALL_PATH}/testData/validateScatterOnLineDensity.py"
 

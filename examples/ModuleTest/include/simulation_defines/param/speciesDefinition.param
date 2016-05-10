@@ -7,6 +7,10 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/string.hpp>
 
+#ifndef PARAM_SCATTERER
+#   define PARAM_SCATTERER Fixed
+#endif
+
 namespace xrt {
 
     /*########################### define particle attributes #####################*/
@@ -37,7 +41,7 @@ namespace xrt {
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
             particleScatterCondition<particles::scatterer::conditions::OnThreshold>,
-            particleScatterDirection<particles::scatterer::direction::Fixed>,
+            particleScatterDirection<particles::scatterer::direction::PARAM_SCATTERER>,
             particleDetector<detector::PhotonDetector>,
             wavelength<wavelengthPhotons>,
             //energy<energyPhotons>,

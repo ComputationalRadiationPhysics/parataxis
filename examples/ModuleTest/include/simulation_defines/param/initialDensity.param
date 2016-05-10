@@ -2,14 +2,17 @@
 
 #include "math/vector/compile-time/UInt32.hpp"
 
-#ifndef PARAM_CUBE_X
-#   define PARAM_CUBE_X 31
+#ifndef PARAM_OFFSET_X
+#   define PARAM_OFFSET_X 31
 #endif
 #ifndef PARAM_CUBE_Y
 #   define PARAM_CUBE_Y 31
 #endif
 #ifndef PARAM_CUBE_Z
 #   define PARAM_CUBE_Z 31
+#endif
+#ifndef PARAM_GENERATOR
+#   define PARAM_GENERATOR Cuboid
 #endif
 
 namespace xrt {
@@ -22,7 +25,7 @@ namespace initialDensity {
         {
             using Offset = PMacc::math::CT::UInt32<
                     /** Offset in cells in x-direction */
-                    PARAM_CUBE_X
+                    PARAM_OFFSET_X
                     /** Offset in cells in y-direction */,
                     PARAM_CUBE_Y
                     /** Offset in cells in z-direction */,
@@ -39,11 +42,18 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = 1;
         };
+        struct RaisingLine
+        {
+            /** Dimension in which the line extents (1=y, 2=z) */
+            static constexpr uint32_t nDim = 1;
+            static constexpr size_t offsetX = PARAM_OFFSET_X;
+            static constexpr size_t offsetOther = 10;
+        };
     };
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::Cuboid;
+            AvailableGenerators::PARAM_GENERATOR;
 
 }  // namespace initialDensity
 }  // namespace xrt
