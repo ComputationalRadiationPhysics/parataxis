@@ -37,7 +37,7 @@ class RuntimeTest:
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
-        self.postRunCmds = flattenList(testDocu.get('post-run', []))
+        self.postRunCmds = list(flattenList(testDocu.get('post-run', [])))
         
         self.lastResult = False
         
