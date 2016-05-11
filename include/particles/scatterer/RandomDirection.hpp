@@ -51,9 +51,9 @@ namespace scatterer {
              * With x,y,z=A_x,..., t=polar, p=azimuth. This solved by Wolfram Alpha results in the following formulas
              */
 
-            float_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
-            PMaccMath::sincos(polarAngle, sinPolar, cosPolar);
-            PMaccMath::sincos(azimuthAngle, sinAzimuth, cosAzimuth);
+            trigo_X sinPolar, cosPolar, sinAzimuth, cosAzimuth;
+            PMaccMath::sincos<trigo_X>(polarAngle, sinPolar, cosPolar);
+            PMaccMath::sincos<trigo_X>(azimuthAngle, sinAzimuth, cosAzimuth);
             const float_X x = dir.x();
             const float_X y = dir.y();
             const float_X z = dir.z();

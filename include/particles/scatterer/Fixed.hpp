@@ -23,8 +23,8 @@ namespace scatterer {
             using namespace PMacc::algorithms::precisionCast;
             float3_64 tmpDir;
             tmpDir.x() = 1;
-            tmpDir.y() = tan(T_Config::angleY);
-            tmpDir.z() = tan(T_Config::angleZ);
+            tmpDir.y() = PMaccMath::tan<float_64>(T_Config::angleY);
+            tmpDir.z() = PMaccMath::tan<float_64>(T_Config::angleZ);
             direction_ = precisionCast<float_X>(tmpDir / PMaccMath::abs(tmpDir));
         }
 

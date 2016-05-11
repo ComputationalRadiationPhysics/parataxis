@@ -29,9 +29,9 @@ namespace scatterer {
         HDINLINE void operator()(const T_DensityBox& density, T_Position& pos, T_Direction& dir)
         {
             dir.x() = 1;
-            dir.y() = tan(float_X(T_Config::factorY) * density(Space::create(0)));
-            dir.z() = tan(float_X(T_Config::factorZ) * density(Space::create(0)));
-            dir = dir / PMaccMath::abs(dir);
+            dir.y() = PMaccMath::tan<trigo_X>(float_X(T_Config::factorY) * density(Space::create(0)));
+            dir.z() = PMaccMath::tan<trigo_X>(float_X(T_Config::factorZ) * density(Space::create(0)));
+            dir = dir / PMaccMath::sqrt<sqrt_X>(PMaccMath::abs2(dir));
         }
     };
 

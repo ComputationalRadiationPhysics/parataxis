@@ -5,6 +5,7 @@
 #include "debug/LogLevels.hpp"
 #include "math/angleHelpers.hpp"
 
+#include <algorithms/math.hpp>
 #include <memory/buffers/GridBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
 
@@ -47,10 +48,10 @@ namespace detector {
                 if(dir.x() <= 0)
                     return false;
 
-                using PMacc::algorithms::math::float2int_rd;
+                using PMaccMath::float2int_rd;
 
                 // Calculate angle in "back" dimension (when viewed from front) -> X-dimension of detector
-                float_X angleBack = atan(dir.z() / dir.x());
+                float_X angleBack = PMaccMath::atan2<trigo_X>(dir.z(), dir.x());
                 // Calculate cell index on detector by angle (histogram-like binning)
                 float_X cellIdxX  = angleBack / angleRangeX_;
                 targetIdx.x() = float2int_rd(cellIdxX);
@@ -64,7 +65,7 @@ namespace detector {
                 cellIdxX += (globalIdx.z() - simSize_.y() / 2) * CELL_DEPTH / cellWidth;
                 targetIdx.x() += float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
-                float_X angleDown = atan(dir.y() / dir.x());
+                float_X angleDown = PMaccMath::atan2<trigo_X>(dir.y(), dir.x());
                 float_X cellIdxY  = angleDown / angleRangeY_;
                 targetIdx.y() = float2int_rd(cellIdxY);
                 cellIdxY -= targetIdx.y();
@@ -74,9 +75,6 @@ namespace detector {
                 // Origin is the center of the detector
                 targetIdx.x() += size_.x() / 2;
                 targetIdx.y() += size_.y() / 2;
-
-                if(targetIdx.x() == 717 && targetIdx.y() == 449)
-                    printf("Src: %u/%u angle: %.9f\n", globalIdx.y(), globalIdx.z(), angleBack);
 
                 /* Check bounds */
                 return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&

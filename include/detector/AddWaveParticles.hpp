@@ -79,12 +79,12 @@ namespace detector {
             // Add the negated dot product (reduced by 2*PI), negated as the difference to the reference ray gets smaller with increasing index
             // the x-Position is 0 by definition so don't use it
             const float_X distDiffG = globalCellIdx.y() * CELL_HEIGHT * dir.y() + globalCellIdx.z() * CELL_DEPTH * dir.z();
-            phase += fmod(-distDiffG * k, static_cast<float_X>(2*PI));
+            phase += PMaccMath::fmod(-distDiffG * k, static_cast<float_X>(2*PI));
             // Now add the negated dot product for the remaining in-cell position
             const float_X distDiffI = float_X(particle[position_].x()) * CELL_WIDTH  * dir.x() +
                                       float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
                                       float_X(particle[position_].z()) * CELL_DEPTH  * dir.z();
-            phase += fmod(-distDiffI * k, static_cast<float_X>(2*PI));
+            phase += PMaccMath::fmod(-distDiffI * k, static_cast<float_X>(2*PI));
 
             /*if(dir.z() > 1e-6)
             {
@@ -94,8 +94,8 @@ namespace detector {
                         -distDiffI * k, particle[startPhase_] + curPhase_, phase+2*PI);
             }*/
 
-            float_X sinPhase, cosPhase;
-            PMaccMath::sincos(phase, sinPhase, cosPhase);
+            trigo_X sinPhase, cosPhase;
+            PMaccMath::sincos<trigo_X>(phase, sinPhase, cosPhase);
             PMacc::atomicAddWrapper(&oldVal.get_real(), FloatType(Amplitude::getValue() * cosPhase));
             PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(Amplitude::getValue() * sinPhase));
         }

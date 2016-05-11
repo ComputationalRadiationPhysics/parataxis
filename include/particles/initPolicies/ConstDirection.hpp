@@ -28,7 +28,7 @@ namespace initPolicies {
         {
             const direction::type dir =  ToVector<Config, direction::type::dim>()();
             // We need unit vectors!
-            return dir / PMaccMath::abs(dir);
+            return dir / PMaccMath::sqrt<sqrt_X>(PMaccMath::abs2(dir));
         }
     };
 
