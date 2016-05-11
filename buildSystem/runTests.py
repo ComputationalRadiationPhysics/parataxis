@@ -103,8 +103,11 @@ def processCompilations(compilations, srcDir, dryRun, verbose, numParallel):
             multiprocessing.Process(target=compileWorker, args=(taskQueue, doneQueue)).start()
             taskQueue.put('STOP')
         
-        for i in range(len(compilations)):
+        numCompilations = len(compilations)
+        for i in range(numCompilations):
             (res, compilation) = doneQueue.get() # Potentially blocks
+            print("Finished " + str(i+1) + "/" + str(numCompilations) + " compilations...", end="\r")
+            sys.stdout.flush()
             # Write back result into original compilation (subprocess uses and returns a copy)
             found = False
             for c in compilations:
@@ -113,9 +116,13 @@ def processCompilations(compilations, srcDir, dryRun, verbose, numParallel):
                     found = True
                     break
             if not found:
+                # Add new line after the last \r
+                print("");
                 raise Exception("Did not find compilation " + str(compilation.getConfig()))
             if(not res):
                 numErrors += 1
+        # Show status and clear progress line
+        print("Compiling finished" + " " * 30);
     return numErrors
     
 def printFailures(compilations = None, runtimeTests = None):
