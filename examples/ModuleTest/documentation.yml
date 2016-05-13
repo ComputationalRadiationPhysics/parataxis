@@ -73,10 +73,18 @@ tests:
                Line of density at [31, n, 10] with density n+1.
                Scattering in z direction proportional to n which should result in a line on the detector
                Regular (wave) detector
-               Double precision
     cmakeFlag: 6
     cfgFile:   0001gpus.cfg
-    post-run:
+    post-run: &lineDensityValidation
         - *simplePostRun
         - python3 "${TEST_INSTALL_PATH}/testData/validateScatterOnLineDensity.py"
+  - name: ScatterOnLineDensityDouble
+    description: |
+               Line of density at [31, n, 10] with density n+1.
+               Scattering in z direction proportional to n which should result in a line on the detector
+               Regular (wave) detector
+               Double precision
+    cmakeFlag: 7
+    cfgFile:   0001gpus.cfg
+    post-run: *lineDensityValidation
 
