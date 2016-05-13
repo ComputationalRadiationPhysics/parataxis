@@ -23,26 +23,39 @@ endif(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 find_package(CUDA 5.0 REQUIRED)
 
 set(CUDA_ARCH sm_20 CACHE STRING "set GPU architecture" )
-set(CUDA_FTZ "--ftz=false" CACHE STRING "Set flush to zero for GPU")
-set(CUDA_MATH --use_fast_math CACHE STRING "use intrinsic GPU math functions" )
+option(CUDA_FAST_MATH "use intrinsic GPU math functions" ON)
+option(CUDA_FTZ "Set flush to zero for GPU" OFF)
+option(CUDA_SHOW_CODELINES "Show kernel lines in cuda-gdb and cuda-memcheck" OFF)
 option(CUDA_SHOW_REGISTER "show kernel register and create PTX" OFF)
 option(CUDA_KEEP_FILES "Keep all intermediate files that are generated during internal compilation steps. (folder: nvcc_tmp)" OFF)
-option(CUDA_SHOW_CODELINES "Show kernel lines in cuda-gdb and cuda-memcheck" OFF)
+
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -arch=${CUDA_ARCH})
+
+if(CUDA_FAST_MATH)
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --use_fast_math)
+endif()
+
+if(NOT CUDA_FTZ)
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --ftz=false)
+endif()
+
+if(CUDA_SHOW_REGISTER)
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -Xptxas=-v)
+endif()
 
 if(CUDA_SHOW_CODELINES)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --source-in-ptx -Xcompiler -rdynamic -lineinfo)
     set(CUDA_KEEP_FILES ON CACHE BOOL "activate keep files" FORCE)
-endif(CUDA_SHOW_CODELINES)
+endif()
 
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} ${nvcc_flags} -arch=${CUDA_ARCH} ${CUDA_MATH} ${CUDA_FTZ})
 if(CUDA_SHOW_REGISTER)
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" -Xptxas=-v)
-endif(CUDA_SHOW_REGISTER)
+endif()
 
 if(CUDA_KEEP_FILES)
     file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/nvcc_tmp")
     set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}" --keep --keep-dir "${PROJECT_BINARY_DIR}/nvcc_tmp")
-endif(CUDA_KEEP_FILES)
+endif()
 
 if(NOT CUDA_VERSION VERSION_LESS "7.5")
     set(CUDA_RELAXED_CONSTEXPR "--expt-relaxed-constexpr")
