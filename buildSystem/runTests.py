@@ -159,6 +159,7 @@ def main(argv):
     parser.add_argument('-t', '--test', action='append', const="+", nargs='?', help='Compile and execute only tests with given names. Without names it compiles only compilations required by runtime tests')
     parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
+    parser.add_argument('-D', action='append', help='Additional defines that are directly passed to CMake')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
     options = parser.parse_args(argv)
@@ -181,7 +182,7 @@ def main(argv):
         cprint("No examples found", "red")
         return 1
     cprint("Loading " + str(len(exampleDirs)) + " examples...", "yellow")
-    examples = Example.loadExamples(exampleDirs, options.profile_file)
+    examples = Example.loadExamples(exampleDirs, options.profile_file, ["-D" + define for define in options.D])
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)

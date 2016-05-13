@@ -29,14 +29,17 @@ def expandList(lst):
                 result.extend([y for y in range(int(match.group(1)), int(match.group(3)) + 1)])
     return result
     
-def loadExamples(exampleDirs, profileFile = None):
-    """Load all examples from the list of directories"""
+def loadExamples(exampleDirs, *args):
+    """Load all examples from the list of directories
+    
+       exampleDirs -- List of directories containing 1 example each
+       args        -- Arguments passed to Example ctor"""
     result = []
     names = []
     shortNames = []
     for exampleDir in exampleDirs:
         try:
-            example = Example(exampleDir, profileFile)
+            example = Example(exampleDir, *args)
             name = example.getMetaData()["name"]
             shortName = example.getMetaData()["short"]
             if name in names:
@@ -106,11 +109,12 @@ def getRuntimeTests(examples, names = None):
     
 class Example:
     """Represents an example with its different configurations and tests"""
-    def __init__(self, folder, profileFile = None):
+    def __init__(self, folder, profileFile = None, addCMakeFlags = None):
         """Create a new example from a folder. This must contain the documentation.yml
         
-        folder      -- Folder containing the example (especially the documentation.yml)
-        profileFile -- Profile file to be sourced into build/run env
+        folder        -- Folder containing the example (especially the documentation.yml)
+        profileFile   -- Profile file to be sourced into build/run env
+        addCMakeFlags -- CMake flags that are used for every compilation in addition to the ones defined in the cmakeFlags.sh
         """
         docuFile = folder + "/documentation.yml"
         if(not os.path.isfile(docuFile)):
@@ -126,7 +130,7 @@ class Example:
             shortName = self.metaData['name']
             re.sub("\W", "", shortName)
             self.metaData['short'] = shortName
-        self.cmakeFlags = self.__queryCMakeFlags()
+        self.cmakeFlags = self.__queryCMakeFlags(addCMakeFlags)
         self.compilations = self.__createCompilations(docu)
         self.runtimeTests = self.__createRuntimeTests(docu)
     
@@ -167,13 +171,19 @@ class Example:
         """Return list of runtime tests"""
         return self.runtimeTests
 
-    def __queryCMakeFlags(self):
+    def __queryCMakeFlags(self, addCMakeFlags):
         """Return a list of CMake flag strings as returned by the cmakeFlags shell script"""
         result = execCmd(self.folder + "/cmakeFlags -ll", True)
         if(result.result != 0):
             raise Exception("Could not get cmakeFlags: " + result.stderr.join("\n"))
         else:
-            return [x for x in result.stdout if x.startswith('-D')]
+            result = [x for x in result.stdout if x.startswith('-D')]
+            if addCMakeFlags and len(addCMakeFlags) > 0:
+                addCMakeFlags = " ".join(addCMakeFlags)
+                if len(result) == 0:
+                    return [addCMakeFlags]
+                else:
+                    return [flags + " " + addCMakeFlags for flags in result]
     
     def __createCompilations(self, docu):
         """Create the compilations for this example as in the docu dictionary and return as a list"""
