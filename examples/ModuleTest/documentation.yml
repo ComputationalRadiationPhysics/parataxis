@@ -23,6 +23,11 @@ tests:
     cfgFile:   0001gpusNoBeamstop.cfg
     post-run: &simplePostRun
         - cp "${TEST_SIMOUTPUT_PATH}/detector_000100.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - |
+            output=$(find "${TEST_SIMOUTPUT_PATH}" -type f -name "*.h5" -print0 | xargs -0 -n 1 -r python "${TEST_INSTALL_PATH}/buildSystem/checkOpenPMD_h5.py" -i )
+            result=$?
+            echo "$output"
+            [ $result -eq 0 ] && [[ "$output" != *"Error:"* ]]
 
   - name: NoDensityDouble
     description: |
