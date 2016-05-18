@@ -41,7 +41,8 @@ namespace plugins {
             name("PrintField: Outputs a slice of a field to a PNG or TIFF"),
             prefix(Field::getName() + std::string("_printSlice")),
             notifyFrequency(0),
-            slicePoint(0)
+            slicePoint(0),
+            nAxis_(0)
         {
             Environment::get().PluginConnector().registerPlugin(this);
         }

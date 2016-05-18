@@ -310,6 +310,23 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "PGI")
 endif()
 
 ################################################################################
+# libSplash (+ hdf5 due to required headers)
+################################################################################
+
+# find libSplash installation
+# prefer static libraries over shared ones (but do not force them)
+set(Splash_USE_STATIC_LIBS ON)
+find_package(Splash 1.4.0 COMPONENTS PARALLEL)
+
+if(Splash_FOUND)
+    include_directories(SYSTEM ${Splash_INCLUDE_DIRS})
+    list(APPEND Splash_DEFINITIONS "-DENABLE_HDF5=1")
+    add_definitions(${Splash_DEFINITIONS})
+    list(APPEND LIBS ${Splash_LIBRARIES})
+endif(Splash_FOUND)
+
+
+################################################################################
 # PNGwriter
 ################################################################################
 
@@ -368,8 +385,8 @@ endif()
 # Compile & Link
 ################################################################################
 
-file(GLOB CUDASRCFILES "*.cu")
-file(GLOB SRCFILES "*.cpp")
+set(CUDASRCFILES "main.cu")
+set(SRCFILES "include/plugins/common/stringHelpers.cpp")
 
 cuda_add_executable(${PROJECT_NAME}
     ${CUDASRCFILES}
