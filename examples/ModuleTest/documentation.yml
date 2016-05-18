@@ -10,8 +10,10 @@ example:
 
 compile:
   - cmakeFlags:
-        - 0
-        - 2-5
+        - 0-2
+        - 4
+        - 6
+        - 8
 
 # Run-Time Tests
 tests:
@@ -92,4 +94,13 @@ tests:
     cmakeFlag: 7
     cfgFile:   0001gpus.cfg
     post-run: *lineDensityValidation
+  - name: RandomScatteringDouble
+    description: |
+               Single point of density at [31, 31, 31]
+               Scattering in full random direction -> uniform intensity on detector expected
+               Regular (wave) detector
+               Double precision
+    cmakeFlag: 8
+    cfgFile:   0001gpus.cfg
+    post-run: *simplePostRun
 
