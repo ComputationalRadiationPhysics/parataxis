@@ -205,6 +205,8 @@ class RuntimeTest:
         with(cd(self.lastOutputPath if not dryRun else ".")):
             cprint("Executing post-run commands for " + self.name+ "...", "yellow")
             envSetupCmd = self.getSetupCmd(compilation)
+            if verbose:
+                print("Environment: " + envSetupCmd)
             
             for cmd in self.postRunCmds:
                 if dryRun or verbose:
