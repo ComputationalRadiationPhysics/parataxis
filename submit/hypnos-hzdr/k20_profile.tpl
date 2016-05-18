@@ -23,6 +23,7 @@
 TBG_queue="k20"
 TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
 TBG_mailSettings=${MY_MAILNOTIFY:-"n"}
+TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
 
 # 4 gpus per node if we need more than 4 gpus else same count as TBG_tasks
 TBG_gpusPerNode=`if [ $TBG_tasks -gt 4 ] ; then echo 4; else echo $TBG_tasks; fi`
@@ -77,7 +78,7 @@ cd simOutput
 sleep 1
 
 if [ $? -eq 0 ] ; then
-  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks !TBG_dstPath/bin/!TBG_program !TBG_programParams
+  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks !TBG_dstPath/bin/!TBG_program !TBG_author !TBG_programParams
 fi
 
 #mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -npernode !TBG_gpusPerNode -n !TBG_tasks killall -9 !TBG_program
