@@ -15,8 +15,6 @@ namespace scatterer {
     template<class T_Config, class T_Species = bmpl::_1>
     struct LinearDensity
     {
-        float3_X direction_;
-
         HINLINE explicit
         LinearDensity(uint32_t)
         {}
