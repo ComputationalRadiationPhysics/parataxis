@@ -184,6 +184,8 @@ class Example:
                     return [addCMakeFlags]
                 else:
                     return [flags + " " + addCMakeFlags for flags in result]
+            else:
+                return result
     
     def __createCompilations(self, docu):
         """Create the compilations for this example as in the docu dictionary and return as a list"""

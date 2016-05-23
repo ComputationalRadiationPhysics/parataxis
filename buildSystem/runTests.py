@@ -182,7 +182,7 @@ def main(argv):
         cprint("No examples found", "red")
         return 1
     cprint("Loading " + str(len(exampleDirs)) + " examples...", "yellow")
-    examples = Example.loadExamples(exampleDirs, options.profile_file, ["-D" + define for define in options.D])
+    examples = Example.loadExamples(exampleDirs, options.profile_file, ["-D" + define for define in (options.D or [])])
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
