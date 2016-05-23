@@ -65,9 +65,34 @@ class ParamParser:
             line += newLine
             if newLine.endswith(";"):
                 return line, descriptions
-            if ';' in line:
-                self.throwError("Unexpected ';' in line: " + line)
+            if ';' in newLine:
+                self.throwError("Unexpected ';' in line: " + newLine)
         self.throwError("Did not found end of assignment")
+        
+    def parseFunction(self, line, curScopeInput, level):
+        """Parse something that looks like a function. Adds everything till a closing brace or semicolon"""
+        if line.endswith(';'):
+            return line
+        elif line.endswith('{'):
+            openBraces = 1
+        else:
+            openBraces = 0
+        for newLine in curScopeInput:
+            newLine = newLine.strip()
+            newLine = self.cleanLine(newLine, curScopeInput, level)
+            if not newLine:
+                continue
+            line += newLine
+            if newLine.endswith("{"):
+                openBraces += 1
+            elif newLine == "}":
+                openBraces -= 1
+                if openBraces == 0:
+                    return line
+                elif openBraces < 0:
+                    self.throwError("Unexpected '}'")
+            elif newLine.endswith(";") and openBraces == 0:
+                return line
     
     @staticmethod
     def addDescription(node, mainDescr, subDescriptions = None):
@@ -227,6 +252,15 @@ class ParamParser:
                 self.log("Found functor: " + value + "(" + fType + ")", level)
                 data['__functorType'] = fType
                 data['value'] = value
+                continue
+            if line.startswith("DINLINE") or line.startswith("HINLINE") or line.startswith("HDINLINE"):
+                self.parseFunction(line, curScopeInput, level)
+                self.log("Ignored function", level)
+                continue
+            if line == 'private:' or line == 'protected:' or line == 'public:':
+                continue
+            if line.startswith('PMACC_ALIGN') or re.match("(const )?\w+ \w+(,\w+)*;", line):
+                # Ignore variable declaration
                 continue
 
             self.throwError("Unknown statement: " + line)
