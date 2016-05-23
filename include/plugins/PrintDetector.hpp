@@ -167,7 +167,6 @@ namespace plugins {
 
 
         splash::Dimensions bufferSize(size.x(), size.y(), 1);
-        std::cout << "VALUE " << bufferBox(Space2D(708, 449)) << std::endl;
 
         const char* dataSetName = "meshes/detector";
         hdf5DataFile.write(currentStep,
