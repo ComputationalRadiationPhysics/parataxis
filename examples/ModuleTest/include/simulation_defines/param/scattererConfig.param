@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random/distributions/Uniform.hpp>
+
 #ifndef PARAM_FACTORY
 #   define PARAM_FACTORY 0
 #endif
@@ -37,10 +39,45 @@ namespace scatterer {
         struct RandomDirection{
             /** Minimum and maximum value for the polar angle (range should be <= PI) */
             static constexpr float_64 minPolar = 0;
-            static constexpr float_64 maxPolar = 0.1;
+            static constexpr float_64 maxPolar = 0.01;
             /** Minimum and maximum value for the azimuth angle (range should always be [0, 2*PI) ) */
             static constexpr float_64 minAzimuth = 0;
             static constexpr float_64 maxAzimuth = 2*PI;
+        };
+        struct DoubleRandDirection
+        {
+            template<class T_Unused>
+            struct apply{
+                using type = DoubleRandDirection;
+            };
+            using Distribution = PMacc::random::distributions::Uniform<float>;
+            using Random = typename RNGProvider::GetRandomType<Distribution>::type;
+
+            HINLINE explicit
+            DoubleRandDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
+            {}
+
+            DINLINE void
+            init(Space globalCellIdx)
+            {
+                rand.init(globalCellIdx - offset);
+            }
+
+            template<class T_DensityBox, typename T_Position, typename T_Direction>
+            DINLINE void
+            operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
+            {
+                float_X angleY = rand() * float_X(0.02) - float_X(0.01);
+                float_X angleZ = rand() * float_X(0.02) - float_X(0.01);
+                dir.x() = 1;
+                dir.y() = PMaccMath::tan<trigo_X>(angleY);
+                dir.z() = PMaccMath::tan<trigo_X>(angleZ);
+                dir = dir / PMaccMath::sqrt<sqrt_X>(PMaccMath::abs2(dir));
+            }
+
+        private:
+            PMACC_ALIGN8(offset, const Space);
+            PMACC_ALIGN8(rand, Random);
         };
     }  // namespace direction
 

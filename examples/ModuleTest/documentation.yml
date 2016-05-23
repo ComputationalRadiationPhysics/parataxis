@@ -14,6 +14,14 @@ compile:
         - 4
         - 6
         - 8
+        
+aliases:
+  validateOpenPMD: &validateOpenPMD
+    - |
+        output=$(find "${TEST_SIMOUTPUT_PATH}" -type f -name "*.h5" -print0 | xargs -0 -n 1 -r python "${TEST_INSTALL_PATH}/buildSystem/checkOpenPMD_h5.py" -i )
+        result=$?
+        echo "$output"
+        [ $result -eq 0 ] && [[ "$output" != *"Error:"* ]]
 
 # Run-Time Tests
 tests:
@@ -25,11 +33,7 @@ tests:
     cfgFile:   0001gpusNoBeamstop.cfg
     post-run: &simplePostRun
         - cp "${TEST_SIMOUTPUT_PATH}/detector_000100.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
-        - |
-            output=$(find "${TEST_SIMOUTPUT_PATH}" -type f -name "*.h5" -print0 | xargs -0 -n 1 -r python "${TEST_INSTALL_PATH}/buildSystem/checkOpenPMD_h5.py" -i )
-            result=$?
-            echo "$output"
-            [ $result -eq 0 ] && [[ "$output" != *"Error:"* ]]
+        - *validateOpenPMD
 
   - name: NoDensityDouble
     description: |
@@ -97,10 +101,12 @@ tests:
   - name: RandomScatteringDouble
     description: |
                Single point of density at [31, 31, 31]
-               Scattering in full random direction -> uniform intensity on detector expected
-               Regular (wave) detector
+               Scattering randomly in y/z direction -> Uniform count on a square expected
+               Count particles on detector
                Double precision
     cmakeFlag: 8
-    cfgFile:   0001gpus.cfg
-    post-run: *simplePostRun
+    cfgFile:   0001gpusLong.cfg
+    post-run:
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - *validateOpenPMD
 

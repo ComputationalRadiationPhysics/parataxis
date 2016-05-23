@@ -2,6 +2,14 @@
 
 #include <math/vector/Float.hpp>
 
+#ifndef PARAM_LASER_STEP_LEN
+#   define PARAM_LASER_STEP_LEN 16
+#endif
+
+#ifndef PARAM_LASER_DISTRIBUTION
+#   define PARAM_LASER_DISTRIBUTION Const
+#endif
+
 namespace xrt {
 namespace laserConfig {
 
@@ -15,9 +23,28 @@ namespace laserConfig {
             /** Value to return */
             static constexpr int32_t numParts = 10;
         };
+        
+        struct PtOnly{
+            int32_t numParts;
+            HINLINE PtOnly(Space){}
+            DINLINE void
+            init(Space totalCellIdx)
+            {
+                if(totalCellIdx.y() == 31 && totalCellIdx.z() == 31)
+                    numParts = 150;
+                else
+                    numParts = 0;
+            }
+            
+            DINLINE int32_t
+            operator()(uint32_t timeStep) const
+            {
+                return numParts;
+            }
+        };
 
         /** Value used in the simulation */
-        using UsedValue = Const;
+        using UsedValue = PARAM_LASER_DISTRIBUTION;
 
     }  // namespace distribution
 
@@ -71,7 +98,7 @@ namespace laserConfig {
 
 
     /** Laser pulse length in s */
-    constexpr float_X PULSE_LENGTH = SI::DELTA_T * 16; // 16 timesteps.
+    constexpr float_X PULSE_LENGTH = SI::DELTA_T * PARAM_LASER_STEP_LEN;
     /** Entry-Direction of the laser pulse: 0=Left->Right, 1=Top->Bottom, 2=Front->Back
      *  Ignored for 2D, there it is always Left->Right */
     constexpr int32_t DIRECTION = 0;
