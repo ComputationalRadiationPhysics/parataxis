@@ -57,6 +57,7 @@ namespace xrt {
     public:
 
         Simulation() :
+            mallocMCBuffer(nullptr),
             particleStorage(nullptr)
         {}
 
