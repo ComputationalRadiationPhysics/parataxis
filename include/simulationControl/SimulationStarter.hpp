@@ -1,7 +1,6 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "Simulation.hpp"
 #include "plugins/plugins.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "DensityField.hpp"
@@ -19,12 +18,13 @@ namespace xrt{
 
     enum class ArgsErrorCode {SUCCESS, SUCCESS_EXIT, ERROR};
 
+    template<class T_Simulation>
     class SimulationStarter
     {
         typedef std::list<po::options_description> BoostOptionsList;
         BoostOptionsList options;
 
-        Simulation simulationClass;
+        T_Simulation simulationClass;
         std::list<ISimulationPlugin*> plugins;
 
         template<typename T_Type>

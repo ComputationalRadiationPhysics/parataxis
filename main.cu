@@ -1,6 +1,5 @@
 #include "mallocMCConfig.hpp"
 #include "xrtTypes.hpp"
-#include "simulationControl/SimulationStarter.hpp"
 #include <mpi.h>
 
 int main( int argc, char **argv )
@@ -12,7 +11,7 @@ int main( int argc, char **argv )
         /* Use nested region to make sure all simulation classes are
          * freed before we call MPI_Finalize
          */
-        xrt::SimulationStarter starter;
+        xrt::SimStarter starter;
         xrt::ArgsErrorCode parserCode = starter.parseConfigs(argc, argv);
 
         switch(parserCode)

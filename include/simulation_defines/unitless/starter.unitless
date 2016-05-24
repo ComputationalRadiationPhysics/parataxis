@@ -1,0 +1,10 @@
+#pragma once
+
+#include "Simulation.hpp"
+#include "simulationControl/SimulationStarter.hpp"
+
+namespace xrt {
+
+    using SimStarter = SimulationStarter<Simulation>;
+
+}  // namespace xrt

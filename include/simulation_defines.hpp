@@ -18,3 +18,5 @@ namespace xrt {
 
 #include <simulation_defines/_defaultUnitless.loader>
 #include <simulation_defines/extensionUnitless.loader>
+//load starter after user extensions and all params are loaded
+#include <simulation_defines/unitless/starter.unitless>

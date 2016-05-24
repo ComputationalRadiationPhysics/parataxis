@@ -205,6 +205,7 @@ def main(argv):
         return 1
     if(options.compile_only):
         cprint(str(len(compilations)) + " compile tests finished!", "green")    
+        thumbsUp()
         return 0
     # Run
     ############################################################################
