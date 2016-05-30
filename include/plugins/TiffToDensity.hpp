@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "ShrinkToDim.hpp"
+#include "convertToSpace.hpp"
 
 #include <tiffWriter/tiffWriter.hpp>
 
