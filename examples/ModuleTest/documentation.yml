@@ -109,4 +109,5 @@ tests:
     post-run:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
+        - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
 

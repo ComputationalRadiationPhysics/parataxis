@@ -52,6 +52,7 @@ namespace scatterer {
             };
             using Distribution = PMacc::random::distributions::Uniform<float>;
             using Random = typename RNGProvider::GetRandomType<Distribution>::type;
+            static constexpr float_64 angle = 0.01;
 
             HINLINE explicit
             DoubleRandDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
@@ -67,8 +68,8 @@ namespace scatterer {
             DINLINE void
             operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
             {
-                float_X angleY = rand() * float_X(0.02) - float_X(0.01);
-                float_X angleZ = rand() * float_X(0.02) - float_X(0.01);
+                float_X angleY = rand() * float_X(angle*2) - float_X(angle);
+                float_X angleZ = rand() * float_X(angle*2) - float_X(angle);
                 dir.x() = 1;
                 dir.y() = PMaccMath::tan<trigo_X>(angleY);
                 dir.z() = PMaccMath::tan<trigo_X>(angleZ);
