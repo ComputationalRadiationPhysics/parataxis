@@ -3,6 +3,7 @@ import collections
 from contextlib import contextmanager
 import os
 import threading
+import sys
 
 def __readAndOutput(fileHandle, output, silent):
     """Read and print a content from the file(handle)
@@ -34,15 +35,18 @@ def execCmds(cmds, silent = False):
         stdoutThread = threading.Thread(target=__readAndOutput, args=(proc.stdout, output, silent))
         stdoutThread.setDaemon(True)
         stdoutThread.start()
-        stdoutThread = threading.Thread(target=__readAndOutput, args=(proc.stderr, error, silent))
-        stdoutThread.setDaemon(True)
-        stdoutThread.start()
+        stderrThread = threading.Thread(target=__readAndOutput, args=(proc.stderr, error, silent))
+        stderrThread.setDaemon(True)
+        stderrThread.start()
         # Write commands
         proc.stdin.write(str.encode(cmd))
         proc.stdin.flush()
         proc.stdin.close()
         # Wait till finish
         retCode = proc.wait()
+        # Flush remaining output, so different commands output does not get mangled
+        sys.stdout.flush()
+        sys.stderr.flush()
         if(retCode != 0):
             if(not silent):
                 print("Executing `" + cmd + "` failed with code " + str(retCode))
