@@ -63,8 +63,10 @@ class TestSingleCell(unittest.TestCase):
             minHitcount = amin(imgData)
             maxHitcount = amax(imgData)
             stdDev = std(imgData)
-            print("Hitcount:", minHitcount, "-", maxHitcount, "average =", avgHitcount, "stdDev=", stdDev)
-            self.assertAlmostEqual(sqrt(avgHitcount), stdDev, delta=0.1)
+            relDev = stdDev/avgHitcount
+            print("Hitcount:", minHitcount, "-", maxHitcount, "average =", avgHitcount, "stdDev=", stdDev, "rel. Dev=", relDev)
+            self.assertAlmostEqual(sqrt(avgHitcount), stdDev, delta=0.05)
+            self.assertLess(relDev, 0.074) # 7.4%
             for numHits in nditer(imgData):
                 self.assertGreater(numHits, 0)
 
