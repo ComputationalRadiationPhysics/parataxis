@@ -98,25 +98,47 @@ tests:
     cmakeFlag: 7
     cfgFile:   0001gpus.cfg
     post-run: *lineDensityValidation
-  - name: SimpleRandomScatteringDouble
+  - name: SimpleRandomScattering
     description: |
                Single point of density at [31, 31, 31]
                Scattering randomly in y/z direction -> Uniform count on a square expected
                Count particles on detector
-               Double precision
     cmakeFlag: 8
     cfgFile:   0001gpusLong.cfg
     post-run:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
+  - name: SimpleRandomScatteringDouble
+    description: |
+               Single point of density at [31, 31, 31]
+               Scattering randomly in y/z direction -> Uniform count on a square expected
+               Count particles on detector
+               Double precision
+    cmakeFlag: 9
+    cfgFile:   0001gpusLong.cfg
+    post-run:
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - *validateOpenPMD
+        - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
+  - name: RandomScattering
+    description: |
+               Single point of density at [31, 31, 31]
+               Scattering randomly -> Uniform count on a circle expected
+               Count particles on detector
+    cmakeFlag: 10
+    cfgFile:   0001gpusLong.cfg
+    post-run:
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - *validateOpenPMD
+        - python3 "${TEST_INSTALL_PATH}/testData/validateRandom.py"
   - name: RandomScatteringDouble
     description: |
                Single point of density at [31, 31, 31]
                Scattering randomly -> Uniform count on a circle expected
                Count particles on detector
                Double precision
-    cmakeFlag: 9
+    cmakeFlag: 11
     cfgFile:   0001gpusLong.cfg
     post-run:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
