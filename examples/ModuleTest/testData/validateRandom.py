@@ -70,7 +70,7 @@ class TestSingleCell(unittest.TestCase):
             relDev = stdDev/avgHitcount
             print("Hitcount:", minHitcount, "-", maxHitcount, "average =", avgHitcount, "stdDev=", stdDev, "rel. Dev=", relDev)
             self.assertAlmostEqual(sqrt(avgHitcount), stdDev, delta=0.05)
-            self.assertLess(relDev, 0.074) # 7.4%
+            self.assertLess(relDev, 0.066) # 6.6%
  
 if __name__ == '__main__':
     unittest.main()
