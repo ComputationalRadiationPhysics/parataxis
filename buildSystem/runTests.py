@@ -129,7 +129,7 @@ def printFailures(compilations = None, runtimeTests = None):
     if compilations:
         print("Compile tests:")
         for compilation in compilations:
-            if compilation.lastResult != None and compilation.lastResult.result != 0:
+            if compilation.lastResult == None or compilation.lastResult.result != 0:
                 print("\t" + str(compilation) + ": " + compilation.getBuildPath())
     if runtimeTests:
         print("Runtime tests:")

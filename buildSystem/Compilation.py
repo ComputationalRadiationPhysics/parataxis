@@ -17,6 +17,8 @@ class Compilation:
         self.buildFolderName = "build_" + example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
         # Remove non-alphanumeric chars
         self.buildFolderName = re.sub("\W", "", self.buildFolderName)
+        if self.cmakePreset >= len(self.example.getCMakeFlags()):
+            raise Exception("Invalid cmakePreset: " + str(self.cmakePreset) + " of " + str(len(self.example.getCMakeFlags())) + " for " + str(self))
         
     def getConfig(self):
         """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this Compilation"""
