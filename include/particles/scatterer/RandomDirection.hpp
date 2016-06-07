@@ -33,15 +33,26 @@ namespace scatterer {
         DINLINE void
         operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
         {
-            // Constants. Optimization with compile-time evaluated ternary for common case
-            const float_X minPolarCos = (Config::minPolar == 0.) ? float_X(1.) : PMaccMath::cos(float_X(Config::minPolar));
-            const float_X maxPolarCos = PMaccMath::cos(float_X(Config::maxPolar));
             /* Azimuth angle is the angle around the x-axis [0,2PI) and polar angle is the angle around the z-axis [0-PI)
              * Note that compared to e.g. wikipedia the z and x axis are swapped as our usual propagation direction is X
              * but it does not influence anything as the axis can be arbitrarily named */
             float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
-            // To get an even distribution on a unit sphere we need to modify this using arccos. Note that cos(minPolar)>=cos(maxPolor) for minPolar<=maxPolar
-            float_X polarAngle   = PMaccMath::acos(rand() * (minPolarCos - maxPolarCos) + maxPolarCos);
+            // To get an even distribution on a unit sphere we need to modify the distribution of the polar angle using arccos.
+            float_X polarAngle;
+            if(std::is_same<float_X, float_32>::value && Config::minPolar == 0. && Config::maxPolar <= 1e-2)
+            {
+                // For float32 we don't get small angles as we'd need to calculate the arccos around 1 where the possible
+                // float values are sparse.
+                // For small angle we can approximate the density distribution and arccos around 0, else we need to use double precision
+                polarAngle = PMaccMath::sqrt<sqrt_X>(rand()) * Config::maxPolar;
+            }else
+            {
+                // Optimization with compile-time evaluated ternary for common case
+                const float_64 minPolarCos = (Config::minPolar == 0.) ? float_64(1.) : PMaccMath::cos(float_64(Config::minPolar));
+                const float_64 maxPolarCos = PMaccMath::cos(float_64(Config::maxPolar));
+                // Note that cos(minPolar)>=cos(maxPolor) for minPolar<=maxPolar
+                polarAngle   = PMaccMath::acos<float_64>(rand() * (minPolarCos - maxPolarCos) + maxPolarCos);
+            }
             /* Now we have the azimuth and polar angles by which we want to change the current direction. So we need some rotations:
              * Assume old direction = A, new direction = B, |A| = 1
              * There is a rotation matrix R_A so that A = R_A * e_X (with e_X = [1,0,0] )
