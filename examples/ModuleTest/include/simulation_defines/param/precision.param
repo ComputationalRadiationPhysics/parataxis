@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef PARAM_PRECISION_TRIGO
+#   define PARAM_PRECISION_TRIGO PARAM_PRECISION
+#endif
+
 namespace xrt
 {
     namespace precision32Bit{}
