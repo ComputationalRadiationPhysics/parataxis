@@ -12,30 +12,21 @@ namespace seeds {
      */
     struct Global
     {
+        static uint32_t value;
+
         uint32_t
         operator()()
         {
-            return 42;
+            return value;
         }
     };
+
+    uint32_t Global::value = 42;
 
     /**
      * Seed for XOR RNG
      */
     static constexpr uint32_t xorRNG = 0xC24E47F2;
-
-    /**
-     * Seed for particle positions
-     */
-    static constexpr uint32_t position = 854666252;
-    /**
-     * Seed for scatter conditions
-     */
-    static constexpr uint32_t scatterCondition = 0x01050186;
-    /**
-     * Seed for scatter direction
-     */
-    static constexpr uint32_t scatterDirection = 0xb0c89ffd;
 
 }  // namespace seeds
 }  // namespace xrt

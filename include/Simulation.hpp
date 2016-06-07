@@ -46,6 +46,7 @@ namespace xrt {
         LaserSource<PIC_Photons> laserSource;
 
         std::vector<uint32_t> gridSize, devices, detectorSize;
+        uint32_t globalSeed;
 
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
@@ -58,7 +59,8 @@ namespace xrt {
 
         Simulation() :
             mallocMCBuffer(nullptr),
-            particleStorage(nullptr)
+            particleStorage(nullptr),
+            globalSeed(42)
         {}
 
         virtual ~Simulation()
@@ -76,6 +78,7 @@ namespace xrt {
                 ("devices,d", po::value<std::vector<uint32_t> > (&devices)->multitoken(), "number of devices in each dimension")
                 ("grid,g", po::value<std::vector<uint32_t> > (&gridSize)->multitoken(), "size of the simulation grid")
                 ("detSize", po::value<std::vector<uint32_t> > (&detectorSize)->multitoken(), "size of detector")
+                ("globalSeed", po::value<uint32_t>(&globalSeed)->default_value(42), "Global seed used for RNGs")
                 ;
         }
 
@@ -135,8 +138,7 @@ namespace xrt {
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
             PMacc::mpi::SeedPerRank<simDim> seedPerRank;
-            seeds::Global globalSeed;
-            uint32_t seed = seeds::xorRNG ^globalSeed();
+            uint32_t seed = seeds::xorRNG ^ seeds::Global()();
             seed = seedPerRank(seed);
             rngProvider_->init(seed);
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
@@ -200,6 +202,8 @@ namespace xrt {
     protected:
         void pluginLoad() override
         {
+            seeds::Global::value = globalSeed;
+
             Space periodic = Space::create(0); // Non periodic boundaries!
             Space devices   = convertToSpace(this->devices, 1, "devices (-d)");
             Space gridSize  = convertToSpace(this->gridSize, 1, "grid (-g)");
