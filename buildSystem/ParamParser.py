@@ -131,17 +131,35 @@ class ParamParser:
                 typedefType = "Type"
             else:
                 typedefType = "Namespace"
-            data[name] = {"value": value, "__type": typedefType}
+            data[name] = {"__value": value, "__type": typedefType}
             self.addDescription(data[name], description, descriptions)
             return name
-        variable = re.match(r"((static )?constexpr|BOOST_STATIC_CONSTEXPR|BOOST_CONSTEXPR_OR_CONST) (\w+) (\w+) ?=(.*);", line)
+        variable = re.match(r"((static )?(constexpr |BOOST_STATIC_CONSTEXPR |BOOST_CONSTEXPR_OR_CONST )?)(\w+) (\w+) ?=(.*);", line)
         if variable:
-            varType = variable.group(3)
-            name = variable.group(4)
-            value = variable.group(5).strip()
+            varType = variable.group(4)
+            name = variable.group(5)
+            value = variable.group(6).strip()
             self.log("Found variable of type " + varType + ": " + name + " = " + value, level)
-            data[name] = {"value": value, "__type": varType}
+            data[name] = {"__value": value, "__type": varType}
             self.addDescription(data[name], description, descriptions)
+            return name
+        externVar = re.match(r"(\w+) (\w+)::(\w+) * =(.*?);", line)
+        if externVar:
+            varType = externVar.group(1)
+            className = externVar.group(2)
+            name = externVar.group(3)
+            value = externVar.group(4).strip()
+            self.log("Found extern variable of type " + varType + ": " + name + " = " + value, level)
+            if not className in data:
+                self.throwError("Invalid class: " + className + "; " + line)
+            data = data[className]
+            if not name in data:
+                self.throwError("Unknown variable. Not declared in class? " + line)
+            data = data[name]
+            if data["__type"] != varType:
+                self.throwError("Type mismatch of variable: " + varType + "!=" + data["__type"] + ". " + line)
+            data["__value"] = value;
+            self.addDescription(data, description, descriptions)
             return name
         self.throwError("Unknown assignment: " + line)
 
@@ -216,6 +234,15 @@ class ParamParser:
             if "=" in line:
                 asgnName = self.parseAssignment(line, data, curScopeInput, level)
                 continue
+            staticVarDecl = re.match(r"static (\w+) (\w+);$", line)
+            if staticVarDecl:
+                varType = staticVarDecl.group(1)
+                name = staticVarDecl.group(2)
+                self.log("Found static variable declaration: " + name + " (" + varType+ ")", level)
+                data[name] = {"__value": None, "__type": varType}
+                self.addDescription(data[name], self.curDescription)
+                self.curDescription = None
+                continue                
             valueId = re.match(r"value_identifier\((\w+), ?(\w+), ?([^,])+\);$", line)
             if valueId:
                 valType = valueId.group(1)
@@ -224,7 +251,7 @@ class ParamParser:
                 self.log("Found value_identifier: " + name + " = " + value + "(" + valType+ ")", level)
                 if not "__valID" in data:
                     data["__valID"] = {}
-                data["__valID"][name] = {"value": value, "__type": valType}
+                data["__valID"][name] = {"__value": value, "__type": valType}
                 self.addDescription(data["__valID"][name], self.curDescription)
                 self.curDescription = None
                 continue
@@ -251,7 +278,7 @@ class ParamParser:
                 value = functor.group(2)
                 self.log("Found functor: " + value + "(" + fType + ")", level)
                 data['__functorType'] = fType
-                data['value'] = value
+                data['__value'] = value
                 continue
             if line.startswith("DINLINE") or line.startswith("HINLINE") or line.startswith("HDINLINE"):
                 self.parseFunction(line, curScopeInput, level)
@@ -323,7 +350,7 @@ class ParamParser:
         
     def GetValue(self, name):
         node = self.GetNode(name)
-        return node['value']
+        return node['__value']
         
     def GetNumber(self, name):
         if not name.startswith("::"):
@@ -384,7 +411,7 @@ def GetNumber(name, mainScope, node = None, lvl = 0):
         isFloat = False
     else:
         return None
-    value = node['value']
+    value = node["__value"]
     # Check if we already have a number
     try:
         return float(value) if isFloat else int(value)
@@ -429,7 +456,7 @@ def GetVector(name, mainScope):
     value = GetNode(name, mainScope)
     if value['__type'] != "Type":
         return None
-    vec = re.match(r"(PMacc::)?math::CT::(\w+)< ?([^,]+)(, ?([^,]+)(, ?([^,]+))) ?>$", value['value'])
+    vec = re.match(r"(PMacc::)?math::CT::(\w+)< ?([^,]+)(, ?([^,]+)(, ?([^,]+))) ?>$", value["__value"])
     if not vec:
         return None
     result = [vec.group(3)]
