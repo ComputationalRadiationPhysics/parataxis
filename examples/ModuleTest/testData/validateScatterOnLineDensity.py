@@ -4,8 +4,6 @@ from numpy import *
 import unittest
 from collections import Counter
 from PIL import Image
-import bigfloat
-bigfloat.setcontext(bigfloat.precision(128))
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "buildSystem"))
 from ParamParser import ParamParser
 
@@ -13,9 +11,9 @@ def getDetCell(DetDist, DetCellSizes, DetSize, scatterOffsets):
     # SimZ = DetX, SimY = DetY
     offsetsFromDetMiddle = flipud(scatterOffsets)
     # Angle binning of detector
-    anglePerCell = [bigfloat.atan(cellSize / DetDist) for cellSize in DetCellSizes]
+    anglePerCell = [atan(cellSize / DetDist) for cellSize in DetCellSizes]
     # Angle in which we hit the detector
-    angleOffset = [bigfloat.atan(offset / DetDist) for offset in offsetsFromDetMiddle]
+    angleOffset = [atan(offset / DetDist) for offset in offsetsFromDetMiddle]
     # Index for the offset
     idxOffset = array(angleOffset) / anglePerCell
     # And shift so 0 is middle
