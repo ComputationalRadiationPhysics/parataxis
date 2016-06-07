@@ -202,7 +202,11 @@ namespace xrt {
     protected:
         void pluginLoad() override
         {
-            seeds::Global::value = globalSeed;
+            if(seeds::Global::value != globalSeed)
+            {
+                seeds::Global::value = globalSeed;
+                PMacc::log<XRTLogLvl::DOMAINS>("Using custom seed %1%") % globalSeed;
+            }
 
             Space periodic = Space::create(0); // Non periodic boundaries!
             Space devices   = convertToSpace(this->devices, 1, "devices (-d)");

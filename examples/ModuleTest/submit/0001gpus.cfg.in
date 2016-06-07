@@ -28,6 +28,7 @@ TBG_program="@PROJECT_NAME@"
 #################################
 
 TBG_plugins="--detSize 1400 900                           \
+             !TBG_globalSeed                              \
              --p_position.period 99999                    \
              --DensityField_printSlice.period 99999       \
              --DensityField_printSlice.axis 0             \

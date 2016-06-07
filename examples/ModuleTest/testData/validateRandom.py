@@ -69,7 +69,7 @@ class TestSingleCell(unittest.TestCase):
             stdDev = std(imgData)
             relDev = stdDev/avgHitcount * 100
             print("Hitcount:", minHitcount, "-", maxHitcount, "average =", avgHitcount, "stdDev=", stdDev, "rel. Dev=" + str(relDev) + "%")
-            self.assertAlmostEqual(sqrt(avgHitcount), stdDev, delta=0.08)
+            self.assertAlmostEqual(sqrt(avgHitcount), stdDev, delta=0.09)
             self.assertLess(relDev, 6.6) # 6.6%
  
 if __name__ == '__main__':

@@ -28,6 +28,7 @@ TBG_program="@PROJECT_NAME@"
 #################################
 
 TBG_plugins="--detSize 900 900                            \
+             !TBG_globalSeed                              \
              --p_position.period 9999999                  \
              --p_position.offset 0 30 30                  \
              --p_position.size 1 5 5                      \

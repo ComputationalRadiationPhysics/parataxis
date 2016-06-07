@@ -160,6 +160,7 @@ def main(argv):
     parser.add_argument('-p', '--profile-file', help='Specifies the profile file used to set up the environment (e.g. ~/picongpu.profile)')
     parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
     parser.add_argument('-D', action='append', help='Additional defines that are directly passed to CMake')
+    parser.add_argument('-s', '--seed', default=None, help='Global seed used to init the random number generators')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
     options = parser.parse_args(argv)
@@ -173,7 +174,12 @@ def main(argv):
         if not strtobool(input().lower()):
             return 1
         options.all = True
-    
+    # Set the TBG_globalSeed variable.
+    # Note: submit config must use 'TBG_globalSeed' and the simulation must use '--globalSeed <num>'
+    if options.seed != None:
+        os.environ["TBG_globalSeed"] = "--globalSeed " + str(options.seed)
+    elif os.environ.get("TBG_globalSeed") == None:
+        os.environ["TBG_globalSeed"] = ""
     # Prepare
     ############################################################################
     cprint("Getting examples...", "yellow")
