@@ -1,8 +1,10 @@
 #pragma once
 
 #include "xrtTypes.hpp"
+#include "debug/LogLevels.hpp"
 #include <random/distributions/Uniform.hpp>
 #include <algorithms/math.hpp>
+#include <debug/VerboseLog.hpp>
 #include <cmath>
 
 namespace xrt {
@@ -21,7 +23,17 @@ namespace scatterer {
 
         HINLINE explicit
         RandomDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
-        {}
+        {
+            static bool angleChecked = false;
+            if(!angleChecked)
+            {
+                angleChecked = true;
+                if(PMaccMath::abs(Config::minAzimuth) > PI || PMaccMath::abs(Config::maxAzimuth) > PI)
+                    PMacc::log<XRTLogLvl::DOMAINS>("Azimuth angle not in range [-PI,PI]. Possibly reduced precision!");
+                if(PMaccMath::abs(Config::minPolar) > PI || PMaccMath::abs(Config::maxPolar) > PI)
+                    PMacc::log<XRTLogLvl::DOMAINS>("Polar angle not in range [-PI,PI]. Possibly reduced precision!");
+            }
+        }
 
         DINLINE void
         init(Space globalCellIdx)
@@ -39,6 +51,7 @@ namespace scatterer {
             float_X azimuthAngle = rand() * float_X(Config::maxAzimuth - Config::minAzimuth) + float_X(Config::minAzimuth);
             // To get an even distribution on a unit sphere we need to modify the distribution of the polar angle using arccos.
             float_X polarAngle;
+            // TODO: Calculate max angle this is valid for
             if(std::is_same<float_X, float_32>::value && Config::minPolar == 0. && Config::maxPolar <= 1e-2)
             {
                 // For float32 we don't get small angles as we'd need to calculate the arccos around 1 where the possible

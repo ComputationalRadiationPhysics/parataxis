@@ -242,16 +242,16 @@ namespace detector {
             // Note: We stay in SI units (m) here for simplicity
             const float_64 simSizeWidth = simSize.x() * CELL_WIDTH * UNIT_LENGTH;
             const float_64 distFromSimStart = Config::distance + simSizeWidth;
-            const float_64 detRangeMin = tan(phiMin) * Config::distance;
-            const float_64 detRangeMax = tan(phiMax) * distFromSimStart;
+            const float_64 detRangeMin = PMaccMath::tan(phiMin) * Config::distance;
+            const float_64 detRangeMax = PMaccMath::tan(phiMax) * distFromSimStart;
             assert(detRangeMin <= detRangeMax);
 
             const float_64 minSize = detRangeMax * 2;
             const float_64 maxCellSize = detRangeMin / (Config::minNumMaxima * Config::resolutionFactor);
             const float_64 maxSize = maxCellSize * std::max(size.x(), size.y());
             const float_64 minCellSize = minSize / std::min(size.x(), size.y());
-            const float_64 maxDistance = std::min(size.x() * Config::cellWidth, size.y() * Config::cellHeight) / 2 / tan(phiMax) - simSizeWidth;
-            const float_64 minDistance = PMaccMath::max(Config::cellWidth, Config::cellHeight) * (Config::minNumMaxima * Config::resolutionFactor) / tan(phiMin);
+            const float_64 maxDistance = std::min(size.x() * Config::cellWidth, size.y() * Config::cellHeight) / 2 / PMaccMath::tan(phiMax) - simSizeWidth;
+            const float_64 minDistance = PMaccMath::max(Config::cellWidth, Config::cellHeight) * (Config::minNumMaxima * Config::resolutionFactor) / PMaccMath::tan(phiMin);
 
             if(doReport)
             {

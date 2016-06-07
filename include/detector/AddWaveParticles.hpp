@@ -66,7 +66,7 @@ namespace detector {
              * whose vector is given by the particles direction (for large distances all rays to a given detector cell are parallel)
              */
             float_X phase = particle[startPhase_] + curPhase_;
-            if(phase > static_cast<float_X>(2*PI))
+            if(phase > static_cast<float_X>(PI))
                 phase -= static_cast<float_X>(2*PI);
 
             /* The projection is k * (dir * pos)/|dir| (dot product)
