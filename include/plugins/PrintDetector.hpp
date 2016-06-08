@@ -162,13 +162,15 @@ namespace plugins {
         splash::DataCollector::initFileCreationAttr(fAttr);
 
         hdf5DataFile.open(fileName.c_str(), fAttr);
-        openPMD::WriteHeader<true> writeHeader(hdf5DataFile, currentStep);
+        hdf5::SplashWriter writer(hdf5DataFile, currentStep);
+        openPMD::WriteHeader writeHeader(writer);
         writeHeader(this->fileName);
 
 
         splash::Dimensions bufferSize(size.x(), size.y(), 1);
 
         const char* dataSetName = "meshes/detector";
+        writer.SetCurrentDataset(dataSetName);
         hdf5DataFile.write(currentStep,
         				   typename traits::PICToSplash<OutputType>::type(),
                            2,
@@ -176,45 +178,28 @@ namespace plugins {
                            dataSetName,
                            buffer.getPointer());
 
-        std::string geometry = "cartesian";
-        splash::ColTypeString ctGeometry(geometry.length());
-        hdf5DataFile.writeAttribute(currentStep, ctGeometry, dataSetName, "geometry", geometry.c_str());
+        auto writeAttribute = writer.GetAttributeWriter();
+        writeAttribute("geometry", "cartesian");;
+        writeAttribute("dataOrder", "C");
+        writeAttribute("axisLabels", "x\0y\0", 2);
 
-        std::string dataOrder = "C";
-        splash::ColTypeString ctDataOrder(dataOrder.length());
-        hdf5DataFile.writeAttribute(currentStep, ctDataOrder, dataSetName, "dataOrder", dataOrder.c_str());
-
-        const char* axisLabels = "x\0y\0";
-        splash::ColTypeString ctAxisLabels(1);
-        hdf5DataFile.writeAttribute(currentStep, ctAxisLabels, dataSetName, "axisLabels",
-                                    1u, splash::Dimensions(2,0,0), axisLabels);
-
-        typename traits::PICToSplash<float_X>::type splashTypeX;
-        splash::ColTypeDouble ctDouble;
         std::array<float_X, 2> gridSpacing = {Detector::cellWidth, Detector::cellHeight};
-        hdf5DataFile.writeAttribute(currentStep, splashTypeX, dataSetName, "gridSpacing",
-        							1u, splash::Dimensions(2,0,0), &gridSpacing.front());
+        writeAttribute("gridSpacing", gridSpacing);
 
         std::array<float_64, 2> gridGlobalOffset = {0, 0};
-        hdf5DataFile.writeAttribute(currentStep, ctDouble, dataSetName, "gridGlobalOffset",
-        							1u, splash::Dimensions(2,0,0), &gridGlobalOffset.front());
+        writeAttribute("gridGlobalOffset", gridGlobalOffset);
 
-        hdf5DataFile.writeAttribute(currentStep, ctDouble, dataSetName, "gridUnitSI", &UNIT_LENGTH);
+        writeAttribute("gridUnitSI", float_64(UNIT_LENGTH));
 
         std::array<float_64, 2> position = {0.5, 0.5};
-        hdf5DataFile.writeAttribute(currentStep, ctDouble, dataSetName, "position",
-        							1u, splash::Dimensions(2,0,0), &position.front());
+        writeAttribute("position", position);
 
         std::array<float_64, 7> unitDimension = {0., 0., 0., 0., 0., 0., 0.};
         // Current unit scale is arbitrary. Correct unit would be: {0., 1.,-3., 0., 0., 0., 0.};
-        hdf5DataFile.writeAttribute(currentStep, ctDouble, dataSetName, "unitDimension",
-        							1u, splash::Dimensions(7,0,0), &unitDimension.front());
+        writeAttribute("unitDimension", unitDimension);
 
-        float_64 unitSI = 1;
-        hdf5DataFile.writeAttribute(currentStep, ctDouble, dataSetName, "unitSI", &unitSI);
-
-        float_X timeOffset = 0;
-        hdf5DataFile.writeAttribute(currentStep, splashTypeX, dataSetName, "timeOffset", &timeOffset);
+        writeAttribute("unitSI", float_64(1));
+        writeAttribute("timeOffset", float_X(0));
 
         hdf5DataFile.close();
     }
