@@ -11,9 +11,9 @@ def getDetCell(DetDist, DetCellSizes, DetSize, scatterOffsets):
     # SimZ = DetX, SimY = DetY
     offsetsFromDetMiddle = flipud(scatterOffsets)
     # Angle binning of detector
-    anglePerCell = [atan(cellSize / DetDist) for cellSize in DetCellSizes]
+    anglePerCell = [arctan(cellSize / DetDist) for cellSize in DetCellSizes]
     # Angle in which we hit the detector
-    angleOffset = [atan(offset / DetDist) for offset in offsetsFromDetMiddle]
+    angleOffset = [arctan(offset / DetDist) for offset in offsetsFromDetMiddle]
     # Index for the offset
     idxOffset = array(angleOffset) / anglePerCell
     # And shift so 0 is middle
