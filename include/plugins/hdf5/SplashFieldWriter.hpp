@@ -1,0 +1,48 @@
+#pragma once
+
+#include "xrtTypes.hpp"
+#include "traits/PICToSplash.hpp"
+#include <splash/splash.h>
+
+namespace xrt {
+namespace plugins {
+namespace hdf5 {
+
+    /** Functor for writing a field with simDim dimensions to hdf5 */
+    class SplashFieldWriter
+    {
+    public:
+        SplashFieldWriter(splash::IParallelDomainCollector& hdfFile, int32_t id, const std::string& datasetName):
+            hdfFile_(hdfFile), id_(id), datasetName_(datasetName){}
+        /// Write the field
+        /// @param data         Pointer to contiguous data
+        /// @param globalDomain Offset and Size of the field over all processes
+        /// @param localDomain  Offset and Size of the field on the current process (Size must match extends of data)
+        template<typename T>
+        void operator()(const T* data, const splash::Domain& globalDomain, const splash::Domain& localDomain);
+    private:
+        splash::IParallelDomainCollector& hdfFile_;
+        const int32_t id_;
+        std::string datasetName_;
+    };
+
+    template<typename T>
+    void SplashFieldWriter::operator()(const T* data, const splash::Domain& globalDomain, const splash::Domain& localDomain)
+    {
+        typename traits::PICToSplash<T>::type splashType;
+
+        hdfFile_.writeDomain(  id_,                                  /* id == time step */
+                               globalDomain.size,                    /* total size of dataset over all processes */
+                               localDomain.offset,                   /* write offset for this process */
+                               splashType,                           /* data type */
+                               simDim,                               /* NDims spatial dimensionality of the field */
+                               splash::Selection(localDomain.size),  /* data size of this process */
+                               datasetName_.c_str(),
+                               globalDomain,
+                               splash::DomainCollector::GridType,
+                               data);
+    }
+
+}  // namespace hdf5
+}  // namespace plugins
+}  // namespace xrt

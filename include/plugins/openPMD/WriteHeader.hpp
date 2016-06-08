@@ -9,9 +9,10 @@ namespace xrt {
 namespace plugins {
 namespace openPMD {
 
+template<class T_DataCollector>
 struct WriteHeader
 {
-    WriteHeader(hdf5::SplashWriter& writer): writer_(writer){}
+    WriteHeader(hdf5::SplashWriter<T_DataCollector>& writer): writer_(writer){}
 
     void operator()(const std::string& fileNameBase, bool usePIC_ED_Ext = false)
     {
@@ -46,8 +47,15 @@ struct WriteHeader
     }
 private:
 
-    hdf5::SplashWriter& writer_;
+    hdf5::SplashWriter<T_DataCollector>& writer_;
 };
+
+template<class T_DataCollector>
+void writeHeader(hdf5::SplashWriter<T_DataCollector>& writer, const std::string& fileNameBase, bool usePIC_ED_Ext = false)
+{
+    WriteHeader<T_DataCollector> writeHeader(writer);
+    writeHeader(fileNameBase, usePIC_ED_Ext);
+}
 
 }  // namespace openPMD
 }  // namespace plugins

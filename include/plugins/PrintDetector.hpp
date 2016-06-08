@@ -162,9 +162,8 @@ namespace plugins {
         splash::DataCollector::initFileCreationAttr(fAttr);
 
         hdf5DataFile.open(fileName.c_str(), fAttr);
-        hdf5::SplashWriter writer(hdf5DataFile, currentStep);
-        openPMD::WriteHeader writeHeader(writer);
-        writeHeader(this->fileName);
+        auto writer = hdf5::makeSplashWriter(hdf5DataFile, currentStep);
+        openPMD::writeHeader(writer, this->fileName);
 
 
         splash::Dimensions bufferSize(size.x(), size.y(), 1);
@@ -181,7 +180,7 @@ namespace plugins {
         auto writeAttribute = writer.GetAttributeWriter();
         writeAttribute("geometry", "cartesian");;
         writeAttribute("dataOrder", "C");
-        writeAttribute("axisLabels", "x\0y\0", 2);
+        writeAttribute("axisLabels", "y\0x\0", 2); //[y][x]
 
         std::array<float_X, 2> gridSpacing = {Detector::cellWidth, Detector::cellHeight};
         writeAttribute("gridSpacing", gridSpacing);
