@@ -434,11 +434,12 @@ endforeach()
 # Install
 ################################################################################
 
-function(CopyOnInstall BASE_SRC_PATH SUB_DIR)
+function(ForceCopyOnInstall BASE_SRC_PATH SUB_DIR)
     file(GLOB_RECURSE _FILES "${BASE_SRC_PATH}/${SUB_DIR}/*")
     foreach(file ${_FILES})
         string(REPLACE "${BASE_SRC_PATH}/" "" destFile "${file}")
-        # Installing with rename will overwrite the target file
+        # Remove existing file
+        install(CODE "file(REMOVE \"${CMAKE_INSTALL_PREFIX}/${destFile}\")")
         install(FILES "${file}" DESTINATION "${CMAKE_INSTALL_PREFIX}" RENAME "${destFile}")
     endforeach()
 endfunction()
@@ -465,7 +466,7 @@ install(DIRECTORY "include/simulation_defines"
 # Extension simulation config (overwrite base)
 if(XRT_EXTENSION_PATH)
     # Overwrite with extension files
-    CopyOnInstall("${XRT_EXTENSION_PATH}/include" "simulation_defines")
+    ForceCopyOnInstall("${XRT_EXTENSION_PATH}/include" "simulation_defines")
     if(EXISTS "${XRT_EXTENSION_PATH}/testData")
         install(DIRECTORY "${XRT_EXTENSION_PATH}/testData"
                 DESTINATION ${CMAKE_INSTALL_PREFIX})
