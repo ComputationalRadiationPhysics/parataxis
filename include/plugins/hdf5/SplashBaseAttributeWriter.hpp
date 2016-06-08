@@ -4,6 +4,7 @@
 #include "traits/PICToSplash.hpp"
 #include <splash/splash.h>
 #include <array>
+#include <vector>
 #include <type_traits>
 
 namespace xrt {
@@ -27,6 +28,9 @@ namespace detail {
         /// Write a 1D array
         template<typename T, size_t T_size>
         void operator()(const std::string& attrName, const std::array<T, T_size>& value);
+        /// Write a 1D array
+        template<typename T>
+        void operator()(const std::string& attrName, const std::vector<T>& value);
     };
 
     template<class T_Writer>
@@ -57,6 +61,14 @@ namespace detail {
     {
         typename traits::PICToSplash<T>::type splashType;
         static_cast<T_Writer&>(*this).writeImpl(splashType, attrName, 1u, splash::Dimensions(T_size,0,0), &value);
+    }
+
+    template<class T_Writer>
+    template<typename T>
+    void SplashBaseAttributeWriter<T_Writer>::operator()(const std::string& attrName, const std::vector<T>& value)
+    {
+        typename traits::PICToSplash<T>::type splashType;
+        static_cast<T_Writer&>(*this).writeImpl(splashType, attrName, 1u, splash::Dimensions(value.size(),0,0), &value.front());
     }
 
 }  // namespace detail
