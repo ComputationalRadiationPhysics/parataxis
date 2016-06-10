@@ -23,11 +23,20 @@ namespace hdf5 {
 class HDF5Output: public ISimulationPlugin
 {
 public:
+    HDF5Output():
+        notifyPeriod(0),
+        filename("h5_data"),
+        checkpointFilename("h5_checkpoint"),
+        dataCollector(nullptr)
+    {
+        Environment::get().PluginConnector().registerPlugin(this);
+    }
+
     void pluginRegisterHelp(po::options_description& desc) override
     {
         desc.add_options()
             ("hdf5.period", po::value<uint32_t > (&notifyPeriod)->default_value(0), "enable HDF5 IO [for each n-th step]")
-            ("hdf5.file", po::value<std::string > (&filename)->default_value(filename), "HDF5 output filename (prefix)")
+            ("hdf5.file", po::value<std::string > (&filename), "HDF5 output filename (prefix)")
             ("hdf5.checkpoint-file", po::value<std::string > (&checkpointFilename), "Optional HDF5 checkpoint filename (prefix)")
             ("hdf5.restart-file", po::value<std::string > (&restartFilename), "HDF5 restart filename (prefix)")
             ;
@@ -95,7 +104,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
                     Environment::get().GridController().getGpuNodes()
             );
 
-    // For localdomain we use the default: No offset, single element
+    // For localDomain we use the default: No offset, single element
     writer.GetFieldWriter()(&idProviderState.startId, globalDomain, splash::Domain());
     writer.GetAttributeWriter()("maxNumProc", idProviderState.maxNumProc);
 
