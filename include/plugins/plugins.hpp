@@ -9,6 +9,9 @@
 #   include "plugins/TiffToDensity.hpp"
 #   include "plugins/PrintDetector.hpp"
 #endif
+#if (ENABLE_HDF5 == 1)
+#   include "plugins/hdf5/HDF5Output.hpp"
+#endif
 #include <boost/mpl/vector.hpp>
 
 namespace xrt {
@@ -17,6 +20,9 @@ namespace xrt {
     typedef bmpl::vector<
 #if defined(XRT_ENABLE_TIFF)
             plugins::TiffToDensity
+#endif
+#if (ENABLE_HDF5 == 1)
+            , plugins::hdf5::HDF5Output
 #endif
     > StandAlonePlugins;
 

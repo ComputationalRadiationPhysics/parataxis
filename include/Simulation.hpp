@@ -15,6 +15,7 @@
 #include "debug/LogLevels.hpp"
 
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
+#include <particles/IdProvider.hpp>
 #include <simulationControl/SimulationHelper.hpp>
 #include <dimensions/DataSpace.hpp>
 #include <mappings/kernel/MappingDescription.hpp>
@@ -134,6 +135,7 @@ namespace xrt {
             if (this->restartRequested)
                 std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
 
+            PMacc::IdProvider<simDim>::init();
             TimeIntervallExt timer;
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");

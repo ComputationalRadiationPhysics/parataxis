@@ -81,7 +81,6 @@ namespace xrt {
         template<class T_Generator>
         void createDensityDistribution(T_Generator&& generator)
         {
-            //PMacc::AreaMapping < PMacc::CORE + PMacc::BORDER, MappingDesc > mapper(mapping);
             __cudaKernelArea(kernel::createDensityDistribution, cellDescription, PMacc::CORE + PMacc::BORDER)
                     (MappingDesc::SuperCellSize::toRT().toDim3())
                     (buffer->getDeviceBuffer().getDataBox(),
@@ -105,6 +104,18 @@ namespace xrt {
         getGridBuffer()
         {
             return *buffer;
+        }
+
+        static float_64
+        getUnit()
+        {
+            return 1;
+        }
+
+        static std::vector<float_64>
+        getUnitDimension()
+        {
+            return std::vector<float_64>(7, 0);
         }
 
     };
