@@ -81,7 +81,7 @@ namespace xrt{
     template<typename T_ParticleDescription>
     Particles<T_ParticleDescription>::Particles( MappingDesc cellDescription, PMacc::SimulationDataId datasetID ) :
         PMacc::ParticlesBase<T_ParticleDescription, MappingDesc>( cellDescription ), gridLayout( cellDescription.getGridLayout() ), datasetID( datasetID ),
-        densityField_(nullptr), nextPartId_(PMacc::DataSpace<1>(1))
+        densityField_(nullptr), lastProcessedStep_(0)
     {
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
@@ -89,10 +89,6 @@ namespace xrt{
         PMacc::log< XRTLogLvl::MEMORY > ( "communication tag for species %1%: %2%" ) % FrameType::getName() % commTag;
 
         detail::AddExchanges<simDim>::add(this->particlesBuffer, commTag);
-
-        // Get a unique counter start value per rank
-        *nextPartId_.getHostBuffer().getBasePointer() = PMacc::reverseBits(Environment::get().GridController().getGlobalRank());
-        nextPartId_.hostToDevice();
     }
 
     template< typename T_ParticleDescription>
@@ -150,7 +146,6 @@ namespace xrt{
               localOffset,
               this->particlesBuffer->getDeviceParticleBox(),
               timeStep,
-              nextPartId_.getDeviceBuffer().getBasePointer(),
               mapper
               );
 

@@ -33,7 +33,6 @@ namespace kernel{
                                           const Space localOffset,
                                           T_ParBox particleBox,
                                           const uint32_t timeStep,
-                                          uint32_t* gId,
                                           const T_Mapper mapper)
     {
         static_assert(T_Mapper::AreaType == PMacc::BORDER, "Only borders should be filled");
@@ -168,7 +167,7 @@ namespace kernel{
                     /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                     {
                         using ParticleAttrList = typename T_ParBox::FrameType::ValueTypeSeq;
-                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, direction, creationTime, globalId>;
+                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, direction, creationTime>;
                         using ParticleCleanedAttrList = typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type;
 
                         PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
@@ -180,8 +179,6 @@ namespace kernel{
                     particle[startPhase_]   = particleFillInfo.getPhase(timeStep);
                     particle[direction_]    = particleFillInfo.getDirection(timeStep);
                     particle[creationTime_] = timeStep;
-                    /* Add a global Id for debugging purposes */
-                    particle[globalId_] = PMacc::nvidia::atomicAllInc(gId);
 
                     if (numParsToCreate > 0)
                         PMacc::nvidia::atomicAllExch(&blockCreatesParticles, 1); //one or more cell has particles to create

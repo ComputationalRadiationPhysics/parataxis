@@ -61,8 +61,6 @@ namespace xrt{
         PMacc::SimulationDataId datasetID;
         PMacc::GridLayout<simDim> gridLayout;
         DensityField* densityField_;
-        /** Contains the globalId that is assigned to the next particle created */
-        PMacc::GridBuffer<uint32_t, 1> nextPartId_;
         uint32_t lastProcessedStep_;
     };
 

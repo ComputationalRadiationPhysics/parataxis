@@ -1,10 +1,10 @@
 #pragma once
 
+#include <pmacc_types.hpp>
 #include <identifier/alias.hpp>
 #include <identifier/value_identifier.hpp>
 #include <particles/Identifier.hpp>
-
-#include <pmacc_types.hpp>
+#include <particles/IdProvider.def>
 
 namespace xrt {
 
@@ -20,7 +20,7 @@ namespace xrt {
     /** direction in which the photon is moving */
     value_identifier(float3_X, direction, float3_X::create(0.));
     /** global unique Id of a particle */
-    value_identifier(uint32_t, globalId, 0);
+    value_identifier(uint32_t, globalId, PMacc::IdProvider<simDim>::getNewId());
 
     /** Timestep at which the particle was created/ entered in the volume */
     value_identifier(uint32_t, creationTime, 0);
