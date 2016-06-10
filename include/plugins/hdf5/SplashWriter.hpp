@@ -8,7 +8,7 @@ namespace xrt {
 namespace plugins {
 namespace hdf5 {
 
-/** Wrapper for splash data collectors to store state and simply writing */
+/** Wrapper for splash data collectors to store state and simplify writing */
 template<class T_DataCollector>
 class SplashWriter
 {
@@ -17,6 +17,7 @@ public:
         hdfFile_(hdfFile), id_(id){}
 
     void SetCurrentDataset(const std::string& name);
+    std::string GetCurrentDataset() const { return curDatasetName_; }
 
     SplashGlobalAttributeWriter GetGlobalAttributeWriter();
     SplashAttributeWriter GetAttributeWriter();

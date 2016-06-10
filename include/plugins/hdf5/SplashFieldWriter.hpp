@@ -2,6 +2,7 @@
 
 #include "xrtTypes.hpp"
 #include "traits/PICToSplash.hpp"
+#include "plugins/hdf5/splashUtils.hpp"
 #include <splash/splash.h>
 
 namespace xrt {
@@ -17,7 +18,7 @@ namespace hdf5 {
         /// Write the field
         /// @param data         Pointer to contiguous data
         /// @param globalDomain Offset and Size of the field over all processes
-        /// @param localDomain  Offset and Size of the field on the current process (Size must match extends of data)
+        /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data)
         template<typename T>
         void operator()(const T* data, const splash::Domain& globalDomain, const splash::Domain& localDomain);
     private:
@@ -31,12 +32,12 @@ namespace hdf5 {
     {
         typename traits::PICToSplash<T>::type splashType;
 
-        hdfFile_.writeDomain(  id_,                                  /* id == time step */
-                               globalDomain.size,                    /* total size of dataset over all processes */
-                               localDomain.offset,                   /* write offset for this process */
-                               splashType,                           /* data type */
-                               simDim,                               /* NDims spatial dimensionality of the field */
-                               splash::Selection(localDomain.size),  /* data size of this process */
+        hdfFile_.writeDomain(  id_,                                       /* id == time step */
+                               globalDomain.getSize(),                    /* total size of dataset over all processes */
+                               localDomain.getOffset(),                   /* write offset for this process */
+                               splashType,                                /* data type */
+                               simDim,                                    /* NDims spatial dimensionality of the field */
+                               splash::Selection(localDomain.getSize()),  /* data size of this process */
                                datasetName_.c_str(),
                                globalDomain,
                                splash::DomainCollector::GridType,
