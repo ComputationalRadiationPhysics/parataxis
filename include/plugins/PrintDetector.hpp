@@ -6,7 +6,11 @@
 #include "ComplexTraits.hpp"
 #include "math/abs.hpp"
 #include "plugins/imaging/TiffCreator.hpp"
-#include "plugins/openPMD/WriteHeader.hpp"
+#if (ENABLE_HDF5 == 1)
+#   include "plugins/openPMD/WriteHeader.hpp"
+#   include "plugins/hdf5/DataBoxWriter.hpp"
+#endif
+#include "plugins/hdf5/BasePlugin.hpp"
 #include "TransformBox.hpp"
 #include "traits/PICToSplash.hpp"
 #include "traits/SplashToPIC.hpp"
@@ -26,7 +30,7 @@ namespace xrt {
 namespace plugins {
 
     template<class T_Detector>
-    class PrintDetector : public ISimulationPlugin
+    class PrintDetector : public ISimulationPlugin, hdf5::BasePlugin
     {
         using Detector = T_Detector;
 
@@ -60,6 +64,7 @@ namespace plugins {
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
                 ((prefix + ".noBeamstop").c_str(), po::bool_switch(&noBeamstop)->default_value(false), "Do not delete 'shadow' of target")
                 ;
+            hdf5::BasePlugin::pluginRegisterHelp(desc);
         }
 
         std::string pluginGetName() const override
@@ -104,19 +109,26 @@ namespace plugins {
             dc.releaseData(Detector::getName());
         }
 
-        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override{}
+        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override;
         void restart(uint32_t restartStep, const std::string restartDirectory) override{}
 
     protected:
         void pluginLoad() override
         {
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyPeriod);
+            hdf5::BasePlugin::pluginLoad();
         }
         void pluginUnload() override
         {
+            hdf5::BasePlugin::pluginUnload();
             masterBuffer_.reset();
         }
     private:
+        std::string getPrefix() const override
+        {
+            return prefix;
+        }
+
         template<class T_DataBox>
         void doBeamstop(T_DataBox&& data, const Space2D& size)
         {
@@ -201,6 +213,68 @@ namespace plugins {
         writeAttribute("timeOffset", float_X(0));
 
         hdf5DataFile.close();
+    }
+
+    template<class T_Detector>
+    void PrintDetector<T_Detector>::checkpoint(uint32_t currentStep, const std::string checkpointDirectory)
+    {
+        openH5File(checkpointFilename);
+        auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
+        openPMD::writeHeader(writer, this->fileName);
+
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 write detector: %1%") % Detector::getName();
+
+        /* Change dataset */
+        writer.SetCurrentDataset(std::string("fields/") + Detector::getName());
+
+        auto& dc = Environment::get().DataConnector();
+        Detector& detector = dc.getData<Detector>(Detector::getName());
+
+        const SubGrid& subGrid = Environment::get().SubGrid();
+        hdf5::writeDataBox(
+                    writer,
+                    detector.getHostDataBox(),
+                    PMacc::Selection<3>(
+                        Space3D(
+                            detector.getSize().x(),
+                            detector.getSize().y(),
+                            Environment::get().GridController().getGpuNodes().productOfComponents()
+                        )
+                    ),
+                    detector.getSize(),
+                    Space3D(
+                            0,
+                            0,
+                            Environment::get().GridController().getScalarPosition()
+                    )
+                );
+
+        /* attributes */
+        auto writeAttribute = writer.GetAttributeWriter();
+
+        std::array<float_X, simDim> positions;
+        std::fill_n(positions.begin(), simDim, 0.5);
+        writeAttribute("position", positions);
+
+        writeAttribute("unitSI", std::vector<float_64>(7, 0));
+        writeAttribute("unitDimension", float_64(1));
+        writeAttribute("timeOffset", float_X(0));
+        writeAttribute("geometry", "cartesian");
+        writeAttribute("dataOrder", "C");
+
+        const char* axisLabels = "z\0y\0x\0";
+        writeAttribute("axisLabels", axisLabels, 3);
+
+        std::array<float_X, 3> gridSpacing = {Detector::cellWidth, Detector::cellHeight, 0};
+        writeAttribute("gridSpacing", gridSpacing);
+
+        writeAttribute("gridGlobalOffset", std::vector<float_64>(3, 0));
+
+        writeAttribute("gridUnitSI", float_64(UNIT_LENGTH));
+
+        dc.releaseData(Detector::getName());
+
+        closeH5File();
     }
 #endif // ENABLE_HDF5
 

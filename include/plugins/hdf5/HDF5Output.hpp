@@ -96,11 +96,11 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
             );
 
     // For localDomain we use the default: No offset, single element
-    writer.GetFieldWriter()(&idProviderState.startId, globalDomain, splash::Domain());
+    writer.GetFieldWriter()(&idProviderState.startId, simDim, globalDomain, splash::Domain());
     writer.GetAttributeWriter()("maxNumProc", idProviderState.maxNumProc);
 
     writer.SetCurrentDataset("picongpu/idProvider/nextId");
-    writer.GetFieldWriter()(&idProviderState.nextId, globalDomain, splash::Domain());
+    writer.GetFieldWriter()(&idProviderState.nextId, simDim, globalDomain, splash::Domain());
 
     auto& dc = Environment::get().DataConnector();
     // Write Random field

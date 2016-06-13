@@ -1,5 +1,10 @@
 #pragma once
 
+#include "xrtTypes.hpp"
+#if (ENABLE_HDF5 == 1)
+#   include <splash/splash.h>
+#endif
+
 namespace xrt {
 namespace plugins {
 namespace hdf5 {
@@ -7,10 +12,10 @@ namespace hdf5 {
 class BasePlugin
 {
 protected:
-    BasePlugin():
-        filename("h5_data"),
-        checkpointFilename("h5_checkpoint"),
-        dataCollector(nullptr)
+    BasePlugin()
+#if (ENABLE_HDF5 == 1)
+     : dataCollector(nullptr)
+#endif
     {}
 
     virtual ~BasePlugin(){}
@@ -19,11 +24,14 @@ protected:
 
     void pluginRegisterHelp(po::options_description& desc)
     {
+#if (ENABLE_HDF5 == 1)
+        restartFilename.clear();
         desc.add_options()
-            ((getPrefix() + ".file").c_str(), po::value<std::string > (&filename), "HDF5 output filename (prefix)")
-            ((getPrefix() + ".checkpoint-file").c_str(), po::value<std::string > (&checkpointFilename), "Optional HDF5 checkpoint filename (prefix)")
-            ((getPrefix() + ".restart-file").c_str(), po::value<std::string > (&restartFilename), "HDF5 restart filename (prefix)")
+            ((getPrefix() + ".file").c_str(), po::value<std::string>(&filename)->default_value(getPrefix() + "_data"), "HDF5 output filename (prefix)")
+            ((getPrefix() + ".checkpoint-file").c_str(), po::value<std::string>(&checkpointFilename)->default_value(getPrefix() + "_checkpoint"), "HDF5 checkpoint filename (prefix)")
+            ((getPrefix() + ".restart-file").c_str(), po::value<std::string>(&restartFilename), "HDF5 restart filename (prefix)")
             ;
+#endif
     }
 
     void openH5File(const std::string& filename);
@@ -31,25 +39,30 @@ protected:
     void pluginLoad();
     void pluginUnload();
 
+#if (ENABLE_HDF5 == 1)
     std::string filename;
     std::string checkpointFilename;
     std::string restartFilename;
 
     splash::ParallelDomainCollector* dataCollector;
     splash::Dimensions mpiPos, mpiSize;
+#endif
 };
 
 void BasePlugin::closeH5File()
 {
+#if (ENABLE_HDF5 == 1)
     if (dataCollector)
     {
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5 close DataCollector");
         dataCollector->close();
     }
+#endif
 }
 
 void BasePlugin::openH5File(const std::string& filename)
 {
+#if (ENABLE_HDF5 == 1)
     const uint32_t maxOpenFilesPerNode = 4;
     if (!dataCollector)
     {
@@ -78,10 +91,12 @@ void BasePlugin::openH5File(const std::string& filename)
         std::cerr << e.what() << std::endl;
         throw std::runtime_error("HDF5 failed to open DataCollector");
     }
+#endif
 }
 
 void BasePlugin::pluginLoad()
 {
+#if (ENABLE_HDF5 == 1)
     auto& gc = Environment::get().GridController();
     /* It is important that we never change the mpi_pos after this point
      * because we get problems with the restart.
@@ -100,14 +115,17 @@ void BasePlugin::pluginLoad()
 
     if (restartFilename.empty())
         restartFilename = checkpointFilename;
+#endif
 }
 
 void BasePlugin::pluginUnload()
 {
-    if (dataCollector)
+#if (ENABLE_HDF5 == 1)
+   if (dataCollector)
         dataCollector->finalize();
 
     __delete(dataCollector);
+#endif
 }
 
 }  // namespace hdf5
