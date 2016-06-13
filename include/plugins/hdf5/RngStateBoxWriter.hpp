@@ -12,10 +12,14 @@ template<>
 struct DataBoxWriter<PMacc::random::methods::Xor::StateType>
 {
     template<class T_SplashWriter, class T_DataBox>
-    void operator()(T_SplashWriter& writer, const T_DataBox& dataBox, const PMacc::Selection<simDim>& globalDomain, const PMacc::Selection<simDim>& localDomain)
+    void operator()(T_SplashWriter& writer, const T_DataBox& dataBox,
+            const PMacc::Selection<simDim>& globalDomain,
+            const PMacc::DataSpace<simDim>& localSize,
+            const PMacc::DataSpace<simDim>& localOffset)
     {
         using ValueType = typename T_DataBox::ValueType;
         static_assert(std::is_same<PMacc::random::methods::Xor::StateType, ValueType>::value, "Wrong type in dataBox");
+        const PMacc::Selection<simDim> localDomain(localSize, localOffset);
 
         const std::string datasetName = writer.GetCurrentDataset();
         writer.SetCurrentDataset(datasetName + "/d");

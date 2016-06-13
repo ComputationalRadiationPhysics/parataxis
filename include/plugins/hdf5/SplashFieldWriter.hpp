@@ -9,7 +9,7 @@ namespace xrt {
 namespace plugins {
 namespace hdf5 {
 
-    /** Functor for writing a field with simDim dimensions to hdf5 */
+    /** Functor for writing a field to hdf5 */
     class SplashFieldWriter
     {
     public:
@@ -20,7 +20,7 @@ namespace hdf5 {
         /// @param globalDomain Offset and Size of the field over all processes
         /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data)
         template<typename T>
-        void operator()(const T* data, const splash::Domain& globalDomain, const splash::Domain& localDomain);
+        void operator()(const T* data, unsigned numDims, const splash::Domain& globalDomain, const splash::Domain& localDomain);
     private:
         splash::IParallelDomainCollector& hdfFile_;
         const int32_t id_;
@@ -28,15 +28,17 @@ namespace hdf5 {
     };
 
     template<typename T>
-    void SplashFieldWriter::operator()(const T* data, const splash::Domain& globalDomain, const splash::Domain& localDomain)
+    void SplashFieldWriter::operator()(const T* data, unsigned numDims, const splash::Domain& globalDomain, const splash::Domain& localDomain)
     {
         typename traits::PICToSplash<T>::type splashType;
+        assert(isDomainValid(globalDomain, numDims));
+        assert(isDomainValid(localDomain, numDims));
 
         hdfFile_.writeDomain(  id_,                                       /* id == time step */
                                globalDomain.getSize(),                    /* total size of dataset over all processes */
                                localDomain.getOffset(),                   /* write offset for this process */
                                splashType,                                /* data type */
-                               simDim,                                    /* NDims spatial dimensionality of the field */
+                               numDims,                                   /* NDims spatial dimensionality of the field */
                                splash::Selection(localDomain.getSize()),  /* data size of this process */
                                datasetName_.c_str(),
                                globalDomain,

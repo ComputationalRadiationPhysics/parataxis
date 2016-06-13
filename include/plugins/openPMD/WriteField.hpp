@@ -30,13 +30,14 @@ struct WriteField
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5 write field: %1%") % name;
 
+        const SubGrid& subGrid = Environment::get().SubGrid();
         /* parameter checking */
         assert(unitDimension.size() == 7); // seven openPMD base units
+        assert(subGrid.getLocalDomain().size == fieldLayout.getDataSpaceWithoutGuarding());
 
         /* Change dataset */
         writer_.SetCurrentDataset(std::string("fields/") + name);
 
-        const SubGrid& subGrid = Environment::get().SubGrid();
         hdf5::writeDataBox(
                     writer_,
                     fieldBox.shift(fieldLayout.getGuard()),
@@ -66,7 +67,7 @@ struct WriteField
             axisLabels[simDim-1-d][0] = char('x' + d); // 3D: F[z][y][x], 2D: F[y][x]
             axisLabels[simDim-1-d][1] = '\0';          // terminator is important!
         }
-        writeAttribute("axisLabels", static_cast<const char*>(&axisLabels[0][0]));
+        writeAttribute("axisLabels", static_cast<const char*>(&axisLabels[0][0]), simDim);
 
         std::array<float_X, simDim> gridSpacing;
         for( uint32_t d = 0; d < simDim; ++d )
