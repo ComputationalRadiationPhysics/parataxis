@@ -30,7 +30,7 @@ namespace plugins {
                 for(uint32_t i=0; i<simDim; ++i)
                     pos[i] = (float_64(globalIdx[i]) + particle[position_][i]) * cellSize[i] * UNIT_LENGTH * 1e6;
 
-                std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << particle[globalId_] << "): " << " => " << pos << "[µm]\n";
+                std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << particle[particleId_] << "): " << " => " << pos << "[µm]\n";
             }
         };
 

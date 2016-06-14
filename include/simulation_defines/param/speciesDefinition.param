@@ -15,7 +15,7 @@ namespace xrt {
     typedef PMacc::MakeSeq<
             position<position_pic>,
             direction,
-            globalId,
+            particleId,
             creationTime,
             startPhase
     >::type DefaultParticleAttributes;

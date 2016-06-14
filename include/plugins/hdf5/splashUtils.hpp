@@ -1,11 +1,11 @@
 #pragma once
 
+#include "xrtTypes.hpp"
+#include <splash/splash.h>
+
 namespace xrt {
 namespace plugins {
 namespace hdf5 {
-
-#include "xrtTypes.hpp"
-#include <splash/splash.h>
 
 /** Convert a PMacc::Selection instance into a splash::Domain */
 template<unsigned T_dim>
@@ -35,18 +35,35 @@ splash::Domain makeSplashDomain(const PMacc::DataSpace<T_dim>& offset, const PMa
     return splashDomain;
 }
 
-/** Check if a domain containing numDims dimensions is valid (excess offsets=0, sizes=1) */
-bool isDomainValid(const splash::Domain domain, unsigned numDims)
+/** Check if a size contains numDims dimensions (excess=1) */
+bool isSizeValid(const splash::Dimensions& size, unsigned numDims)
 {
     assert(numDims > 0);
     for(unsigned d = numDims; d <= 3; d++)
     {
-        if(domain.getOffset()[d - 1] != 0)
-            return false;
-        if(domain.getSize()[d - 1] != 1)
+        if(size[d - 1] != 1)
             return false;
     }
     return true;
+}
+
+/** Check if an offset contains numDims dimensions (excess=0) */
+bool isOffsetValid(const splash::Dimensions& offset, unsigned numDims)
+{
+    assert(numDims > 0);
+    for(unsigned d = numDims; d <= 3; d++)
+    {
+        if(offset[d - 1] != 0)
+            return false;
+    }
+    return true;
+}
+
+/** Check if a domain containing numDims dimensions is valid (excess offsets=0, sizes=1) */
+bool isDomainValid(const splash::Domain& domain, unsigned numDims)
+{
+    return isSizeValid(domain.getSize(), numDims) &&
+           isOffsetValid(domain.getOffset(), numDims);
 }
 
 }  // namespace hdf5

@@ -1,0 +1,103 @@
+#pragma once
+
+#include "traits/PICToOpenPMD.hpp"
+#include "traits/SIBaseUnits.hpp"
+#include <vector>
+
+namespace xrt{
+namespace traits{
+
+template<typename T_Type>
+struct OpenPMDUnit<position<T_Type> >
+{
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit(simDim);
+        /* in-cell position needs two transformations to get to SI:
+           in-cell [0;1) -> dimensionless scaling to grid -> SI
+        */
+        for(uint32_t i=0;i<simDim;++i)
+            unit[i]=cellSize[i]*UNIT_LENGTH;
+
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        std::vector<float_64> unitDimension( NUnitDimension, 0.0 );
+        unitDimension.at(SIBaseUnits::length) = 1.0;
+
+        return unitDimension;
+    }
+};
+
+template<>
+struct OpenPMDUnit<particleId>
+{
+    // unitless and not scaled by a factor: by convention 1.0
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( 1, 1.0 );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        // unitless
+        return std::vector<float_64>( NUnitDimension, 0.0 );
+    }
+};
+
+template<>
+struct OpenPMDUnit<direction>
+{
+    // unitless and not scaled by a factor: by convention 1.0
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( simDim, 1.0 );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        // unitless
+        return std::vector<float_64>( NUnitDimension, 0.0 );
+    }
+};
+
+template<>
+struct OpenPMDUnit<creationTime>
+{
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( 1, DELTA_T * UNIT_TIME );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+         std::vector<float_64> result( NUnitDimension, 0.0 );
+         result[SIBaseUnits::time] = 1;
+         return result;
+    }
+};
+
+template<>
+struct OpenPMDUnit<startPhase>
+{
+    // unitless and not scaled by a factor: by convention 1.0
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( 1, 1.0 );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        // unitless
+        return std::vector<float_64>( NUnitDimension, 0.0 );
+    }
+};
+
+} // namespace traits
+} // namespace xrt

@@ -13,37 +13,48 @@ namespace hdf5 {
     class SplashFieldWriter
     {
     public:
-        SplashFieldWriter(splash::IParallelDomainCollector& hdfFile, int32_t id, const std::string& datasetName):
+        SplashFieldWriter(splash::IParallelDataCollector& hdfFile, int32_t id, const std::string& datasetName):
             hdfFile_(hdfFile), id_(id), datasetName_(datasetName){}
         /// Write the field
         /// @param data         Pointer to contiguous data
-        /// @param globalDomain Offset and Size of the field over all processes
-        /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data)
+        /// @param numDims      Dimensionality of the data
+        /// @param globalSize   Size of the data over all processes
+        /// @param localDomain  Offset and Size of the data on the current process (Size must match extents of data)
         template<typename T>
-        void operator()(const T* data, unsigned numDims, const splash::Domain& globalDomain, const splash::Domain& localDomain);
+        void operator()(const T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain);
+        /// Write a scalar field (1D)
+        /// @param data         Pointer to contiguous data
+        /// @param globalSize   Size of the data over all processes
+        /// @param localDomain  Offset and Size of the data on the current process (Size must match extents of data)
+        template<typename T>
+        void operator()(const T data, const splash::Dimensions& globalSize, const splash::Domain& localDomain);
     private:
-        splash::IParallelDomainCollector& hdfFile_;
+        splash::IParallelDataCollector& hdfFile_;
         const int32_t id_;
         std::string datasetName_;
     };
 
     template<typename T>
-    void SplashFieldWriter::operator()(const T* data, unsigned numDims, const splash::Domain& globalDomain, const splash::Domain& localDomain)
+    void SplashFieldWriter::operator()(const T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain)
     {
         typename traits::PICToSplash<T>::type splashType;
-        assert(isDomainValid(globalDomain, numDims));
+        assert(isSizeValid(globalSize, numDims));
         assert(isDomainValid(localDomain, numDims));
 
-        hdfFile_.writeDomain(  id_,                                       /* id == time step */
-                               globalDomain.getSize(),                    /* total size of dataset over all processes */
-                               localDomain.getOffset(),                   /* write offset for this process */
-                               splashType,                                /* data type */
-                               numDims,                                   /* NDims spatial dimensionality of the field */
-                               splash::Selection(localDomain.getSize()),  /* data size of this process */
-                               datasetName_.c_str(),
-                               globalDomain,
-                               splash::DomainCollector::GridType,
-                               data);
+        hdfFile_.write(id_,                     /* id == time step */
+                       globalSize,              /* total size of dataset over all processes */
+                       localDomain.getOffset(), /* write offset for this process */
+                       splashType,              /* data type */
+                       numDims,                 /* NDims spatial dimensionality of the field */
+                       localDomain.getSize(),   /* data size of this process */
+                       datasetName_.c_str(),
+                       data);
+    }
+
+    template<typename T>
+    void SplashFieldWriter::operator()(const T data, const splash::Dimensions& globalSize, const splash::Domain& localDomain)
+    {
+        (*this)(&data, 1, globalSize, localDomain);
     }
 
 }  // namespace hdf5

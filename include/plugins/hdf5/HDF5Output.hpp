@@ -8,6 +8,7 @@
 #include "plugins/hdf5/splashUtils.hpp"
 #include "plugins/hdf5/BasePlugin.hpp"
 #include "plugins/openPMD/WriteFields.hpp"
+#include "plugins/openPMD/WriteSpecies.hpp"
 #include "DensityField.hpp"
 #include "debug/LogLevels.hpp"
 #include <debug/VerboseLog.hpp>
@@ -91,16 +92,20 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
     writer.SetCurrentDataset("picongpu/idProvider/startId");
     splash::Domain globalDomain =
             makeSplashDomain(
-                    Environment::get().GridController().getPosition(),
+                    Space::create(0),
                     Environment::get().GridController().getGpuNodes()
             );
+    splash::Domain localDomain =
+            makeSplashDomain(
+                    Environment::get().GridController().getPosition(),
+                    Space::create(1)
+            );
 
-    // For localDomain we use the default: No offset, single element
-    writer.GetFieldWriter()(&idProviderState.startId, simDim, globalDomain, splash::Domain());
+    writer.GetDomainWriter()(&idProviderState.startId, simDim, globalDomain, localDomain);
     writer.GetAttributeWriter()("maxNumProc", idProviderState.maxNumProc);
 
     writer.SetCurrentDataset("picongpu/idProvider/nextId");
-    writer.GetFieldWriter()(&idProviderState.nextId, simDim, globalDomain, splash::Domain());
+    writer.GetDomainWriter()(&idProviderState.nextId, simDim, globalDomain, localDomain);
 
     auto& dc = Environment::get().DataConnector();
     // Write Random field
@@ -118,6 +123,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
     Environment::get().DataConnector().releaseData(RNGProvider::getName());
 
     openPMD::WriteFields<DensityField>()(writer);
+    openPMD::WriteSpecies<PIC_Photons>()(writer, *cellDescription_);
 
     closeH5File();
 }
