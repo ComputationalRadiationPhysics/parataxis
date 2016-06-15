@@ -57,8 +57,9 @@ struct WriteParticleAttribute
             for(uint64_t i = 0; i < numParticles; ++i)
                 tmpArray[i] = ((ComponentValueType*)dataPtr)[i * numComponents + d];
 
-            auto polyWriter = ((numComponents > 0) ? writer[name_lookup[d]] : writer).GetPolyDataWriter();
-            polyWriter(
+            // Write components only for >1D records
+            auto tmpWriter = (numComponents > 1) ? writer[name_lookup[d]] : writer;
+            tmpWriter.GetPolyDataWriter()(
                 tmpArray,
                 1,
                 makeSplashDomain(globalDomain),
@@ -68,7 +69,7 @@ struct WriteParticleAttribute
                     splash::Dimensions(localParticlesOffset, 1, 1)
                 )
             );
-            writer.GetAttributeWriter()("unitSI", unit.at(d));
+            tmpWriter.GetAttributeWriter()("unitSI", unit.at(d));
         }
         __deleteArray(tmpArray);
 
