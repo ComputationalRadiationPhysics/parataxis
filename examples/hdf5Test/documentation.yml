@@ -21,7 +21,7 @@ aliases:
 
 # Run-Time Tests
 tests:
-  - name: BaseCheckpoint
+  - name: Checkpoint
     description: Test only that checkpointing works
     cmakeFlag: 0
     cfgFile:   0001gpus.cfg
@@ -29,3 +29,14 @@ tests:
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 3 \]
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 3 \]
         - *validateOpenPMD
+  - name: Restart
+    description: Restart from the last checkpoint of BaseCheckpoint
+    cmakeFlag: 0
+    cfgFile:   0001gpusRestart.cfg
+    dependency: Checkpoint
+    post-run:
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 2 \]
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 2 \]
+        - *validateOpenPMD
+        - python3 "${TEST_INSTALL_PATH}/testData/validateRestart.py"
+
