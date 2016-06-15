@@ -115,6 +115,9 @@ def getRuntimeTests(examples, names = None):
                 if test.name in requiredDependencies and not test.name in foundTestNames:
                     result.append(test)
                     foundTestNames.append(test.name)
+            remainingDeps = set(requiredDependencies) - set(foundTestNames)
+            if len(remainingDeps) > 0:
+                raise Exception("Unmet dependencies while loading: " + str(list(requiredDependencies)))
     return result
     
 class Example:

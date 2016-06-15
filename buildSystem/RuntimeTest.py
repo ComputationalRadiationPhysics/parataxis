@@ -283,7 +283,7 @@ class RuntimeTest:
     
     def __str__(self):
         (exName, cmakeCfg, profileFile) = self.getConfig()
-        result = "Runtime test for " + exName + ", cmakeCfg: " + str(cmakeCfg)
+        result = "Runtime test " + exName + "/" + self.name + ", cmakeCfg: " + str(cmakeCfg)
         if profileFile:
             result += ", profileFile: " + profileFile
         return result

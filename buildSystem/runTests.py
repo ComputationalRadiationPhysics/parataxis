@@ -252,7 +252,7 @@ def main(argv):
             i += 1
         # If we still have tests waiting, then those dependencies could not be started/found/finished
         for test in waitingTests:
-            cPrint("Could not start " + str(test) + " due to dependency", "red")
+            cprint("Could not start " + str(test) + " due to unmet dependency", "red")
             numErrors += 1
     else:
         finishedTests = []
@@ -268,7 +268,7 @@ def main(argv):
         # Now run all tests with dependencies
         for test in waitingTests:
             if not test.getDependency() in finishedTests:
-                cPrint("Could not start " + str(test) + " due to dependency", "red")
+                cprint("Could not start " + str(test) + " due to unmet dependency", "red")
                 numErrors += 1
             elif test.execute(srcDir, options.output, options.dry_run, options.verbose) != 0:
                 numErrors += 1
