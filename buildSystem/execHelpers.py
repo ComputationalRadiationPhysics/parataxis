@@ -44,6 +44,8 @@ def execCmds(cmds, silent = False):
         proc.stdin.close()
         # Wait till finish
         retCode = proc.wait()
+        stdoutThread.join(10)
+        stderrThread.join(10)
         # Flush remaining output, so different commands output does not get mangled
         sys.stdout.flush()
         sys.stderr.flush()
