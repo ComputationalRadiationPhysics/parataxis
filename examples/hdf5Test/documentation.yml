@@ -1,0 +1,31 @@
+# Description
+example:
+  name:        HDF5Test
+  author:      Alexander Grund
+
+  description: |
+               Test HDF5 writing, loading and checkpointing
+
+compile:
+  - cmakeFlags:
+        - 0
+        
+aliases:
+  validateOpenPMD: &validateOpenPMD
+    - |
+        set +e
+        output=$(find "${TEST_SIMOUTPUT_PATH}/checkpoints" -type f -name "*.h5" -print0 | xargs -0 -n 1 -r python "${TEST_INSTALL_PATH}/buildSystem/checkOpenPMD_h5.py" -i )
+        result=$?
+        echo "$output"
+        [ $result -eq 0 ] && [[ "$output" != *"Error:"* ]]
+
+# Run-Time Tests
+tests:
+  - name: BaseCheckpoint
+    description: Test only that checkpointing works
+    cmakeFlag: 0
+    cfgFile:   0001gpus.cfg
+    post-run: &simplePostRun
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 3 \]
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 3 \]
+        - *validateOpenPMD
