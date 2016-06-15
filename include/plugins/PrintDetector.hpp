@@ -126,7 +126,7 @@ namespace plugins {
     private:
         std::string getPrefix() const override
         {
-            return prefix;
+            return Detector::getName();
         }
 
         template<class T_DataBox>
@@ -218,14 +218,19 @@ namespace plugins {
     template<class T_Detector>
     void PrintDetector<T_Detector>::checkpoint(uint32_t currentStep, const std::string checkpointDirectory)
     {
-        openH5File(checkpointFilename);
+        std::string fname;
+        if (boost::filesystem::path(checkpointFilename).is_relative())
+            fname = checkpointDirectory + "/" + checkpointFilename;
+        else
+            fname = checkpointFilename;
+        openH5File(fname);
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5 write detector: %1%") % Detector::getName();
 
         /* Change dataset */
-        writer.SetCurrentDataset(std::string("fields/") + Detector::getName());
+        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
 
         auto& dc = Environment::get().DataConnector();
         Detector& detector = dc.getData<Detector>(Detector::getName());
@@ -250,14 +255,17 @@ namespace plugins {
                 );
 
         /* attributes */
-        auto writeAttribute = writer.GetAttributeWriter();
-
         std::array<float_X, simDim> positions;
-        std::fill_n(positions.begin(), simDim, 0.5);
+        positions.fill(0.5);
+        auto writeAttribute = writer["real"].GetAttributeWriter();
         writeAttribute("position", positions);
+        writeAttribute("unitSI", float_64(1));
+        writeAttribute = writer["imag"].GetAttributeWriter();
+        writeAttribute("position", positions);
+        writeAttribute("unitSI", float_64(1));
 
-        writeAttribute("unitSI", std::vector<float_64>(7, 0));
-        writeAttribute("unitDimension", float_64(1));
+        writeAttribute = writer.GetAttributeWriter();
+        writeAttribute("unitDimension", std::vector<float_64>(7, 0));
         writeAttribute("timeOffset", float_X(0));
         writeAttribute("geometry", "cartesian");
         writeAttribute("dataOrder", "C");
@@ -267,9 +275,7 @@ namespace plugins {
 
         std::array<float_X, 3> gridSpacing = {Detector::cellWidth, Detector::cellHeight, 0};
         writeAttribute("gridSpacing", gridSpacing);
-
         writeAttribute("gridGlobalOffset", std::vector<float_64>(3, 0));
-
         writeAttribute("gridUnitSI", float_64(UNIT_LENGTH));
 
         dc.releaseData(Detector::getName());

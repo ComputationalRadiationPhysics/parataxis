@@ -29,7 +29,7 @@ namespace traits
     struct OpenPMDName;
 
     /** Get the openPMD Unit via static get() and the dimension via getDimension() */
-    template<typename T_Identifier>
+    template<typename T_Identifier, typename T_Frame>
     struct OpenPMDUnit;
 
 } // namespace traits

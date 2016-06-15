@@ -80,6 +80,7 @@ struct WriteField
         writeAttribute("gridGlobalOffset", gridGlobalOffset);
 
         writeAttribute("gridUnitSI", float_64(UNIT_LENGTH));
+        writeAttribute("fieldSmoothing", "none");
     }
 
 };

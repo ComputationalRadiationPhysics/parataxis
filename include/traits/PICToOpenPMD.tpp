@@ -27,6 +27,16 @@ namespace xrt
 {
 namespace traits
 {
+
+    template<>
+    struct OpenPMDName<DensityField>
+    {
+        static std::string get()
+        {
+            return "electron_density";
+        }
+    };
+
     /** Forward names that are identical in PIConGPU & openPMD
      */
     template<typename T_Identifier>
@@ -54,8 +64,8 @@ namespace traits
      *  until the beginning of the cell by multiplying with the component-wise
      *  cell size in SI
      */
-    template<typename T_Type>
-    struct OpenPMDUnit<PMacc::globalCellIdx<T_Type> >
+    template<typename T_Type, typename T_Frame>
+    struct OpenPMDUnit<PMacc::globalCellIdx<T_Type>, T_Frame>
     {
         static std::vector<double> get()
         {

@@ -42,8 +42,8 @@ namespace functors {
     /**
      * Returns the wavelength of a species (unit-less) from wavelength or energy property
      */
-    template<typename T_Species>
-    using GetWavelength = detail::GetWavelength<typename T_Species::FrameType>;
+    template<typename T_Species, class T_FrameType = typename T_Species::FrameType>
+    using GetWavelength = detail::GetWavelength<T_FrameType>;
 
 }  // namespace functors
 }  // namespace particles

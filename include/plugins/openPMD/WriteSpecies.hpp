@@ -225,6 +225,28 @@ struct WriteSpecies
         ForEach<typename Hdf5FrameType::ValueTypeSeq, FreeHostMemory<bmpl::_1> > freeMem;
         freeMem(forward(hostFrame));
 
+        /* write constant particle records to hdf5 file */
+        // No macro particles -> weighting = 1
+        writeConstantRecord(writer["weighting"], numParticlesGlobal, 1, 1, std::vector<float_64>(traits::NUnitDimension, 0));
+
+        const float_64 chargeVal = GetResolvedFlag_t<FrameType, charge<>>::getValue();
+        std::vector<float_64> chargeUnitDimension(traits::NUnitDimension, 0);
+        chargeUnitDimension.at(traits::SIBaseUnits::time) = 1.0;
+        chargeUnitDimension.at(traits::SIBaseUnits::electricCurrent) = 1.0;
+        writeConstantRecord(writer["charge"], numParticlesGlobal, chargeVal, UNIT_CHARGE, chargeUnitDimension);
+
+        const float_64 massVal = GetResolvedFlag_t<FrameType, mass<>>::getValue();
+        std::vector<float_64> massUnitDimension(traits::NUnitDimension, 0);
+        massUnitDimension.at(traits::SIBaseUnits::mass) = 1.0;
+        writeConstantRecord(writer["mass"], numParticlesGlobal, massVal, UNIT_MASS, massUnitDimension);
+
+        auto writeAttribute = writer.GetAttributeWriter();
+        writeAttribute("particleShape", float(0));
+        writeAttribute("currentDeposition", "none");
+        writeAttribute("particlePush", "other");
+        writeAttribute("particleInterpolation", "uniform");
+        writeAttribute("particleSmoothing", "none");
+
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (end) write particle records for %1%") % Hdf5FrameType::getName();
 
         /* write species particle patch meta information */
@@ -261,7 +283,7 @@ struct WriteSpecies
             /* offsets and extent of the patch are positions (lengths)
              * and need to be scaled like the cell idx of a particle
              */
-            std::vector<float_64> unitCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>>::get();
+            std::vector<float_64> unitCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>, FrameType>::get();
 
             auto curWriter = offsetWriter[name_lookup[d]];
             curWriter.GetFieldWriter()(patchOffset, numPatches, localDomain);
@@ -272,7 +294,7 @@ struct WriteSpecies
             curWriter.GetAttributeWriter()("unitSI", unitCellIdx.at(d));
         }
 
-        std::vector<float_64> unitDimensionCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>>::getDimension();
+        std::vector<float_64> unitDimensionCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>, FrameType>::getDimension();
 
         offsetWriter.GetAttributeWriter()("unitDimension", unitDimensionCellIdx);
         extentWriter.GetAttributeWriter()("unitDimension", unitDimensionCellIdx);
@@ -281,6 +303,46 @@ struct WriteSpecies
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) writing particlePatches for %1%") % Hdf5FrameType::getName();
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5: ( end ) writing species: %1%") % Hdf5FrameType::getName();
+    }
+
+private:
+    /** Writes a constant particle record (weighted for a real particle)
+     *
+     * @param value of the record
+     * @param unitSI conversion factor to SI
+     * @param unitDimension power in terms of SI base units for this record
+     */
+    template<class T_Writer>
+    static void writeConstantRecord(
+        T_Writer&& writer,
+        const uint64_t numParticles,
+        const float_64 value,
+        const float_64 unitSI,
+        const std::vector<float_64>& unitDimension
+    )
+    {
+        // Write a dummy field so we can add attributes (workaround for splash)
+        auto& gc = Environment::get().GridController();
+        writer["dummy"].GetFieldWriter()(
+            uint32_t(0),
+            hdf5::makeSplashSize<1>(gc.getGlobalSize()),
+            hdf5::makeSplashDomain<1>(gc.getGlobalRank(), 1)
+            );
+
+        auto writeAttribute = writer.GetAttributeWriter();
+        writeAttribute("value", value);
+        writeAttribute("shape", std::array<uint64_t,1>{numParticles});
+        writeAttribute("unitSI", unitSI);
+        writeAttribute("unitDimension", unitDimension);
+        writeAttribute("timeOffset", float_X(0));
+
+        /* ED-PIC extension:
+         *   - this is a record describing a *real* particle (0: false)
+         *   - it needs to be scaled linearly (w^1.0) to get the *macro*
+         *     particle record
+         */
+        writeAttribute("macroWeighted", uint32_t(0));
+        writeAttribute("weightingPower", float_64(1));
     }
 };
 

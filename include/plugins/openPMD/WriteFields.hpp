@@ -31,7 +31,7 @@ public:
 
         WriteField<T_SplashWriter> writeField(writer);
         writeField(
-                  T_Field::getName(),
+                  traits::OpenPMDName<T_Field>::get(),
                   field.getGridBuffer().getGridLayout(),
                   T_Field::getUnit(),
                   T_Field::getUnitDimension(),

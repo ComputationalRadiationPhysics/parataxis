@@ -55,7 +55,7 @@ namespace xrt {
         static std::string
         getName()
         {
-            return "electron_density";
+            return "DensityField";
         }
 
         PMacc::SimulationDataId getUniqueId() override

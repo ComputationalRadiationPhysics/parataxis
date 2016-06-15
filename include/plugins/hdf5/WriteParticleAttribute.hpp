@@ -22,7 +22,7 @@ struct WriteParticleAttribute
      * @param numParticlesGlobal number of particles globally
      */
     template<class T_SplashWriter, typename T_Frame>
-    HINLINE void operator()(T_SplashWriter& writer,
+    HINLINE void operator()(T_SplashWriter& inWriter,
                             T_Frame& frame,
                             const uint64_t numParticles,
                             const uint64_t localParticlesOffset,
@@ -34,17 +34,13 @@ struct WriteParticleAttribute
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write species attribute: %1%") % T_Identifier::getName();
 
-        const std::string datasetName = writer.GetCurrentDataset();
-        const std::string recordPath = datasetName + "/" + traits::OpenPMDName<T_Identifier>::get();
+        T_SplashWriter writer = inWriter[traits::OpenPMDName<T_Identifier>::get()];
 
         const std::string name_lookup[] = {"x", "y", "z"};
 
         // get the SI scaling, dimensionality of the attribute
-        std::vector<float_64> unit = traits::OpenPMDUnit<T_Identifier>::get();
-        std::vector<float_64> unitDimension = traits::OpenPMDUnit<T_Identifier>::getDimension();
-        //const bool macroWeightedBool = MacroWeighted<T_Identifier>::get();
-        //const uint32_t macroWeighted = (macroWeightedBool ? 1 : 0);
-        //const float_64 weightingPower = WeightingPower<T_Identifier>::get();
+        std::vector<float_64> unit = traits::OpenPMDUnit<T_Identifier, T_Frame>::get();
+        std::vector<float_64> unitDimension = traits::OpenPMDUnit<T_Identifier, T_Frame>::getDimension();
 
         assert(unit.size() == numComponents); // unitSI for each component
         assert(unitDimension.size() == traits::NUnitDimension); // seven openPMD base units
@@ -56,14 +52,13 @@ struct WriteParticleAttribute
 
         for (uint32_t d = 0; d < numComponents; d++)
         {
-            writer.SetCurrentDataset(recordPath + "/" + name_lookup[d]);
-
             ValueType* dataPtr = frame.getIdentifier(T_Identifier()).getPointer();
             #pragma omp parallel for
             for(uint64_t i = 0; i < numParticles; ++i)
                 tmpArray[i] = ((ComponentValueType*)dataPtr)[i * numComponents + d];
 
-            writer.GetPolyDataWriter()(
+            auto polyWriter = ((numComponents > 0) ? writer[name_lookup[d]] : writer).GetPolyDataWriter();
+            polyWriter(
                 tmpArray,
                 1,
                 makeSplashDomain(globalDomain),
@@ -77,14 +72,15 @@ struct WriteParticleAttribute
         }
         __deleteArray(tmpArray);
 
-        writer.SetCurrentDataset(recordPath);
         auto writeAttribute = writer.GetAttributeWriter();
 
         writeAttribute("unitDimension", unitDimension);
         writeAttribute("timeOffset", float_X(0));
+        // Single particles
+        writeAttribute("macroWeighted", uint32_t(0));
+        writeAttribute("weightingPower", float_64(1));
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) write species attribute: %1%") % T_Identifier::getName();
-        writer.SetCurrentDataset(datasetName);
     }
 
 };

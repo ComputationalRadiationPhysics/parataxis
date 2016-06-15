@@ -2,13 +2,14 @@
 
 #include "traits/PICToOpenPMD.hpp"
 #include "traits/SIBaseUnits.hpp"
+#include "particles/functors/GetWavelength.hpp"
 #include <vector>
 
 namespace xrt{
 namespace traits{
 
-template<typename T_Type>
-struct OpenPMDUnit<position<T_Type> >
+template<typename T_Type, typename T_Frame>
+struct OpenPMDUnit<position<T_Type>, T_Frame>
 {
     static std::vector<float_64> get()
     {
@@ -31,8 +32,8 @@ struct OpenPMDUnit<position<T_Type> >
     }
 };
 
-template<>
-struct OpenPMDUnit<particleId>
+template<typename T_Frame>
+struct OpenPMDUnit<particleId, T_Frame>
 {
     // unitless and not scaled by a factor: by convention 1.0
     static std::vector<float_64> get()
@@ -49,24 +50,39 @@ struct OpenPMDUnit<particleId>
 };
 
 template<>
-struct OpenPMDUnit<direction>
+struct OpenPMDName<direction>
 {
-    // unitless and not scaled by a factor: by convention 1.0
+    static std::string get()
+    {
+        return "momentum";
+    }
+};
+
+template<typename T_Frame>
+struct OpenPMDUnit<direction, T_Frame>
+{
+    // This is a momentum
     static std::vector<float_64> get()
     {
-        std::vector<float_64> unit( simDim, 1.0 );
+
+        std::vector<float_64> unit(simDim,
+                PLANCK_CONSTANT / particles::functors::GetWavelength<T_Frame, T_Frame>()() * UNIT_MASS * UNIT_LENGTH / UNIT_TIME
+                );
         return unit;
     }
 
     static std::vector<float_64> getDimension()
     {
-        // unitless
-        return std::vector<float_64>( NUnitDimension, 0.0 );
+        std::vector<float_64> result(NUnitDimension, 0);
+        result.at(SIBaseUnits::length) =  1.0;
+        result.at(SIBaseUnits::mass)   =  1.0;
+        result.at(SIBaseUnits::time)   = -1.0;
+        return result;
     }
 };
 
-template<>
-struct OpenPMDUnit<creationTime>
+template<typename T_Frame>
+struct OpenPMDUnit<creationTime, T_Frame>
 {
     static std::vector<float_64> get()
     {
@@ -82,8 +98,8 @@ struct OpenPMDUnit<creationTime>
     }
 };
 
-template<>
-struct OpenPMDUnit<startPhase>
+template<typename T_Frame>
+struct OpenPMDUnit<startPhase, T_Frame>
 {
     // unitless and not scaled by a factor: by convention 1.0
     static std::vector<float_64> get()

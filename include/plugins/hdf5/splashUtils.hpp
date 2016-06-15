@@ -35,6 +35,16 @@ splash::Domain makeSplashDomain(const PMacc::DataSpace<T_dim>& offset, const PMa
     return splashDomain;
 }
 
+template<unsigned T_dim>
+splash::Dimensions makeSplashSize(const PMacc::DataSpace<T_dim>& size)
+{
+    splash::Dimensions splashSize;
+
+    for (uint32_t d = 0; d < T_dim; ++d)
+        splashSize[d] = size[d];
+    return splashSize;
+}
+
 /** Check if a size contains numDims dimensions (excess=1) */
 bool isSizeValid(const splash::Dimensions& size, unsigned numDims)
 {

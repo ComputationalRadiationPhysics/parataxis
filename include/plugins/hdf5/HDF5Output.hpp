@@ -81,7 +81,6 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
         fname = filename;
     openH5File(fname);
     auto writer = makeSplashWriter(*dataCollector, currentStep);
-    openPMD::writeHeader(writer, fname, true);
 
     __getTransactionEvent().waitForFinished();
 
@@ -125,6 +124,8 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
     openPMD::WriteFields<DensityField>()(writer);
     openPMD::WriteSpecies<PIC_Photons>()(writer, *cellDescription_);
 
+    // Write this at the end, as we need to annotate the fields which do not exist yet
+    openPMD::writeHeader(writer, fname, true);
     closeH5File();
 }
 
