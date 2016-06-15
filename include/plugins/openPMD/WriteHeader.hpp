@@ -22,7 +22,7 @@ struct WriteHeader
     	writeGlobalAttribute("openPMD", "1.0.0");
         writeGlobalAttribute("openPMDextension", uint32_t(usePIC_ED_Ext ? 1 : 0)); // ED-PIC ID
         writeGlobalAttribute("basePath", "/data/%T/");
-        writeGlobalAttribute("meshesPath", "meshes/");
+        writeGlobalAttribute("meshesPath", usePIC_ED_Ext ? "fields/" : "meshes/");
         writeGlobalAttribute("particlesPath", "particles/");
         writeGlobalAttribute("iterationEncoding", "fileBased");
         writeGlobalAttribute("iterationFormat", fileNameBase + std::string("_%T.h5"));
@@ -44,6 +44,16 @@ struct WriteHeader
         writeAttribute("dt", DELTA_T);
         writeAttribute("time", float_X(Environment::get().SimulationDescription().getCurrentStep()) * DELTA_T);
         writeAttribute("timeUnitSI", UNIT_TIME);
+
+        if(usePIC_ED_Ext)
+        {
+            writeAttribute = writer_("fields").GetAttributeWriter();
+            writeAttribute("fieldSolver", "none");
+            writeAttribute("fieldBoundary", "open\0open\0open\0open\0open\0open\0", 2 * simDim);
+            writeAttribute("particleBoundary", "absorbing\0absorbing\0absorbing\0absorbing\0absorbing\0absorbing\0", 2 * simDim);
+            writeAttribute("currentSmoothing", "none");
+            writeAttribute("chargeCorrection", "none");
+        }
     }
 private:
 
