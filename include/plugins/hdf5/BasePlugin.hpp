@@ -34,7 +34,7 @@ protected:
 #endif
     }
 
-    void openH5File(const std::string& filename);
+    void openH5File(const std::string& filename, bool openRead);
     void closeH5File();
     void pluginLoad();
     void pluginUnload();
@@ -60,7 +60,7 @@ void BasePlugin::closeH5File()
 #endif
 }
 
-void BasePlugin::openH5File(const std::string& filename)
+void BasePlugin::openH5File(const std::string& filename, bool openRead)
 {
 #if (ENABLE_HDF5 == 1)
     const uint32_t maxOpenFilesPerNode = 4;
@@ -76,7 +76,7 @@ void BasePlugin::openH5File(const std::string& filename)
     // set attributes for datacollector files
     splash::DataCollector::FileCreationAttr attr;
     attr.enableCompression = false;
-    attr.fileAccType = splash::DataCollector::FAT_CREATE;
+    attr.fileAccType = openRead ? splash::DataCollector::FAT_READ : splash::DataCollector::FAT_CREATE;
     attr.mpiPosition = mpiPos;
     attr.mpiSize = mpiSize;
 

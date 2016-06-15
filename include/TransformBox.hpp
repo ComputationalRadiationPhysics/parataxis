@@ -15,14 +15,15 @@ namespace xrt {
         T_Transform transformation;
     public:
         static constexpr unsigned Dim = T_BaseBox::Dim;
-        using ValueType = std::result_of_t<T_Transform(BaseValueType)>;
-        using RefValueType = ValueType;
+        using RefValueType = std::result_of_t<T_Transform(BaseValueType&)>;
+        using ValueType = std::remove_reference_t<RefValueType>;
 
         HDINLINE TransformBox(const T_BaseBox& base, const T_Transform& transformation): T_BaseBox(base), transformation(transformation)
         {}
 
         template<unsigned T_Dim>
-        HDINLINE ValueType operator()(const PMacc::DataSpace<T_Dim>& idx) const
+        HDINLINE auto operator()(const PMacc::DataSpace<T_Dim>& idx) const
+        -> std::result_of_t<T_Transform(std::result_of_t<T_BaseBox(decltype(idx))>)>
         {
             return transformation(T_BaseBox::operator()(idx));
         }

@@ -6,7 +6,7 @@
 #include "math/angleHelpers.hpp"
 
 #include <algorithms/math.hpp>
-#include <memory/buffers/GridBuffer.hpp>
+#include <memory/buffers/HostDeviceBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
 
 namespace xrt {
@@ -144,7 +144,7 @@ namespace detector {
         using Type = typename AccumPolicy::Type;
         using OutputTransformer = typename AccumPolicy::OutputTransformer;
     private:
-        using Buffer = PMacc::GridBuffer< Type, 2 >;
+        using Buffer = PMacc::HostDeviceBuffer< Type, 2 >;
         std::unique_ptr< Buffer > buffer;
         // which angles are covered by 1 cell
         float_X angleRangePerCellX_, angleRangePerCellY_;
@@ -200,10 +200,15 @@ namespace detector {
             return buffer->getDeviceBuffer().getDataBox();
         }
 
+        void hostToDevice()
+        {
+            buffer->hostToDevice();
+        }
+
         Space2D
         getSize() const
         {
-            return buffer->getGridLayout().getDataSpaceWithoutGuarding();
+            return buffer->getHostBuffer().getDataSpace();
         }
 
         DetectParticle

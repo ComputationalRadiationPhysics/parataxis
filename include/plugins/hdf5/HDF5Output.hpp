@@ -79,7 +79,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
             fname = checkpointFilename;
     }else
         fname = filename;
-    openH5File(fname);
+    openH5File(fname, false);
     auto writer = makeSplashWriter(*dataCollector, currentStep);
 
     __getTransactionEvent().waitForFinished();

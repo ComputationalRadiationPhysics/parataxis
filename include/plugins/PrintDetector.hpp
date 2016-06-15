@@ -9,6 +9,7 @@
 #if (ENABLE_HDF5 == 1)
 #   include "plugins/openPMD/WriteHeader.hpp"
 #   include "plugins/hdf5/DataBoxWriter.hpp"
+#   include "plugins/hdf5/DataBoxReader.hpp"
 #endif
 #include "plugins/hdf5/BasePlugin.hpp"
 #include "TransformBox.hpp"
@@ -110,7 +111,7 @@ namespace plugins {
         }
 
         void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override;
-        void restart(uint32_t restartStep, const std::string restartDirectory) override{}
+        void restart(uint32_t restartStep, const std::string restartDirectory) override;
 
     protected:
         void pluginLoad() override
@@ -223,7 +224,7 @@ namespace plugins {
             fname = checkpointDirectory + "/" + checkpointFilename;
         else
             fname = checkpointFilename;
-        openH5File(fname);
+        openH5File(fname, false);
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
@@ -277,6 +278,50 @@ namespace plugins {
         writeAttribute("gridSpacing", gridSpacing);
         writeAttribute("gridGlobalOffset", std::vector<float_64>(3, 0));
         writeAttribute("gridUnitSI", float_64(UNIT_LENGTH));
+
+        dc.releaseData(Detector::getName());
+
+        closeH5File();
+    }
+    template<class T_Detector>
+    void PrintDetector<T_Detector>::restart(uint32_t currentStep, const std::string checkpointDirectory)
+    {
+        std::string fname;
+        if (boost::filesystem::path(restartFilename).is_relative())
+            fname = checkpointDirectory + "/" + restartFilename;
+        else
+            fname = restartFilename;
+        openH5File(fname, false);
+        auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
+
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 read detector: %1%") % Detector::getName();
+
+        /* Change dataset */
+        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
+
+        auto& dc = Environment::get().DataConnector();
+        Detector& detector = dc.getData<Detector>(Detector::getName(), true);
+
+        const SubGrid& subGrid = Environment::get().SubGrid();
+        hdf5::readDataBox(
+                    writer,
+                    detector.getHostDataBox(),
+                    PMacc::Selection<3>(
+                        Space3D(
+                            detector.getSize().x(),
+                            detector.getSize().y(),
+                            Environment::get().GridController().getGpuNodes().productOfComponents()
+                        )
+                    ),
+                    detector.getSize(),
+                    Space3D(
+                            0,
+                            0,
+                            Environment::get().GridController().getScalarPosition()
+                    )
+                );
+
+        detector.hostToDevice();
 
         dc.releaseData(Detector::getName());
 
