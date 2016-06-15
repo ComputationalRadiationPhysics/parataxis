@@ -48,7 +48,7 @@ struct DataBoxWriter
 /// @param globalDomain Offset and Size of the field over all processes
 /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data in the box)
 template<class T_SplashWriter, class T_DataBox, unsigned T_dim>
-void writeDataBox(T_SplashWriter& writer, const T_DataBox& dataBox, const PMacc::Selection<T_dim>& globalDomain, const PMacc::Selection<T_dim>& localDomain)
+void writeDataBox(T_SplashWriter&& writer, const T_DataBox& dataBox, const PMacc::Selection<T_dim>& globalDomain, const PMacc::Selection<T_dim>& localDomain)
 {
     DataBoxWriter<typename T_DataBox::ValueType> boxWriter;
     boxWriter(writer, dataBox, globalDomain, localDomain.size, localDomain.offset);
@@ -61,7 +61,7 @@ void writeDataBox(T_SplashWriter& writer, const T_DataBox& dataBox, const PMacc:
 /// @param localSize    Size of the field on the current process (must match extents of data in the box)
 /// @param localOffset  Offset of the field of the current process
 template<class T_SplashWriter, class T_DataBox, unsigned T_globalDims>
-void writeDataBox(T_SplashWriter& writer, const T_DataBox& dataBox,
+void writeDataBox(T_SplashWriter&& writer, const T_DataBox& dataBox,
         const PMacc::Selection<T_globalDims>& globalDomain,
         const PMacc::DataSpace<T_DataBox::Dim>& localSize,
         const PMacc::DataSpace<T_globalDims>& localOffset)

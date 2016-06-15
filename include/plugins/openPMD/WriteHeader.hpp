@@ -40,7 +40,7 @@ struct WriteHeader
         writeGlobalAttribute("date", common::getDateString("%F %T %z"));
 
         /* openPMD: required time attributes */
-        auto writeAttribute = writer_.GetAttributeWriter("");
+        auto writeAttribute = writer_("").GetAttributeWriter();
         writeAttribute("dt", DELTA_T);
         writeAttribute("time", float_X(Environment::get().SimulationDescription().getCurrentStep()) * DELTA_T);
         writeAttribute("timeUnitSI", UNIT_TIME);

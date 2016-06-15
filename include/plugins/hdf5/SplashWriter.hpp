@@ -31,11 +31,12 @@ public:
 
     SplashGlobalAttributeWriter GetGlobalAttributeWriter();
     SplashAttributeWriter GetAttributeWriter();
-    SplashAttributeWriter GetAttributeWriter(const std::string& datasetName);
     SplashFieldWriter GetFieldWriter();
     SplashDomainWriter GetDomainWriter();
     SplashPolyDataWriter GetPolyDataWriter();
 
+    T_DataCollector& GetDC(){ return *hdfFile_; }
+    int32_t GetId() const { return id_; }
 private:
 
     T_DataCollector* hdfFile_;
@@ -83,13 +84,7 @@ SplashWriter<T_DataCollector> SplashWriter<T_DataCollector>::operator[](const st
 template<class T_DataCollector>
 SplashAttributeWriter SplashWriter<T_DataCollector>::GetAttributeWriter()
 {
-    return GetAttributeWriter(curDatasetName_);
-}
-
-template<class T_DataCollector>
-SplashAttributeWriter SplashWriter<T_DataCollector>::GetAttributeWriter(const std::string& datasetName)
-{
-    return SplashAttributeWriter(*hdfFile_, id_, datasetName);
+    return SplashAttributeWriter(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>

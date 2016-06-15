@@ -27,14 +27,8 @@ struct DataBoxWriter<PMacc::math::Complex<T_ValueType>>
         using ValueType = typename T_DataBox::ValueType;
         static_assert(std::is_same<PMacc::math::Complex<T_ValueType>, ValueType>::value, "Wrong type in dataBox");
 
-        const std::string datasetName = writer.GetCurrentDataset();
-
-        writer.SetCurrentDataset(datasetName + "/real");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& value) { return value.get_real(); }), globalDomain, localSize, localOffset);
-        writer.SetCurrentDataset(datasetName + "/imag");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& value) { return value.get_imag(); }), globalDomain, localSize, localOffset);
-
-        writer.SetCurrentDataset(datasetName);
+        writeDataBox(writer["real"], makeHostTransformBox(dataBox, [](const ValueType& value) { return value.get_real(); }), globalDomain, localSize, localOffset);
+        writeDataBox(writer["imag"], makeHostTransformBox(dataBox, [](const ValueType& value) { return value.get_imag(); }), globalDomain, localSize, localOffset);
     }
 };
 
