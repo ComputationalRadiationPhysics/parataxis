@@ -132,30 +132,60 @@ namespace xrt {
 
         uint32_t fillSimulation() override
         {
+            uint32_t step = 0;
             if (this->restartRequested)
-                std::cerr << "Restarting is not yet supported. Starting from zero" << std::endl;
+            {
+                std::vector<uint32_t> checkpoints = readCheckpointMasterFile();
+                if (checkpoints.empty())
+                     throw std::runtime_error("Restart failed, no checkpoints found.");
+                if (restartStep < 0)
+                    this->restartStep = checkpoints.back();
+                else if(std::find(checkpoints.begin(), checkpoints.end(), restartStep) == checkpoints.end())
+                    throw std::runtime_error("Restart failed, invalid restartStep passed.");
 
-            PMacc::IdProvider<simDim>::init();
-            TimeIntervallExt timer;
+                // restart simulation by loading from persistent data
+                // the simulation will start after restartStep
+                PMacc::log<XRTLogLvl::SIM_STATE>("Restarting simulation from timestep %1% in directory '%2%'") %
+                    restartStep % restartDirectory;
 
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
-            PMacc::mpi::SeedPerRank<simDim> seedPerRank;
-            uint32_t seed = seeds::xorRNG ^ seeds::Global()();
-            seed = seedPerRank(seed);
-            rngProvider_->init(seed);
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+                Environment::get().PluginConnector().restartPlugins(restartStep, restartDirectory);
+                __getTransactionEvent().waitForFinished();
 
-            PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
-            Resolve_t<initialDensity::Generator> generator;
-            densityField->createDensityDistribution(generator);
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+                // Global synchronize
+                CUDA_CHECK(cudaDeviceSynchronize());
+                CUDA_CHECK(cudaGetLastError());
+                auto&gc = Environment::get().GridController();
+                MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
+
+                PMacc::log<XRTLogLvl::SIM_STATE>("Loading from persistent data finished");
+
+                step = this->restartStep + 1;
+            } else
+            {
+                PMacc::log<XRTLogLvl::SIM_STATE>("Starting simulation from timestep 0");
+
+                PMacc::IdProvider<simDim>::init();
+                TimeIntervallExt timer;
+
+                PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
+                PMacc::mpi::SeedPerRank<simDim> seedPerRank;
+                uint32_t seed = seeds::xorRNG ^ seeds::Global()();
+                seed = seedPerRank(seed);
+                rngProvider_->init(seed);
+                PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+
+                PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
+                Resolve_t<initialDensity::Generator> generator;
+                densityField->createDensityDistribution(generator);
+                PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            }
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation filled.");
 
 #ifdef XRT_CHECK_PHOTON_CT
             laserSource.checkPhotonCt(runSteps, this->cellDescription);
 #endif
-            return 0;
+            return step;
         }
 
         void resetAll(uint32_t currentStep)

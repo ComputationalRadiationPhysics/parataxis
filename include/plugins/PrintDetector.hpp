@@ -291,7 +291,7 @@ namespace plugins {
             fname = checkpointDirectory + "/" + restartFilename;
         else
             fname = restartFilename;
-        openH5File(fname, false);
+        openH5File(fname, true);
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5 read detector: %1%") % Detector::getName();
