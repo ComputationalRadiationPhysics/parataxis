@@ -52,4 +52,7 @@ namespace xrt {
 
     /** Amplitude of a wave */
     alias(amplitude);
+
+    alias(mass);
+    alias(charge);
 }  // namespace xrt

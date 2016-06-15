@@ -33,6 +33,8 @@ namespace xrt {
     /* energy for photons in J */
     value_identifier(float_X, energyPhotons, 8 * UNITCONV_keV_to_Joule);
     value_identifier(float_X, amplitudePhotons, 1);
+    value_identifier(float_X, massPhotons, 0);
+    value_identifier(float_X, chargePhotons, 0);
 
     typedef bmpl::vector<
             particlePusher<particles::pusher::Photon>,
@@ -41,7 +43,9 @@ namespace xrt {
             particleDetector<detector::PhotonDetector>,
             wavelength<wavelengthPhotons>,
             //energy<energyPhotons>,
-            amplitude<amplitudePhotons>
+            amplitude<amplitudePhotons>,
+            mass<massPhotons>,
+            charge<chargePhotons>
     > ParticleFlagsPhotons;
 
     /*define species photons*/
