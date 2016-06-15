@@ -101,10 +101,20 @@ def getRuntimeTests(examples, names = None):
         if names == None or (len(names) == 1 and names[0] == '+'):
             result.extend(example.getRuntimeTests())
         else:
+            foundTestNames = []
+            requiredDependencies = []
             for test in example.getRuntimeTests():
                 for name in names:
                     if re.match(name.replace("*", ".*") + "$", test.name):
                         result.append(test)
+                        foundTestNames.append(test.name)
+                        if test.getDependency():
+                            requiredDependencies.append(test.getDependency())
+            # Add dependent tests (1 pass -> Single dependency only, no chains like A->B->C)
+            for test in example.getRuntimeTests():
+                if test.name in requiredDependencies and not test.name in foundTestNames:
+                    result.append(test)
+                    foundTestNames.append(test.name)
     return result
     
 class Example:

@@ -220,18 +220,61 @@ def main(argv):
     errorTests = []
     if options.k:
         startedTests = []
+        waitingTests = []
+        # Start all tests with no dependencies
         for test in runtimeTests:
+            if test.getDependency():
+                waitingTests.append(test)
+                continue
             if test.startTest(srcDir, options.output, options.dry_run, options.verbose) != 0:
                 numErrors += 1
             else:
                 startedTests.append(test)
-        for test in startedTests:
+        # Wait for started tests to finish
+        i = 0
+        while i < len(startedTests):
+            test = startedTests[i]
             if test.finishTest(options.dry_run, options.verbose) != 0:
                 numErrors += 1
+            else:
+                # If the test finished successfully, we may start dependent tests
+                j = 0
+                while j < len(waitingTests):
+                    wTest = waitingTests[j]
+                    if wTest.getDependency() == test.name:
+                        if test.startTest(srcDir, options.output, options.dry_run, options.verbose) != 0:
+                            numErrors += 1
+                        else:
+                            startedTests.append(test)
+                        del waitingTests[j]
+                    else:
+                        j += 1
+            i += 1
+        # If we still have tests waiting, then those dependencies could not be started/found/finished
+        for test in waitingTests:
+            cPrint("Could not start " + str(test) + " due to dependency", "red")
+            numErrors += 1
     else:
+        finishedTests = []
+        waitingTests = []
         for test in runtimeTests:
+            if test.getDependency():
+                waitingTests.append(test)
+                continue
             if test.execute(srcDir, options.output, options.dry_run, options.verbose) != 0:
                 numErrors += 1
+            else:
+                finishedTests.append(test.name)
+        # Now run all tests with dependencies
+        for test in waitingTests:
+            if not test.getDependency() in finishedTests:
+                cPrint("Could not start " + str(test) + " due to dependency", "red")
+                numErrors += 1
+            elif test.execute(srcDir, options.output, options.dry_run, options.verbose) != 0:
+                numErrors += 1
+            else:
+                finishedTests.append(test.name)
+ 
     if(numErrors > 0):
         cprint(str(numErrors) + " run errors occured!", "red")
         printFailures(runtimeTests = runtimeTests)

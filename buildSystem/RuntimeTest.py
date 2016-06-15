@@ -37,6 +37,7 @@ class RuntimeTest:
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
+        self.dependency = testDocu.get('dependency', None)
         self.postRunCmds = list(flattenList(testDocu.get('post-run', [])))
         
         self.lastResult = False
@@ -44,6 +45,10 @@ class RuntimeTest:
     def getConfig(self):
         """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this RuntimeTest"""
         return (self.example.getMetaData()["name"], self.cmakeFlag, self.profileFile)
+        
+    def getDependency(self):
+        """Return dependent runtime test name (from same example)"""
+        return self.dependency
 
     def findCompilation(self, outputDir = None):
         """Return the compilation instance required for this test.
