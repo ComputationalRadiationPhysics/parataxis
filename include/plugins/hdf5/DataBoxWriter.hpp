@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory/boxes/DataBoxDim1Access.hpp>
+
 namespace xrt {
 namespace plugins {
 namespace hdf5 {
@@ -38,7 +40,7 @@ struct DataBoxWriter
         for(unsigned i = 0; i < localSize.getDim(); i++)
             fullLocalSize[i] = localSize[i];
 
-        writer.GetDomainWriter()(tmpArray.get(), T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(fullLocalSize, localOffset));
+        writer.GetDomainWriter()(tmpArray.get(), T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
     }
 };
 
