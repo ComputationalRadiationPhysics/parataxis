@@ -266,7 +266,7 @@ class RuntimeTest:
         if(self.profileFile):
             tbgCmd += " -o 'TBG_profile_file='" + self.profileFile + "'"
         tbgCmd += " -c submit/" + self.cfgFile + " " + outputDir
-        cprint("Submitting to queue", "yellow")
+        cprint("Submitting " + self.getConfig()[0] + "/" + self.name + " to queue", "yellow")
         if dryRun or verbose:
             tbgVars = "TBG_SUBMIT="+os.environ.get("TBG_SUBMIT") + " TBG_TPLFILE="+os.environ.get("TBG_TPLFILE")
             print(tbgVars + " " + tbgCmd)
