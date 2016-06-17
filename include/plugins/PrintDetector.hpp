@@ -228,7 +228,7 @@ namespace plugins {
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 write detector: %1%") % Detector::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: write detector: %1%") % Detector::getName();
 
         /* Change dataset */
         writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
@@ -283,18 +283,19 @@ namespace plugins {
 
         closeH5File();
     }
+
     template<class T_Detector>
-    void PrintDetector<T_Detector>::restart(uint32_t currentStep, const std::string checkpointDirectory)
+    void PrintDetector<T_Detector>::restart(uint32_t currentStep, const std::string restartDirectory)
     {
         std::string fname;
         if (boost::filesystem::path(restartFilename).is_relative())
-            fname = checkpointDirectory + "/" + restartFilename;
+            fname = restartDirectory + "/" + restartFilename;
         else
             fname = restartFilename;
         openH5File(fname, true);
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 read detector: %1%") % Detector::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: read detector: %1%") % Detector::getName();
 
         /* Change dataset */
         writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
