@@ -5,12 +5,15 @@
 #include "plugins/hdf5/SplashFieldWriter.hpp"
 #include "plugins/hdf5/SplashDomainWriter.hpp"
 #include "plugins/hdf5/SplashPolyDataWriter.hpp"
+#include "plugins/hdf5/SplashAttributeReader.hpp"
+#include "plugins/hdf5/SplashFieldReader.hpp"
+#include "plugins/hdf5/SplashDomainReader.hpp"
 
 namespace xrt {
 namespace plugins {
 namespace hdf5 {
 
-/** Wrapper for splash data collectors to store state and simplify writing */
+/** Wrapper for splash data collectors to store state and simplify writing/reading */
 template<class T_DataCollector>
 class SplashWriter
 {
@@ -34,6 +37,10 @@ public:
     SplashFieldWriter GetFieldWriter();
     SplashDomainWriter GetDomainWriter();
     SplashPolyDataWriter GetPolyDataWriter();
+
+    SplashAttributeReader GetAttributeReader();
+    SplashFieldReader GetFieldReader();
+    SplashDomainReader GetDomainReader();
 
     T_DataCollector& GetDC(){ return *hdfFile_; }
     int32_t GetId() const { return id_; }
@@ -103,6 +110,26 @@ template<class T_DataCollector>
 SplashPolyDataWriter SplashWriter<T_DataCollector>::GetPolyDataWriter()
 {
     return SplashPolyDataWriter(*hdfFile_, id_, curDatasetName_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+template<class T_DataCollector>
+SplashAttributeReader SplashWriter<T_DataCollector>::GetAttributeReader()
+{
+    return SplashAttributeReader(*hdfFile_, id_, curDatasetName_);
+}
+
+template<class T_DataCollector>
+SplashFieldReader SplashWriter<T_DataCollector>::GetFieldReader()
+{
+    return SplashFieldReader(*hdfFile_, id_, curDatasetName_);
+}
+
+template<class T_DataCollector>
+SplashDomainReader SplashWriter<T_DataCollector>::GetDomainReader()
+{
+    return SplashDomainReader(*hdfFile_, id_, curDatasetName_);
 }
 
 }  // namespace openPMD

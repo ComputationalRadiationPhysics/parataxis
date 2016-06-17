@@ -1,7 +1,7 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include <splash/splash.h>
+#include <memory/boxes/DataBoxDim1Access.hpp>
 
 namespace xrt {
 namespace plugins {
@@ -26,42 +26,14 @@ struct DataBoxReader
         using ValueType = typename T_DataBox::ValueType;
         static_assert(std::is_same<T_ValueType, ValueType>::value, "Wrong type in dataBox");
 
-        // sizeRead will be set
-        splash::Dimensions sizeRead;
-        splash::CollectionType* colType = writer.GetDC().readMeta(
-            writer.GetId(),
-            writer.GetCurrentDataset().c_str(),
-            makeSplashSize(globalDomain.size),
-            makeSplashDomain(globalDomain).getOffset(),
-            sizeRead);
-
-        if(sizeRead != makeSplashSize(globalDomain.size))
-            throw std::runtime_error("Invalid size read");
-
-        if(colType->getDataType() != typename traits::PICToSplash<ValueType>::type().getDataType())
-            throw std::runtime_error("Invalid data type");
-
-        __delete(colType);
-
         auto fullLocalSize = PMacc::DataSpace<T_globalDims>::create(1);
         for(unsigned i = 0; i < localSize.getDim(); i++)
             fullLocalSize[i] = localSize[i];
 
-        splash::DomainCollector::DomDataClass data_class;
-        splash::DataContainer *field_container =
-            writer.GetDC().readDomain(writer.GetId(),
-                                      writer.GetCurrentDataset().c_str(),
-                                      makeSplashDomain<T_globalDims>(globalDomain.offset + localOffset, fullLocalSize),
-                                      &data_class);
-
-        const size_t linearSize = localSize.productOfComponents();
         typedef PMacc::DataBoxDim1Access<T_DataBox> D1Box;
         D1Box d1Access(dataBox, localSize);
 
-        const ValueType* data = reinterpret_cast<const ValueType*>(field_container->getIndex(0)->getData());
-        for (size_t i = 0; i < linearSize; ++i)
-            d1Access[i] = data[i];
-        delete field_container;
+        writer.GetDomainReader()(d1Access, T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
     }
 };
 
