@@ -1,5 +1,5 @@
 import os
-from numpy import *
+import numpy as np
 import numpy.testing as npt
 import unittest
 import h5py
@@ -26,8 +26,8 @@ class TestRestart(unittest.TestCase):
             # 3D momentum
             self.assertEqual(len(momentum), 3)
             # All momentums must be ~1
-            momentums = vstack((momentum["x"], momentum["y"], momentum["z"]))
-            momNorms = linalg.norm(momentums, axis=0)
+            momentums = np.vstack((momentum["x"], momentum["y"], momentum["z"]))
+            momNorms = np.linalg.norm(momentums, axis=0)
             npt.assert_array_almost_equal(momNorms, 1.)
  
 if __name__ == '__main__':

@@ -50,7 +50,6 @@ namespace xrt {
         // Calculate the number of timesteps the laser is active. It is rounded to the nearest timestep (so error is at most half a timestep)
         static constexpr uint32_t numTimeStepsLaserPulse = math::floatToIntRound(laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T);
         static constexpr float_64 phi_0 = 0; // Phase offset at t = 0 (in range [0, 2*PI) )
-        uint32_t timeStepsProcessed = 0;
 
         static_assert(laserConfig::DIRECTION >= 0 && laserConfig::DIRECTION <= 2, "Invalid laser direction");
 
@@ -66,18 +65,13 @@ namespace xrt {
 
         void processStep(uint32_t currentStep)
         {
-            if(timeStepsProcessed < numTimeStepsLaserPulse){
-                addParticles(timeStepsProcessed);
-                timeStepsProcessed++;
+            if(currentStep < numTimeStepsLaserPulse){
+                addParticles(currentStep);
             }
         }
 
         void reset(uint32_t currentStep)
-        {
-            // TODO: This only works if we do 1 "laser step" per timestep
-            timeStepsProcessed = currentStep;
-        }
-
+        {}
 
         void checkPhotonCt(uint32_t numTimesteps, MappingDesc cellDescription)
         {

@@ -36,8 +36,8 @@ tests:
     cfgFile:   0001gpusRestart.cfg
     dependency: Checkpoint
     post-run:
-        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -ge 2 \]
-        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -ge 2 \]
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 2 \]
+        - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 2 \]
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRestart.py"
 
