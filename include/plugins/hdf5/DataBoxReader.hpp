@@ -11,14 +11,14 @@ namespace hdf5 {
 template<class T_ValueType>
 struct DataBoxReader
 {
-    /// Write a field from a databox
-    /// @param writer       Instance of SplashWriter
+    /// Read a field from a databox
+    /// @param reader       Instance of SplashReader
     /// @param dataBox      Databox containing the data
     /// @param globalDomain Offset and Size of the field over all processes
     /// @param localSize    Size of the field on the current process (must match extents of data in the box)
     /// @param localOffset  Offset of the field of the current process
-    template<class T_SplashWriter, class T_DataBox, unsigned T_globalDims>
-    void operator()(T_SplashWriter& writer, const T_DataBox& dataBox,
+    template<class T_SplashReader, class T_DataBox, unsigned T_globalDims>
+    void operator()(T_SplashReader& reader, const T_DataBox& dataBox,
             const PMacc::Selection<T_globalDims>& globalDomain,
             const PMacc::DataSpace<T_DataBox::Dim>& localSize,
             const PMacc::DataSpace<T_globalDims>& localOffset)
@@ -33,36 +33,36 @@ struct DataBoxReader
         typedef PMacc::DataBoxDim1Access<T_DataBox> D1Box;
         D1Box d1Access(dataBox, localSize);
 
-        writer.GetDomainReader()(d1Access, T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
+        reader.GetDomainReader()(d1Access, T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
     }
 };
 
-/// Write a field from a databox
-/// @param writer       Instance of SplashWriter
+/// Read a field to a databox
+/// @param reader       Instance of SplashReader
 /// @param dataBox      Databox containing the data
 /// @param globalDomain Offset and Size of the field over all processes
 /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data in the box)
-template<class T_SplashWriter, class T_DataBox, unsigned T_dim>
-void readDataBox(T_SplashWriter&& writer, const T_DataBox& dataBox, const PMacc::Selection<T_dim>& globalDomain, const PMacc::Selection<T_dim>& localDomain)
+template<class T_SplashReader, class T_DataBox, unsigned T_dim>
+void readDataBox(T_SplashReader&& reader, const T_DataBox& dataBox, const PMacc::Selection<T_dim>& globalDomain, const PMacc::Selection<T_dim>& localDomain)
 {
     DataBoxReader<typename T_DataBox::ValueType> boxReader;
-    boxReader(writer, dataBox, globalDomain, localDomain.size, localDomain.offset);
+    boxReader(reader, dataBox, globalDomain, localDomain.size, localDomain.offset);
 }
 
-/// Write a field from a databox
-/// @param writer       Instance of SplashWriter
+/// Read a field to a databox
+/// @param reader       Instance of SplashReader
 /// @param dataBox      Databox containing the data
 /// @param globalDomain Offset and Size of the field over all processes
 /// @param localSize    Size of the field on the current process (must match extents of data in the box)
 /// @param localOffset  Offset of the field of the current process
-template<class T_SplashWriter, class T_DataBox, unsigned T_globalDims>
-void readDataBox(T_SplashWriter&& writer, const T_DataBox& dataBox,
+template<class T_SplashReader, class T_DataBox, unsigned T_globalDims>
+void readDataBox(T_SplashReader&& reader, const T_DataBox& dataBox,
         const PMacc::Selection<T_globalDims>& globalDomain,
         const PMacc::DataSpace<T_DataBox::Dim>& localSize,
         const PMacc::DataSpace<T_globalDims>& localOffset)
 {
     DataBoxReader<typename T_DataBox::ValueType> boxReader;
-    boxReader(writer, dataBox, globalDomain, localSize, localOffset);
+    boxReader(reader, dataBox, globalDomain, localSize, localOffset);
 }
 
 }  // namespace hdf5

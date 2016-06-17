@@ -13,9 +13,9 @@ namespace hdf5 {
 namespace detail {
 
     /** CRTP based base functor for reading attributes.
-     *  Provides functor-functionality, but delegates actual reading to T_Writer::readImpl
+     *  Provides functor-functionality, but delegates actual reading to T_Reader::readImpl
      */
-    template<class T_Writer>
+    template<class T_Reader>
     struct SplashBaseAttributeReader
     {
         /// Read a arithmetic attribute
@@ -33,45 +33,45 @@ namespace detail {
         void operator()(const std::string& attrName, std::vector<T>& value);
     };
 
-    template<class T_Writer>
+    template<class T_Reader>
     template<typename T, typename>
-    void SplashBaseAttributeReader<T_Writer>::operator()(const std::string& attrName, T& value)
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& attrName, T& value)
     {
         typename traits::PICToSplash<T>::type splashType;
-        static_cast<T_Writer&>(*this).readImpl(splashType, attrName, &value);
+        static_cast<T_Reader&>(*this).readImpl(splashType, attrName, &value);
     }
 
-    template<class T_Writer>
-    void SplashBaseAttributeReader<T_Writer>::operator()(const std::string& name, std::string& value)
+    template<class T_Reader>
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& name, std::string& value)
     {
         char tmp[1024];
         splash::ColTypeString colType(1337); // TODO
-        static_cast<T_Writer&>(*this).readImpl(colType, name, tmp);
+        static_cast<T_Reader&>(*this).readImpl(colType, name, tmp);
         value = tmp;
     }
 
-    template<class T_Writer>
-    void SplashBaseAttributeReader<T_Writer>::operator()(const std::string& attrName, char* value, size_t numValues)
+    template<class T_Reader>
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& attrName, char* value, size_t numValues)
     {
         splash::ColTypeString colType(1337); // TODO
-        static_cast<T_Writer&>(*this).readImpl(colType, attrName, 1u, splash::Dimensions(numValues,0,0), value);
+        static_cast<T_Reader&>(*this).readImpl(colType, attrName, 1u, splash::Dimensions(numValues,0,0), value);
     }
 
-    template<class T_Writer>
+    template<class T_Reader>
     template<typename T, size_t T_size>
-    void SplashBaseAttributeReader<T_Writer>::operator()(const std::string& attrName, std::array<T, T_size>& value)
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& attrName, std::array<T, T_size>& value)
     {
         typename traits::PICToSplash<T>::type splashType;
-        static_cast<T_Writer&>(*this).readImpl(splashType, attrName, 1u, splash::Dimensions(T_size,0,0), &value);
+        static_cast<T_Reader&>(*this).readImpl(splashType, attrName, 1u, splash::Dimensions(T_size,0,0), &value);
     }
 
-    template<class T_Writer>
+    template<class T_Reader>
     template<typename T>
-    void SplashBaseAttributeReader<T_Writer>::operator()(const std::string& attrName, std::vector<T>& value)
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& attrName, std::vector<T>& value)
     {
         assert(!value.empty()); // TODO: size must be known in current implementation
         typename traits::PICToSplash<T>::type splashType;
-        static_cast<T_Writer&>(*this).readImpl(splashType, attrName, 1u, splash::Dimensions(value.size(),0,0), &value.front());
+        static_cast<T_Reader&>(*this).readImpl(splashType, attrName, 1u, splash::Dimensions(value.size(),0,0), &value.front());
     }
 
 }  // namespace detail

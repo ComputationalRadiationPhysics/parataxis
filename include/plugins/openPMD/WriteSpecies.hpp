@@ -20,7 +20,7 @@ namespace xrt {
 namespace plugins {
 namespace openPMD {
 
- /** Write copy particle to host memory and dump to HDF5 file
+ /** copy particle to host memory and dump to HDF5 file
  *
  * @tparam T_Species type of species
  *

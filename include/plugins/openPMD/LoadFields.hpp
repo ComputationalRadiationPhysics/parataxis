@@ -7,12 +7,12 @@ namespace xrt {
 namespace plugins {
 namespace openPMD {
 
-template<class T_SplashWriter>
+template<class T_SplashReader>
 struct LoadField
 {
-    T_SplashWriter& writer_;
+    T_SplashReader& reader_;
 
-    LoadField(T_SplashWriter& writer): writer_(writer){}
+    LoadField(T_SplashReader& reader): reader_(reader){}
 
     template<class T_DataBox>
     void operator()(const std::string& name, const GridLayout& fieldLayout, T_DataBox fieldBox)
@@ -21,10 +21,10 @@ struct LoadField
 
         const auto& subGrid = Environment::get().SubGrid();
 
-        writer_.SetCurrentDataset(std::string("fields/") + name);
+        reader_.SetCurrentDataset(std::string("fields/") + name);
 
         hdf5::readDataBox(
-                    writer_,
+                    reader_,
                     fieldBox.shift(fieldLayout.getGuard()),
                     subGrid.getGlobalDomain(),
                     PMacc::Selection<simDim>(
@@ -44,15 +44,15 @@ template<typename T_Field>
 struct LoadFields
 {
 
-    template<class T_SplashWriter>
-    void operator()(T_SplashWriter& writer)
+    template<class T_SplashReader>
+    void operator()(T_SplashReader& reader)
     {
         auto& dc = Environment::get().DataConnector();
 
         /* load field without copying data to host */
         T_Field& field = dc.getData<T_Field>(T_Field::getName(), true);
 
-        LoadField<T_SplashWriter> loadField(writer);
+        LoadField<T_SplashReader> loadField(reader);
         loadField(
                   traits::OpenPMDName<T_Field>::get(),
                   field.getGridBuffer().getGridLayout(),
