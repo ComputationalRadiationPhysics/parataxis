@@ -193,7 +193,7 @@ namespace xrt {
             if(currentStep > 0)
                 std::cerr << "Cannot reset to a timestep. Resetting to zero" << std::endl;
             particleStorage->reset(currentStep);
-            laserSource.reset();
+            laserSource.reset(currentStep);
             densityField->reset();
             detector_->reset();
         }

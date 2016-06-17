@@ -72,9 +72,10 @@ namespace xrt {
             }
         }
 
-        void reset()
+        void reset(uint32_t currentStep)
         {
-            timeStepsProcessed = 0;
+            // TODO: This only works if we do 1 "laser step" per timestep
+            timeStepsProcessed = currentStep;
         }
 
 
