@@ -72,7 +72,7 @@ namespace plugins {
 
             auto &dc = Environment::get().DataConnector();
 
-            Field& field = dc.getData<Field>(Field::getName(), false);
+            Field& field = dc.getData<Field>(Field::getName());
             (*gather_)(field);
             if (gather_->hasData()){
                 std::stringstream fileName;

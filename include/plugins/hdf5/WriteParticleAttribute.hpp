@@ -17,8 +17,8 @@ struct WriteParticleAttribute
     /** write attribute to hdf5 file
      *
      * @param frame frame with all particles
-     * @param elements number of particles in this patch
-     * @param elementsOffset number of particles in this patch
+     * @param numParticles number of particles in this patch
+     * @param localParticlesOffset number of particles in this patch
      * @param numParticlesGlobal number of particles globally
      */
     template<class T_SplashWriter, typename T_Frame>
@@ -32,11 +32,9 @@ struct WriteParticleAttribute
         typedef typename Resolve_t<T_Identifier>::type ValueType;
         constexpr uint32_t numComponents = PMacc::traits::GetNComponents<ValueType>::value;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   (begin) write species attribute: %1%") % T_Identifier::getName();
 
         T_SplashWriter writer = inWriter[traits::OpenPMDName<T_Identifier>::get()];
-
-        const std::string name_lookup[] = {"x", "y", "z"};
 
         // get the SI scaling, dimensionality of the attribute
         std::vector<float_64> unit = traits::OpenPMDUnit<T_Identifier, T_Frame>::get();
@@ -50,6 +48,7 @@ struct WriteParticleAttribute
         typedef typename PMacc::traits::GetComponentsType<ValueType>::type ComponentValueType;
         ComponentValueType* tmpArray = new ComponentValueType[numParticles];
 
+        const std::string name_lookup[] = {"x", "y", "z"};
         for (uint32_t d = 0; d < numComponents; d++)
         {
             ValueType* dataPtr = frame.getIdentifier(T_Identifier()).getPointer();
@@ -63,11 +62,8 @@ struct WriteParticleAttribute
                 tmpArray,
                 1,
                 makeSplashDomain(globalDomain),
-                splash::Dimensions(numParticlesGlobal, 1, 1),
-                splash::Domain(
-                    splash::Dimensions(numParticles, 1, 1),
-                    splash::Dimensions(localParticlesOffset, 1, 1)
-                )
+                makeSplashSize<1>(numParticlesGlobal),
+                makeSplashDomain<1>(localParticlesOffset, numParticles)
             );
             tmpWriter.GetAttributeWriter()("unitSI", unit.at(d));
         }
@@ -81,7 +77,7 @@ struct WriteParticleAttribute
         writeAttribute("macroWeighted", uint32_t(0));
         writeAttribute("weightingPower", float_64(1));
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) write species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   ( end ) write species attribute: %1%") % T_Identifier::getName();
     }
 
 };

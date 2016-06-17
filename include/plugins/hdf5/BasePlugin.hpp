@@ -54,7 +54,7 @@ void BasePlugin::closeH5File()
 #if (ENABLE_HDF5 == 1)
     if (dataCollector)
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 close DataCollector");
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: close DataCollector");
         dataCollector->close();
     }
 #endif
@@ -83,13 +83,13 @@ void BasePlugin::openH5File(const std::string& filename, bool openRead)
     // open datacollector
     try
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 open DataCollector with file: %1%") % filename;
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: open DataCollector with file: %1%") % filename;
         dataCollector->open(filename.c_str(), attr);
     }
     catch (const splash::DCException& e)
     {
         std::cerr << e.what() << std::endl;
-        throw std::runtime_error("HDF5 failed to open DataCollector");
+        throw std::runtime_error("HDF5: failed to open DataCollector");
     }
 #endif
 }

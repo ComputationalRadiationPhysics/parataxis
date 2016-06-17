@@ -7,6 +7,19 @@ namespace xrt {
 namespace plugins {
 namespace hdf5 {
 
+template<unsigned T_dim>
+splash::Dimensions makeSplashSize(const PMacc::DataSpace<T_dim>& size)
+{
+    if(size == PMacc::DataSpace<T_dim>::create(0))
+        return splash::Dimensions(0, 0, 0);
+
+    splash::Dimensions splashSize;
+
+    for (uint32_t d = 0; d < T_dim; ++d)
+        splashSize[d] = size[d];
+    return splashSize;
+}
+
 /** Convert a PMacc::Selection instance into a splash::Domain */
 template<unsigned T_dim>
 splash::Domain makeSplashDomain(const PMacc::Selection<T_dim>& selection)
@@ -14,10 +27,8 @@ splash::Domain makeSplashDomain(const PMacc::Selection<T_dim>& selection)
     splash::Domain splashDomain;
 
     for (uint32_t d = 0; d < T_dim; ++d)
-    {
         splashDomain.getOffset()[d] = selection.offset[d];
-        splashDomain.getSize()[d] = selection.size[d];
-    }
+    splashDomain.getSize() = makeSplashSize(selection.size);
     return splashDomain;
 }
 
@@ -28,30 +39,21 @@ splash::Domain makeSplashDomain(const PMacc::DataSpace<T_dim>& offset, const PMa
     splash::Domain splashDomain;
 
     for (uint32_t d = 0; d < T_dim; ++d)
-    {
         splashDomain.getOffset()[d] = offset[d];
-        splashDomain.getSize()[d] = size[d];
-    }
+    splashDomain.getSize() = makeSplashSize(size);
     return splashDomain;
-}
-
-template<unsigned T_dim>
-splash::Dimensions makeSplashSize(const PMacc::DataSpace<T_dim>& size)
-{
-    splash::Dimensions splashSize;
-
-    for (uint32_t d = 0; d < T_dim; ++d)
-        splashSize[d] = size[d];
-    return splashSize;
 }
 
 /** Check if a size contains numDims dimensions (excess=1) */
 bool isSizeValid(const splash::Dimensions& size, unsigned numDims)
 {
+    if(size == splash::Dimensions(0, 0, 0))
+        return true;
+
     assert(numDims > 0);
-    for(unsigned d = numDims; d <= 3; d++)
+    for(unsigned d = numDims; d < 3; d++)
     {
-        if(size[d - 1] != 1)
+        if(size[d] != 1)
             return false;
     }
     return true;
@@ -61,9 +63,9 @@ bool isSizeValid(const splash::Dimensions& size, unsigned numDims)
 bool isOffsetValid(const splash::Dimensions& offset, unsigned numDims)
 {
     assert(numDims > 0);
-    for(unsigned d = numDims; d <= 3; d++)
+    for(unsigned d = numDims; d < 3; d++)
     {
-        if(offset[d - 1] != 0)
+        if(offset[d] != 0)
             return false;
     }
     return true;

@@ -37,6 +37,9 @@ namespace hdf5 {
     template<typename T>
     void SplashFieldWriter::operator()(const T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain)
     {
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: writing %4%D record %1% (globalSize: %2%, localDomain: %3%")
+                % datasetName_ % globalSize.toString() % localDomain.toString() % numDims;
+
         typename traits::PICToSplash<T>::type splashType;
         assert(isSizeValid(globalSize, numDims));
         assert(isDomainValid(localDomain, numDims));

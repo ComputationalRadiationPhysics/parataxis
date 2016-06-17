@@ -24,7 +24,7 @@ namespace hdf5 {
         template<typename T>
         void operator()(const T* data, unsigned numDims,
                 const splash::Domain& globalDomain,
-                const splash::Dimensions& globalDataSize,
+                const splash::Dimensions& globalSize,
                 const splash::Domain& localDomain);
     private:
         splash::IParallelDomainCollector& hdfFile_;
@@ -35,15 +35,18 @@ namespace hdf5 {
     template<typename T>
     void SplashPolyDataWriter::operator()(const T* data, unsigned numDims,
             const splash::Domain& globalDomain,
-            const splash::Dimensions& globalDataSize,
+            const splash::Dimensions& globalSize,
             const splash::Domain& localDomain)
     {
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: writing %5%D record %1% (globalDomain: %2%, globalSize: %3%, localDomain: %4%")
+                % datasetName_ % globalDomain.toString() % globalSize.toString() % localDomain.toString() % numDims;
+
         typename traits::PICToSplash<T>::type splashType;
-        assert(isDomainValid(globalDomain, numDims));
+        assert(isSizeValid(globalSize, numDims));
         assert(isDomainValid(localDomain, numDims));
 
         hdfFile_.writeDomain(  id_,                                       /* id == time step */
-                               globalDataSize,                    /* total size of dataset over all processes */
+                               globalSize,                                /* total size of dataset over all processes */
                                localDomain.getOffset(),                   /* write offset for this process */
                                splashType,                                /* data type */
                                numDims,                                   /* NDims spatial dimensionality of the field */

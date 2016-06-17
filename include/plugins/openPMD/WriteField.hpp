@@ -28,7 +28,7 @@ struct WriteField
     {
         using ValueType = typename T_DataBox::ValueType;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5 write field: %1%") % name;
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: write field: %1%") % name;
 
         const SubGrid& subGrid = Environment::get().SubGrid();
         /* parameter checking */
@@ -43,8 +43,8 @@ struct WriteField
                     fieldBox.shift(fieldLayout.getGuard()),
                     subGrid.getGlobalDomain(),
                     PMacc::Selection<simDim>(
-                            subGrid.getLocalDomain().offset,
-                            fieldLayout.getDataSpaceWithoutGuarding()
+                            fieldLayout.getDataSpaceWithoutGuarding(),
+                            subGrid.getLocalDomain().offset
                     )
                 );
 

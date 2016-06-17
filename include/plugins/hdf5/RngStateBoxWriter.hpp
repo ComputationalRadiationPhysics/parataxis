@@ -1,12 +1,12 @@
 #pragma once
 
+#include "xrtTypes.hpp"
+#include "plugins/hdf5/DataBoxReader.hpp"
+#include <random/methods/Xor.hpp>
+
 namespace xrt {
 namespace plugins {
 namespace hdf5 {
-
-#include "xrtTypes.hpp"
-#include "plugins/hdf5/DataBoxWriter.hpp"
-#include <random/methods/Xor.hpp>
 
 template<>
 struct DataBoxWriter<PMacc::random::methods::Xor::StateType>
@@ -21,25 +21,18 @@ struct DataBoxWriter<PMacc::random::methods::Xor::StateType>
         static_assert(std::is_same<PMacc::random::methods::Xor::StateType, ValueType>::value, "Wrong type in dataBox");
         const PMacc::Selection<simDim> localDomain(localSize, localOffset);
 
-        const std::string datasetName = writer.GetCurrentDataset();
-        writer.SetCurrentDataset(datasetName + "/d");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& state) { return state.d; }), globalDomain, localDomain);
+        writeDataBox(writer["d"], makeHostTransformBox(dataBox, [](const ValueType& state) { return state.d; }), globalDomain, localDomain);
+        std::array<char, 3> vNames = {'v', '0', '\0'};
         for(unsigned i=0; i<5; i++)
         {
-            writer.SetCurrentDataset(datasetName + "/v" + char('0' + i));
-            writeDataBox(writer, makeHostTransformBox(dataBox, [i](const ValueType& state) { return state.v[i]; }), globalDomain, localDomain);
+            vNames[1] = char('0' + i);
+            writeDataBox(writer[&vNames.front()], makeHostTransformBox(dataBox, [i](const ValueType& state)  { return state.v[i]; }), globalDomain, localDomain);
         }
 
-        writer.SetCurrentDataset(datasetName + "/boxmuller_flag");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& state) { return state.boxmuller_flag; }), globalDomain, localDomain);
-        writer.SetCurrentDataset(datasetName + "/boxmuller_flag_double");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& state) { return state.boxmuller_flag_double; }), globalDomain, localDomain);
-        writer.SetCurrentDataset(datasetName + "/boxmuller_extra");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& state) { return state.boxmuller_extra; }), globalDomain, localDomain);
-        writer.SetCurrentDataset(datasetName + "/boxmuller_extra_double");
-        writeDataBox(writer, makeHostTransformBox(dataBox, [](const ValueType& state) { return state.boxmuller_extra_double; }), globalDomain, localDomain);
-
-        writer.SetCurrentDataset(datasetName);
+        writeDataBox(writer["boxmuller_flag"], makeHostTransformBox(dataBox, [](const ValueType& state)  { return state.boxmuller_flag; }), globalDomain, localDomain);
+        writeDataBox(writer["boxmuller_flag_double"], makeHostTransformBox(dataBox, [](const ValueType& state)  { return state.boxmuller_flag_double; }), globalDomain, localDomain);
+        writeDataBox(writer["boxmuller_extra"], makeHostTransformBox(dataBox, [](const ValueType& state)  { return state.boxmuller_extra; }), globalDomain, localDomain);
+        writeDataBox(writer["boxmuller_extra_double"], makeHostTransformBox(dataBox, [](const ValueType& state)  { return state.boxmuller_extra_double; }), globalDomain, localDomain);
     }
 };
 
