@@ -163,6 +163,7 @@ def main(argv):
     parser.add_argument('-s', '--seed', default=None, help='Global seed used to init the random number generators')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
     parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
+    parser.add_argument('-r', '--release', action='store_true', help='Build in release mode')
     options = parser.parse_args(argv)
     if options.j < 0:
         options.j = max(1, min(multiprocessing.cpu_count(), 8))
@@ -188,7 +189,15 @@ def main(argv):
         cprint("No examples found", "red")
         return 1
     cprint("Loading " + str(len(exampleDirs)) + " examples...", "yellow")
-    examples = Example.loadExamples(exampleDirs, options.profile_file, ["-D" + define for define in (options.D or [])])
+    # Get defines
+    defines = options.D or []
+    # Append build-type if not set
+    if not any("CMAKE_BUILD_TYPE" in define for define in defines):
+        if options.release:
+            defines.append("CMAKE_BUILD_TYPE=Release")
+        else:
+            defines.append("CMAKE_BUILD_TYPE=Debug")
+    examples = Example.loadExamples(exampleDirs, options.profile_file, ["-D" + define for define in defines])
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
