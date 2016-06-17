@@ -3,6 +3,7 @@
 #include "xrtTypes.hpp"
 #include "plugins/hdf5/WriteParticleAttribute.hpp"
 #include "plugins/hdf5/splashUtils.hpp"
+#include "plugins/common/helpers.hpp"
 #include <compileTime/conversion/MakeSeq.hpp>
 #include <compileTime/conversion/RemoveFromSeq.hpp>
 #include <particles/Identifier.hpp>
@@ -18,67 +19,6 @@
 namespace xrt {
 namespace plugins {
 namespace openPMD {
-
-struct OperatorCreateVectorBox
-{
-    template<typename InType>
-    struct apply
-    {
-        typedef
-        bmpl::pair< InType, PMacc::VectorDataBox<typename Resolve_t<InType>::type> >
-        type;
-    };
-};
-
-struct NoFilter
-{
-    template<class T_Space>
-    HDINLINE void setSuperCellPosition(T_Space){}
-
-    template<class T_Frame>
-    HDINLINE bool operator()(T_Frame& frame, PMacc::lcellId_t id)
-    {
-        return true;
-    }
-};
-
-/** allocate memory on host
- *
- * This functor use `new[]` to allocate memory
- */
-template<typename T_Attribute>
-struct MallocHostMemory
-{
-    template<typename ValueType >
-    HINLINE void operator()(ValueType& v1, const size_t size) const
-    {
-        typedef T_Attribute Attribute;
-        typedef typename Resolve_t<Attribute>::type type;
-
-        type* ptr = NULL;
-        if (size != 0)
-            ptr = new type[size];
-        v1.getIdentifier(Attribute()) = PMacc::VectorDataBox<type>(ptr);
-    }
-};
-
-/** free memory
- *
- * use `delete[]` to free memory
- */
-template<typename T_Attribute>
-struct FreeHostMemory
-{
-
-    template<typename ValueType >
-    HINLINE void operator()(ValueType& value) const
-    {
-        typedef T_Attribute Attribute;
-        typedef typename Resolve_t<Attribute>::type type;
-
-        delete[] value.getIdentifier(Attribute()).getPointer();
-    }
-};
 
  /** Write copy particle to host memory and dump to HDF5 file
  *
@@ -116,7 +56,7 @@ struct WriteSpecies
         auto& dc = Environment::get().DataConnector();
         const auto& subGrid = Environment::get().SubGrid();
         /* load particle without copy particle data to host */
-        T_Species& speciesTmp = dc.getData<T_Species >(FrameType::getName(), true);
+        T_Species& speciesTmp = dc.getData<T_Species >(FrameType::getName());
 
         /* count number of particles for this species on the device */
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) count particles: %1%") % Hdf5FrameType::getName();
@@ -126,21 +66,21 @@ struct WriteSpecies
             NoFilter()
         );
 
-
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) count particles: %1% = %2%") % Hdf5FrameType::getName() % numParticles;
 
         Hdf5FrameType hostFrame;
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) malloc host memory: %1%") % Hdf5FrameType::getName();
         /*malloc memory on host*/
-        ForEach<typename Hdf5FrameType::ValueTypeSeq, MallocHostMemory<bmpl::_1> > mallocMem;
-        mallocMem(forward(hostFrame), numParticles);
+        ForEach<typename Hdf5FrameType::ValueTypeSeq, AllocMemory<bmpl::_1, ArrayAllocator> > mallocMem;
+        mallocMem(PMacc::forward(hostFrame), numParticles);
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) malloc host memory: %1%") % Hdf5FrameType::getName();
 
         if (numParticles != 0)
         {
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   (begin) copy particle host (with hierarchy) to host (without hierarchy): %1%") % Hdf5FrameType::getName();
+            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
+                    % Hdf5FrameType::getName() % numParticles;
 
-            PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName(), true);
+            PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName());
 
             int globalParticleOffset = 0;
             PMacc::AreaMapping<PMacc::CORE + PMacc::BORDER, MappingDesc> mapper(cellDescription);
@@ -155,9 +95,12 @@ struct WriteSpecies
                                 subGrid.getLocalDomain().offset, /*relative to data domain (not to physical domain)*/
                                 mapper
                                 );
+
             dc.releaseData(PMacc::MallocMCBuffer::getName());
 
             assert(globalParticleOffset == numParticles);
+            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
+                    % Hdf5FrameType::getName() % globalParticleOffset;
         }
 
         /* We rather do an allgather at this point then letting libSplash
@@ -205,10 +148,11 @@ struct WriteSpecies
             if( particleCounts.at(2 * r + 1) < myParticlePatch[ 1 ] )
                 numParticlesOffset += particleCounts.at(2 * r);
         }
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (end) collect particle sizes for %1%") % Hdf5FrameType::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) collect particle sizes for %1%") % Hdf5FrameType::getName();
 
         /* dump non-constant particle records to hdf5 file */
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write particle records for %1%") % Hdf5FrameType::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write particle records for %1% (%2%:%3%)")
+                % Hdf5FrameType::getName() % numParticles % numParticlesOffset;
 
         writer.SetCurrentDataset(std::string("particles/") + FrameType::getName());
 
@@ -222,8 +166,8 @@ struct WriteSpecies
         );
 
         /*free host memory*/
-        ForEach<typename Hdf5FrameType::ValueTypeSeq, FreeHostMemory<bmpl::_1> > freeMem;
-        freeMem(forward(hostFrame));
+        ForEach<typename Hdf5FrameType::ValueTypeSeq, FreeMemory<bmpl::_1, ArrayAllocator> > freeMem;
+        freeMem(PMacc::forward(hostFrame));
 
         /* write constant particle records to hdf5 file */
         // No macro particles -> weighting = 1
@@ -247,7 +191,7 @@ struct WriteSpecies
         writeAttribute("particleInterpolation", "uniform");
         writeAttribute("particleSmoothing", "none");
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (end) write particle records for %1%") % Hdf5FrameType::getName();
+        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) write particle records for %1%") % Hdf5FrameType::getName();
 
         /* write species particle patch meta information */
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) writing particlePatches for %1%") % Hdf5FrameType::getName();
@@ -260,7 +204,7 @@ struct WriteSpecies
          *   - myPatchEntries: every MPI rank writes exactly one patch
          */
         const splash::Dimensions numPatches( numRanks, 1, 1 );
-        const splash::Domain localDomain = hdf5::makeSplashDomain(PMacc::DataSpace<1>(myRank), PMacc::DataSpace<1>(1));
+        const splash::Domain localDomain = hdf5::makeSplashDomain<1>(myRank, 1);
 
         /* numParticles: number of particles in this patch */
         writer["numParticles"].GetFieldWriter()(numParticles, numPatches, localDomain);
