@@ -10,9 +10,6 @@ namespace hdf5 {
 template<unsigned T_dim>
 splash::Dimensions makeSplashSize(const PMacc::DataSpace<T_dim>& size)
 {
-    if(size == PMacc::DataSpace<T_dim>::create(0))
-        return splash::Dimensions(0, 0, 0);
-
     splash::Dimensions splashSize;
 
     for (uint32_t d = 0; d < T_dim; ++d)
@@ -47,9 +44,6 @@ splash::Domain makeSplashDomain(const PMacc::DataSpace<T_dim>& offset, const PMa
 /** Check if a size contains numDims dimensions (excess=1) */
 bool isSizeValid(const splash::Dimensions& size, unsigned numDims)
 {
-    if(size == splash::Dimensions(0, 0, 0))
-        return true;
-
     assert(numDims > 0);
     for(unsigned d = numDims; d < 3; d++)
     {
