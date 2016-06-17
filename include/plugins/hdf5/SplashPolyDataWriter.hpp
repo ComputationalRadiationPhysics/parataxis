@@ -38,7 +38,7 @@ namespace hdf5 {
             const splash::Dimensions& globalSize,
             const splash::Domain& localDomain)
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: writing %5%D record %1% (globalDomain: %2%, globalSize: %3%, localDomain: %4%")
+        PMacc::log<XRTLogLvl::DEBUG>("HDF5: writing %5%D record %1% (globalDomain: %2%, globalSize: %3%, localDomain: %4%")
                 % datasetName_ % globalDomain.toString() % globalSize.toString() % localDomain.toString() % numDims;
 
         typename traits::PICToSplash<T>::type splashType;
