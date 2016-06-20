@@ -178,17 +178,11 @@ namespace plugins {
         auto writer = hdf5::makeSplashWriter(hdf5DataFile, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
-
-        splash::Dimensions bufferSize(size.x(), size.y(), 1);
-
-        const char* dataSetName = "meshes/detector";
-        writer.SetCurrentDataset(dataSetName);
-        hdf5DataFile.write(currentStep,
-        				   typename traits::PICToSplash<OutputType>::type(),
-                           2,
-                           splash::Selection(bufferSize),
-                           dataSetName,
-                           buffer.getPointer());
+        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
+        writer.GetFieldWriter()(buffer.getPointer(), 2,
+                                hdf5::makeSplashSize(size),
+                                hdf5::makeSplashDomain(Space2D::create(0), size)
+                               );
 
         auto writeAttribute = writer.GetAttributeWriter();
         writeAttribute("geometry", "cartesian");;
@@ -256,14 +250,19 @@ namespace plugins {
                 );
 
         /* attributes */
+        // Is type integral? Otherwise it is assumed to be complex
+        const bool isIntegral = std::is_integral<Type>::value;
         std::array<float_X, simDim> positions;
         positions.fill(0.5);
-        auto writeAttribute = writer["real"].GetAttributeWriter();
+        auto writeAttribute = (isIntegral ? writer : writer["real"]).GetAttributeWriter();
         writeAttribute("position", positions);
         writeAttribute("unitSI", float_64(1));
-        writeAttribute = writer["imag"].GetAttributeWriter();
-        writeAttribute("position", positions);
-        writeAttribute("unitSI", float_64(1));
+        if(!isIntegral)
+        {
+            writeAttribute = writer["imag"].GetAttributeWriter();
+            writeAttribute("position", positions);
+            writeAttribute("unitSI", float_64(1));
+        }
 
         writeAttribute = writer.GetAttributeWriter();
         writeAttribute("unitDimension", std::vector<float_64>(7, 0));
