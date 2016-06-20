@@ -52,7 +52,7 @@ tests:
   - name: RestartCt
     description: Restart from the last checkpoint of CheckpointCt (ParticleCounter)
     cmakeFlag: 1
-    cfgFile:   0001gpusRestartCt.cfg
+    cfgFile:   0001gpusRestart.cfg
     dependency: CheckpointCt
     post-run: *restartPostRun
 
