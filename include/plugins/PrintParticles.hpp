@@ -10,6 +10,7 @@
 #include <particles/memory/buffers/MallocMCBuffer.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
 #include <dataManagement/DataConnector.hpp>
+#include <traits/HasIdentifier.hpp>
 #include <debug/VerboseLog.hpp>
 #include <string>
 
@@ -18,19 +19,38 @@ namespace plugins {
 
     namespace detail {
 
+        template<class T_Particle, bool T_hasId = PMacc::traits::HasIdentifier<T_Particle, particleId>::type::value>
+        struct GetId
+        {
+            static uint64_t get(const T_Particle& particle)
+            {
+                return particle[particleId_];
+            }
+        };
+
+        template<class T_Particle>
+        struct GetId<T_Particle, false>
+        {
+            static uint64_t get(const T_Particle& particle)
+            {
+                return 0;
+            }
+        };
+
         template<class T_ParticlesType>
         struct PrintParticle
         {
             template<class T_Particle>
             void
-            operator()(const Space globalIdx, T_Particle&& particle)
+            operator()(const Space globalIdx, const T_Particle& particle)
             {
                 // Convert global + local position to position in µm
                 floatD_64 pos;
                 for(uint32_t i=0; i<simDim; ++i)
                     pos[i] = (float_64(globalIdx[i]) + particle[position_][i]) * cellSize[i] * UNIT_LENGTH * 1e6;
 
-                std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << particle[particleId_] << "): " << " => " << pos << "[µm]\n";
+                uint64_t id = GetId<T_Particle>::get(particle);
+                std::cout << "Particle " << globalIdx << " (" << T_ParticlesType::FrameType::getName() << id << "): " << " => " << pos << "[µm]\n";
             }
         };
 
