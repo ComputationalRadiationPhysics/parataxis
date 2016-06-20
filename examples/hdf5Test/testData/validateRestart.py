@@ -10,9 +10,12 @@ class TestRestart(unittest.TestCase):
         if isinstance(valExpected, h5py.Dataset):
             self.assertEqual(valIs.shape, valExpected.shape, "Record: " + valExpected.name)
             if sortValues:
-                valIs = np.sort(valIs)
-                valExpected = np.sort(valExpected)
-            npt.assert_allclose(valIs, valExpected, err_msg = "Record: " + valExpected.name)
+                valArrayIs = np.sort(valIs)
+                valArrayExpected = np.sort(valExpected)
+            else:
+                valArrayIs = np.array(valIs)
+                valArrayExpected = np.array(valExpected)
+            npt.assert_allclose(valArrayIs, valArrayExpected, err_msg = "Record: " + valExpected.name)
         else:
             for ds1, ds2 in zip(valIs.values(), valExpected.values()):
                 self.checkRecords(ds1, ds2, sortValues)
