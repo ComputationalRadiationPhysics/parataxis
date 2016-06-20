@@ -359,7 +359,6 @@ endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 
 
@@ -368,7 +367,7 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 ################################################################################
 
 find_path(XRT_EXTENSION_PATH
-    NAMES include/simulation_defines/param/precision.param
+    NAMES include/simulation_defines/param/precision.param include/simulation_defines/param/speciesDefinition.param
     PATHS "${CMAKE_CURRENT_SOURCE_DIR}"
     DOC "search PATH to extension folder"
     NO_DEFAULT_PATH
@@ -379,6 +378,19 @@ find_path(XRT_EXTENSION_PATH
 include_directories(include)
 if(XRT_EXTENSION_PATH)
     include_directories(BEFORE ${XRT_EXTENSION_PATH}/include)
+    message(STATUS "Using extension path: ${XRT_EXTENSION_PATH}")
+endif()
+
+################################################################################
+# IDE support
+################################################################################
+
+if(${CMAKE_EXTRA_GENERATOR} MATCHES "Eclipse CDT4")
+    # The indexer gets confused, if PARAM_PRECISION is undefined
+    get_directory_property(CurDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+    if(NOT "${CurDefs}" MATCHES "PARAM_PRECISION")
+        add_definitions(-DPARAM_PRECISION=precision64Bit)
+    endif()
 endif()
 
 ################################################################################
