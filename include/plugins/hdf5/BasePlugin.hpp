@@ -5,6 +5,8 @@
 #   include <splash/splash.h>
 #endif
 
+namespace po = boost::program_options;
+
 namespace xrt {
 namespace plugins {
 namespace hdf5 {

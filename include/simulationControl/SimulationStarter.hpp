@@ -80,7 +80,7 @@ namespace xrt{
             simulationClass.load();
             PMacc::log< XRTLogLvl::SIM_STATE >("Loading plugins");
 
-            for(auto&& plugin: plugins)
+            for(auto&& plugin: Environment::get().PluginConnector().getPluginsFromType<ISimulationPlugin>())
                 plugin->setMappingDesc(simulationClass.getMappingDesc());
             PMacc::log< XRTLogLvl::SIM_STATE >("Loading done");
         }

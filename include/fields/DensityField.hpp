@@ -84,7 +84,7 @@ namespace fields {
         {
             __cudaKernelArea(kernel::createDensityDistribution, cellDescription, PMacc::CORE + PMacc::BORDER)
                     (MappingDesc::SuperCellSize::toRT().toDim3())
-                    (buffer->getDeviceBuffer().getDataBox(),
+                    (getDeviceDataBox(),
                      Environment::get().SubGrid().getLocalDomain().offset,
                      generator);
         }

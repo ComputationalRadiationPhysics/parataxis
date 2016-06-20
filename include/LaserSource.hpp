@@ -63,7 +63,7 @@ namespace xrt {
             PMacc::log< XRTLogLvl::MEMORY > ("There are %1% slots available that can fit up to %2% particles") % slotsAv % numParts;
         }
 
-        void processStep(uint32_t currentStep)
+        void update(uint32_t currentStep)
         {
             if(currentStep < numTimeStepsLaserPulse){
                 addParticles(currentStep);

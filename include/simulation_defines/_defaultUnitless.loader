@@ -7,3 +7,4 @@
 #include "simulation_defines/unitless/detectorConfig.unitless"
 #include "simulation_defines/unitless/laserConfig.unitless"
 #include "simulation_defines/unitless/speciesAttributes.unitless"
+#include "simulation_defines/unitless/FieldManipulator.unitless"

@@ -1,0 +1,23 @@
+#pragma once
+
+#include "fields/DensityField.hpp"
+#include "fields/StaticManipulator.hpp"
+#include "fields/RandomManipulator.hpp"
+
+namespace PMacc {
+namespace traits {
+
+    template<>
+    struct Resolve<xrt::fieldManipulators::Static>
+    {
+        using type = xrt::fields::StaticManipulator<xrt::fields::DensityField>;
+    };
+
+    template<>
+    struct Resolve<xrt::fieldManipulators::Random>
+    {
+        using type = xrt::fields::RandomManipulator<xrt::fields::DensityField>;
+    };
+
+}  // namespace traits
+}  // namespace PMacc

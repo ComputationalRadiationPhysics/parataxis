@@ -1,0 +1,14 @@
+#pragma once
+
+namespace xrt {
+    namespace fieldManipulators {
+
+        /** Static field */
+        struct Static;
+        /** Random field in each step */
+        struct Random;
+
+    }  // namespace fieldManipulators
+
+    using FieldManipulator = fieldManipulators::Static;
+}  // namespace xrt

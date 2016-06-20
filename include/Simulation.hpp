@@ -10,6 +10,7 @@
 #include "LaserSource.hpp"
 
 #include "fields/DensityField.hpp"
+#include "fields/IFieldManipulator.hpp"
 #include "generators.hpp"
 #include "TimerIntervallExt.hpp"
 #include "debug/LogLevels.hpp"
@@ -55,6 +56,7 @@ namespace xrt {
         std::unique_ptr<fields::DensityField> densityField;
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<RNGProvider> rngProvider_;
+        std::unique_ptr<fields::IFieldManipulator> fieldManipulator_;
 
     public:
 
@@ -219,7 +221,8 @@ namespace xrt {
                 CUDA_CHECK(cudaProfilerStop());
             }
 #endif
-            laserSource.processStep(currentStep);
+            fieldManipulator_->update(currentStep);
+            laserSource.update(currentStep);
             particleStorage->update(currentStep);
             PMacc::EventTask commEvt = PMacc::communication::asyncCommunication(*particleStorage, __getTransactionEvent());
             __setTransactionEvent(commEvt);
@@ -265,6 +268,9 @@ namespace xrt {
             /* Create with 1 border and 1 guard super cell */
             cellDescription = MappingDesc(layout.getDataSpace(), 1, 1);
             checkGridConfiguration(gridSize, layout);
+
+            // Add FieldManipulators (possible plugins)
+            fieldManipulator_.reset(new Resolve_t<FieldManipulator>(cellDescription));
         }
 
         void pluginUnload() override

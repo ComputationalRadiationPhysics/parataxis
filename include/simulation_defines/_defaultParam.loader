@@ -17,3 +17,4 @@
 #include "simulation_defines/param/speciesAttributes.param"
 #include "simulation_defines/param/speciesDefinition.param"
 #include "simulation_defines/param/laserConfig.param"
+#include "simulation_defines/param/FieldManipulator.param"
