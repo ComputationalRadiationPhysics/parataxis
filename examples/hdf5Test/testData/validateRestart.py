@@ -8,17 +8,17 @@ class TestRestart(unittest.TestCase):
     """Recursivly iterate over val*.value() till h5py.Datasets are found and validate those"""
     def checkRecords(self, valIs, valExpected, sortValues):
         if isinstance(valExpected, h5py.Dataset):
-            print("Checking record " + valExpected.name)
-            self.assertEqual(valIs.shape, valExpected.shape)
+            self.assertEqual(valIs.shape, valExpected.shape, "Record: " + valExpected.name)
             if sortValues:
                 valIs = np.sort(valIs)
                 valExpected = np.sort(valExpected)
-            npt.assert_allclose(valIs, valExpected)
+            npt.assert_allclose(valIs, valExpected, err_msg = "Record: " + valExpected.name)
         else:
             for ds1, ds2 in zip(valIs.values(), valExpected.values()):
                 self.checkRecords(ds1, ds2, sortValues)
 
     def testCheckpoint(self):
+        self.longMessage = True
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
         hdf5Path = checkpointPath + "/hdf5_checkpoint_100.h5"
         hdf5PathOrig = hdf5Path.replace("out_Restart", "out_Checkpoint")
@@ -39,15 +39,15 @@ class TestRestart(unittest.TestCase):
         self.assertEqual(len(particles1), len(particles2))
         for species1, species2 in zip(particles1.values(), particles2.values()):
             # Number of species attributes
-            self.assertEqual(len(species1), len(species2))
+            self.assertEqual(len(species1), len(species2), "Species: " + species1.name)
             for prop1, prop2 in zip(species1.values(), species2.values()):
-                self.assertEqual(len(prop1.attrs), len(prop2.attrs))
+                self.assertEqual(len(prop1.attrs), len(prop2.attrs), "Species attributes: " + species1.name)
                 for attr1, attr2 in zip(prop1.attrs.items(), prop2.attrs.items()):
-                    print("Checking attribute " + prop1.name + "/" + attr1[0])
-                    npt.assert_equal(attr1[1], attr2[1])
+                    npt.assert_equal(attr1[1], attr2[1], err_msg = "Attribute: " + prop1.name + "/" + attr1[0])
                 self.checkRecords(prop1, prop2, True)
  
-    def atestDetector(self):
+    def testDetector(self):
+        self.longMessage = True
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
         hdf5Path = checkpointPath + "/PhotonDetector_checkpoint_100.h5"
         hdf5PathOrig = hdf5Path.replace("out_Restart", "out_Checkpoint")
