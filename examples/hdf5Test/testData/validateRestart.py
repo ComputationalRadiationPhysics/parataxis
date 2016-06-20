@@ -42,8 +42,9 @@ class TestRestart(unittest.TestCase):
             self.assertEqual(len(species1), len(species2))
             for prop1, prop2 in zip(species1.values(), species2.values()):
                 self.assertEqual(len(prop1.attrs), len(prop2.attrs))
-                for attr1, attr2 in zip(prop1.attrs.values(), prop2.attrs.values()):
-                    npt.assert_equal(attr1, attr2)
+                for attr1, attr2 in zip(prop1.attrs.items(), prop2.attrs.items()):
+                    print("Checking attribute " + prop1.name + "/" + attr1[0])
+                    npt.assert_equal(attr1[1], attr2[1])
                 self.checkRecords(prop1, prop2, True)
  
     def atestDetector(self):

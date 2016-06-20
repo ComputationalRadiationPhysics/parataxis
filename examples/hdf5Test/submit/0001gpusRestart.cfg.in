@@ -35,7 +35,7 @@ TBG_plugins="--detSize 1400 900                           \
              --checkpoints 50                             \
              --restart                                    \
              --restart-step 50                            \
-             --restart-directory \"${TEST_INSTALL_PATH}\"/out_Checkpoint/simOutput/checkpoints \
+             --restart-directory \"${TEST_SIMOUTPUT_PATH/_Restart/_Checkpoint}\"/checkpoints \
              "
 
 #################################

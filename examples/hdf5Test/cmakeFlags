@@ -6,7 +6,8 @@
 #   - start with zero index
 #   - increase by 1, no gaps
 
-flags[0]="-DXRT_VERBOSE=13"
+flags[0]="-DXRT_VERBOSE=13 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=AddWaveParticles"
+flags[1]="-DXRT_VERBOSE=255 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=CountParticles"
 
 
 ################################################################################

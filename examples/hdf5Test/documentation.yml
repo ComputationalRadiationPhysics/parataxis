@@ -5,6 +5,10 @@ example:
 
   description: |
                Test HDF5 writing, loading and checkpointing
+               Note for the restart validation: Particle Ids and particle placement on restart
+               is not deterministic. Hence it can only be checked, that a particle with a given value
+               is there and when IDs are checked, all particles must take the same path, or e.g. a particle
+               with ID x might have already left, where in the restart that particle takes a longer path.
 
 compile:
   - cmakeFlags:
@@ -25,7 +29,7 @@ tests:
     description: Test only that checkpointing works
     cmakeFlag: 0
     cfgFile:   0001gpus.cfg
-    post-run: &simplePostRun
+    post-run: &cpPostRun
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 3 \]
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 3 \]
         - *validateOpenPMD
@@ -35,9 +39,20 @@ tests:
     cmakeFlag: 0
     cfgFile:   0001gpusRestart.cfg
     dependency: Checkpoint
-    post-run:
+    post-run: &restartPostRun
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/hdf5_checkpoint_*.h5 | wc -l) -eq 2 \]
         - \[ $(ls "${TEST_SIMOUTPUT_PATH}"/checkpoints/PhotonDetector_checkpoint_*.h5 | wc -l) -eq 2 \]
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRestart.py"
+  - name: CheckpointCt
+    description: Test only that checkpointing works (ParticleCounter)
+    cmakeFlag: 1
+    cfgFile:   0001gpus.cfg
+    post-run: *cpPostRun
+  - name: RestartCt
+    description: Restart from the last checkpoint of CheckpointCt (ParticleCounter)
+    cmakeFlag: 1
+    cfgFile:   0001gpusRestartCt.cfg
+    dependency: CheckpointCt
+    post-run: *restartPostRun
 
