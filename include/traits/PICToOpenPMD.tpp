@@ -29,7 +29,7 @@ namespace traits
 {
 
     template<>
-    struct OpenPMDName<DensityField>
+    struct OpenPMDName<fields::DensityField>
     {
         static std::string get()
         {

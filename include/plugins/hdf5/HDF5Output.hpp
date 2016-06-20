@@ -12,7 +12,7 @@
 #include "plugins/openPMD/LoadFields.hpp"
 #include "plugins/openPMD/WriteSpecies.hpp"
 #include "plugins/openPMD/LoadSpecies.hpp"
-#include "DensityField.hpp"
+#include "fields/DensityField.hpp"
 #include "debug/LogLevels.hpp"
 #include <debug/VerboseLog.hpp>
 #include <particles/IdProvider.def>
@@ -28,7 +28,7 @@ namespace hdf5 {
 class HDF5Output: public ISimulationPlugin, private hdf5::BasePlugin
 {
 public:
-    HDF5Output(): notifyPeriod(0)
+    HDF5Output(): notifyPeriod(0), restartChunkSize(0)
     {
         Environment::get().PluginConnector().registerPlugin(this);
     }
@@ -132,7 +132,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
     }
     Environment::get().DataConnector().releaseData(RNGProvider::getName());
 
-    openPMD::WriteFields<DensityField>()(writer);
+    openPMD::WriteFields<fields::DensityField>()(writer);
     openPMD::WriteSpecies<PIC_Photons>()(writer, *cellDescription_);
 
     // Write this at the end, as we need to annotate the fields which do not exist yet
@@ -191,7 +191,7 @@ void HDF5Output::restart(uint32_t restartStep, const std::string restartDirector
     rngProvider.getStateBuffer().hostToDevice();
     Environment::get().DataConnector().releaseData(RNGProvider::getName());
 
-    openPMD::LoadFields<DensityField>()(writer);
+    openPMD::LoadFields<fields::DensityField>()(writer);
     openPMD::LoadSpecies<PIC_Photons>()(writer, *cellDescription_, restartChunkSize);
     closeH5File();
 }

@@ -9,7 +9,7 @@
 #include "particles/initPolicies/EvenDistPosition.hpp"
 #include "LaserSource.hpp"
 
-#include "DensityField.hpp"
+#include "fields/DensityField.hpp"
 #include "generators.hpp"
 #include "TimerIntervallExt.hpp"
 #include "debug/LogLevels.hpp"
@@ -52,7 +52,7 @@ namespace xrt {
         /* Only valid after pluginLoad */
         MappingDesc cellDescription;
 
-        std::unique_ptr<DensityField> densityField;
+        std::unique_ptr<fields::DensityField> densityField;
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<RNGProvider> rngProvider_;
 
@@ -95,7 +95,7 @@ namespace xrt {
 #endif
             TimeIntervallExt timer;
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating buffers");
-            densityField.reset(new DensityField(cellDescription));
+            densityField.reset(new fields::DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
             rngProvider_.reset(new RNGProvider(Environment::get().SubGrid().getLocalDomain().size));
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();

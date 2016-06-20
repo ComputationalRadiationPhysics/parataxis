@@ -3,7 +3,7 @@
 #include "xrtTypes.hpp"
 #include "plugins/plugins.hpp"
 #include "plugins/ISimulationPlugin.hpp"
-#include "DensityField.hpp"
+#include "fields/DensityField.hpp"
 
 #include <debug/VerboseLog.hpp>
 #include <algorithms/ForEach.hpp>
@@ -108,7 +108,7 @@ namespace xrt{
                 FieldPlugins,
                 bmpl::apply1<
                     bmpl::_1,
-                    DensityField
+                    fields::DensityField
                 >
             >::type SpecializedFieldPlugins;
 

@@ -259,9 +259,9 @@ namespace plugins {
             PMacc::log< XRTLogLvl::IN_OUT >("Loading density field");
 
             if(cfg.firstIdx == cfg.lastIdx || cfg.filePath.find("%i") == std::string::npos)
-                detail::FillDensityFromTiff<simDim>::load2D<DensityField>(*cellDescription_, cfg);
+                detail::FillDensityFromTiff<simDim>::load2D<fields::DensityField>(*cellDescription_, cfg);
             else
-                detail::FillDensityFromTiff<simDim>::load3D<DensityField>(*cellDescription_, cfg);
+                detail::FillDensityFromTiff<simDim>::load3D<fields::DensityField>(*cellDescription_, cfg);
         }
 
        void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override

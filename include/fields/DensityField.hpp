@@ -10,6 +10,7 @@
 #include <memory>
 
 namespace xrt {
+namespace fields {
 
     namespace kernel
     {
@@ -120,4 +121,6 @@ namespace xrt {
 
     };
 
+
+}  // namespace fields
 }  // namespace xrt

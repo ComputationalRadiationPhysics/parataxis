@@ -18,7 +18,7 @@
 #include <dimensions/SuperCellDescription.hpp>
 #include <math/Vector.hpp>
 #include <algorithms/reverseBits.hpp>
-#include <DensityField.hpp>
+#include <fields/DensityField.hpp>
 #include <type_traits>
 
 namespace xrt{
@@ -120,7 +120,7 @@ namespace xrt{
     {}
 
     template<typename T_ParticleDescription>
-    void Particles<T_ParticleDescription>::init(DensityField* densityField)
+    void Particles<T_ParticleDescription>::init(fields::DensityField* densityField)
     {
         densityField_ = densityField;
         PMacc::Environment<>::get().DataConnector().registerData( *this );
