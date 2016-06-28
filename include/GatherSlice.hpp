@@ -145,7 +145,6 @@ namespace xrt
             return *masterField_;
         }
     private:
-        uint32_t slicePoint_;
         PMacc::math::UInt32<3> twistedAxes_;
         uint32_t localOffset_;
         const uint32_t nAxis_;
