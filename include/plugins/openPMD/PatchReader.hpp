@@ -40,7 +40,7 @@ template<class T_SplashReader>
 void PatchReader::read(T_SplashReader&& reader, std::vector<uint64_t>& values, uint32_t numPatches)
 {
     // Note: We read ALL patches -> localSize == globalSize
-    reader.GetFieldReader()(&values.front(), 1,
+    reader.getFieldReader()(&values.front(), 1,
             hdf5::makeSplashSize<1>(numPatches),
             hdf5::makeSplashDomain<1>(0, numPatches));
 }

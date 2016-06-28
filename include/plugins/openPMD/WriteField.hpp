@@ -36,7 +36,7 @@ struct WriteField
         assert(subGrid.getLocalDomain().size == fieldLayout.getDataSpaceWithoutGuarding());
 
         /* Change dataset */
-        writer_.SetCurrentDataset(std::string("fields/") + name);
+        writer_.setCurrentDataset(std::string("fields/") + name);
 
         hdf5::writeDataBox(
                     writer_,
@@ -49,7 +49,7 @@ struct WriteField
                 );
 
         /* attributes */
-        auto writeAttribute = writer_.GetAttributeWriter();
+        auto writeAttribute = writer_.getAttributeWriter();
 
         std::array<float_X, simDim> positions;
         std::fill_n(positions.begin(), simDim, 0.5);

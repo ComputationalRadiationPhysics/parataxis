@@ -58,18 +58,18 @@ struct WriteParticleAttribute
 
             // Write components only for >1D records
             auto tmpWriter = (numComponents > 1) ? writer[name_lookup[d]] : writer;
-            tmpWriter.GetPolyDataWriter()(
+            tmpWriter.getPolyDataWriter()(
                 tmpArray,
                 1,
                 makeSplashDomain(globalDomain),
                 makeSplashSize<1>(numParticlesGlobal),
                 makeSplashDomain<1>(localParticlesOffset, numParticles)
             );
-            tmpWriter.GetAttributeWriter()("unitSI", unit.at(d));
+            tmpWriter.getAttributeWriter()("unitSI", unit.at(d));
         }
         __deleteArray(tmpArray);
 
-        auto writeAttribute = writer.GetAttributeWriter();
+        auto writeAttribute = writer.getAttributeWriter();
 
         writeAttribute("unitDimension", unitDimension);
         writeAttribute("timeOffset", float_X(0));

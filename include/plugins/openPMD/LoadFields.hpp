@@ -21,7 +21,7 @@ struct LoadField
 
         const auto& subGrid = Environment::get().SubGrid();
 
-        reader_.SetCurrentDataset(std::string("fields/") + name);
+        reader_.setCurrentDataset(std::string("fields/") + name);
 
         hdf5::readDataBox(
                     reader_,

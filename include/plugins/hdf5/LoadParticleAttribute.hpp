@@ -43,7 +43,7 @@ struct LoadParticleAttribute
         {
              // Read components only for >1D records
              auto tmpReader = (numComponents > 1) ? reader[name_lookup[d]] : reader;
-             tmpReader.GetFieldReader()(
+             tmpReader.getFieldReader()(
                  tmpArray,
                  1,
                  makeSplashSize<1>(numParticlesGlobal),

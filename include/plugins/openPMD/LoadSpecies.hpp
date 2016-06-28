@@ -53,7 +53,7 @@ struct LoadSpecies
         using namespace PMacc::algorithms::forEach;
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5: (begin) read species: %1%") % FrameType::getName();
-        reader.SetCurrentDataset(std::string("particles/") + FrameType::getName());
+        reader.setCurrentDataset(std::string("particles/") + FrameType::getName());
 
         ParticlePatches particlePatches = PatchReader()(reader, Environment::get().GridController().getGlobalSize());
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  Loaded patches: %1%") % particlePatches.toString();

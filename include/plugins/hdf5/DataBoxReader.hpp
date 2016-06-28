@@ -33,7 +33,7 @@ struct DataBoxReader
         typedef PMacc::DataBoxDim1Access<T_DataBox> D1Box;
         D1Box d1Access(dataBox, localSize);
 
-        reader.GetDomainReader()(d1Access, T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
+        reader.getDomainReader()(d1Access, T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
     }
 };
 

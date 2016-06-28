@@ -17,26 +17,36 @@ public:
 
 private:
     friend struct detail::SplashBaseAttributeReader<SplashAttributeReader>;
-    void readImpl(const splash::CollectionType& colType, const std::string& name, void* value);
-    void readImpl(const splash::CollectionType& colType, const std::string& name,
-            unsigned numDims, const splash::Dimensions& dims, void* value);
+    splash::DCAttributeInfo* readImpl(const std::string& name);
 
     splash::DataCollector* hdfFile_;
     int32_t id_;
     std::string dataSetName_;
 };
 
-void SplashAttributeReader::readImpl(const splash::CollectionType& colType, const std::string& name, void* value)
+class SplashGlobalAttributeReader: public detail::SplashBaseAttributeReader<SplashGlobalAttributeReader>
 {
-    // TODO: check type (currently impossible)
-    hdfFile_->readAttribute(id_, dataSetName_.empty() ? nullptr : dataSetName_.c_str(), name.c_str(), value);
+public:
+    SplashGlobalAttributeReader(splash::DataCollector& hdfFile, int32_t id, const std::string& dataSetName):
+        hdfFile_(&hdfFile), id_(id), dataSetName_(dataSetName){}
+
+private:
+    friend struct detail::SplashBaseAttributeReader<SplashGlobalAttributeReader>;
+    splash::DCAttributeInfo* readImpl(const std::string& name);
+
+    splash::DataCollector* hdfFile_;
+    int32_t id_;
+    std::string dataSetName_;
+};
+
+splash::DCAttributeInfo* SplashAttributeReader::readImpl(const std::string& name)
+{
+    return hdfFile_->readAttributeMeta(id_, dataSetName_.empty() ? nullptr : dataSetName_.c_str(), name.c_str());
 }
 
-void SplashAttributeReader::readImpl(const splash::CollectionType& colType, const std::string& name,
-        unsigned numDims, const splash::Dimensions& dims, void* value)
+splash::DCAttributeInfo* SplashGlobalAttributeReader::readImpl(const std::string& name)
 {
-    // TODO: check type/dimensions (currently impossible)
-    hdfFile_->readAttribute(id_, dataSetName_.empty() ? nullptr : dataSetName_.c_str(), name.c_str(), value);
+    return hdfFile_->readGlobalAttributeMeta(id_, name.c_str());
 }
 
 }  // namespace openPMD

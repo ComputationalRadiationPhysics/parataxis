@@ -16,7 +16,7 @@ struct WriteHeader
 
     void operator()(const std::string& fileNameBase, bool usePIC_ED_Ext = false)
     {
-        auto writeGlobalAttribute = writer_.GetGlobalAttributeWriter();
+        auto writeGlobalAttribute = writer_.getGlobalAttributeWriter();
         /* openPMD attributes */
         /*   required */
     	writeGlobalAttribute("openPMD", "1.0.0");
@@ -25,7 +25,7 @@ struct WriteHeader
         writeGlobalAttribute("meshesPath", usePIC_ED_Ext ? "fields/" : "meshes/");
         writeGlobalAttribute("particlesPath", "particles/");
         writeGlobalAttribute("iterationEncoding", "fileBased");
-        writeGlobalAttribute("iterationFormat", fileNameBase + std::string("_%T.h5"));
+        writeGlobalAttribute("iterationFormat", boost::filesystem::basename(fileNameBase) + std::string("_%T.h5"));
 
         /*   recommended */
         std::string author = Environment::get().SimulationDescription().getAuthor();
@@ -40,14 +40,14 @@ struct WriteHeader
         writeGlobalAttribute("date", common::getDateString("%F %T %z"));
 
         /* openPMD: required time attributes */
-        auto writeAttribute = writer_("").GetAttributeWriter();
+        auto writeAttribute = writer_("").getAttributeWriter();
         writeAttribute("dt", DELTA_T);
         writeAttribute("time", float_X(Environment::get().SimulationDescription().getCurrentStep()) * DELTA_T);
         writeAttribute("timeUnitSI", UNIT_TIME);
 
         if(usePIC_ED_Ext)
         {
-            writeAttribute = writer_("fields").GetAttributeWriter();
+            writeAttribute = writer_("fields").getAttributeWriter();
             writeAttribute("fieldSolver", "none");
             writeAttribute("fieldBoundary", "open\0open\0open\0open\0open\0open\0", 2 * simDim);
             writeAttribute("particleBoundary", "absorbing\0absorbing\0absorbing\0absorbing\0absorbing\0absorbing\0", 2 * simDim);

@@ -40,7 +40,7 @@ struct DataBoxWriter
         for(unsigned i = 0; i < localSize.getDim(); i++)
             fullLocalSize[i] = localSize[i];
 
-        writer.GetDomainWriter()(tmpArray.get(), T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
+        writer.getDomainWriter()(tmpArray.get(), T_globalDims, makeSplashDomain(globalDomain), makeSplashDomain(localOffset, fullLocalSize));
     }
 };
 

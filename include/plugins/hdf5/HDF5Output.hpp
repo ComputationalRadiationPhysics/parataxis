@@ -99,7 +99,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
     const auto idProviderState = PMacc::IdProvider<simDim>::getState();
     PMacc::log<XRTLogLvl::IN_OUT>("HDF5: Writing IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
             % idProviderState.startId % idProviderState.nextId % idProviderState.maxNumProc;
-    writer.SetCurrentDataset("picongpu/idProvider/startId");
+    writer.setCurrentDataset("picongpu/idProvider/startId");
     splash::Domain globalDomain =
             makeSplashDomain(
                     Space::create(0),
@@ -111,18 +111,18 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
                     Space::create(1)
             );
 
-    writer.GetDomainWriter()(&idProviderState.startId, simDim, globalDomain, localDomain);
-    writer.GetAttributeWriter()("maxNumProc", idProviderState.maxNumProc);
+    writer.getDomainWriter()(&idProviderState.startId, simDim, globalDomain, localDomain);
+    writer.getAttributeWriter()("maxNumProc", idProviderState.maxNumProc);
 
-    writer.SetCurrentDataset("picongpu/idProvider/nextId");
-    writer.GetDomainWriter()(&idProviderState.nextId, simDim, globalDomain, localDomain);
+    writer.setCurrentDataset("picongpu/idProvider/nextId");
+    writer.getDomainWriter()(&idProviderState.nextId, simDim, globalDomain, localDomain);
 
     auto& dc = Environment::get().DataConnector();
     // Write Random field
     auto& rngBuffer = dc.getData<RNGProvider>(RNGProvider::getName()).getStateBuffer().getHostBuffer();
     if(rngBuffer.getCurrentDataSpace().productOfComponents() > 0)
     {
-        writer.SetCurrentDataset("picongpu/rngProvider");
+        writer.setCurrentDataset("picongpu/rngProvider");
         hdf5::writeDataBox(
                 writer,
                 rngBuffer.getDataBox(),
@@ -163,12 +163,12 @@ void HDF5Output::restart(uint32_t restartStep, const std::string restartDirector
             );
 
     PMacc::IdProvider<simDim>::State idProviderState;
-    writer.SetCurrentDataset("picongpu/idProvider/startId");
-    writer.GetDomainReader()(&idProviderState.startId, simDim, globalDomain, localDomain);
-    writer.GetAttributeReader()("maxNumProc", idProviderState.maxNumProc);
+    writer.setCurrentDataset("picongpu/idProvider/startId");
+    writer.getDomainReader()(&idProviderState.startId, simDim, globalDomain, localDomain);
+    writer.getAttributeReader()("maxNumProc", idProviderState.maxNumProc);
 
-    writer.SetCurrentDataset("picongpu/idProvider/nextId");
-    writer.GetDomainReader()(&idProviderState.nextId, simDim, globalDomain, localDomain);
+    writer.setCurrentDataset("picongpu/idProvider/nextId");
+    writer.getDomainReader()(&idProviderState.nextId, simDim, globalDomain, localDomain);
 
     PMacc::log<XRTLogLvl::IN_OUT>("HDF5: Setting IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
             % idProviderState.startId % idProviderState.nextId % idProviderState.maxNumProc;
@@ -180,7 +180,7 @@ void HDF5Output::restart(uint32_t restartStep, const std::string restartDirector
     auto& rngBuffer = rngProvider.getStateBuffer().getHostBuffer();
     if(rngBuffer.getCurrentDataSpace().productOfComponents() > 0)
     {
-        writer.SetCurrentDataset("picongpu/rngProvider");
+        writer.setCurrentDataset("picongpu/rngProvider");
         hdf5::readDataBox(
                 writer,
                 rngBuffer.getDataBox(),

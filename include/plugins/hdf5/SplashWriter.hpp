@@ -24,26 +24,28 @@ public:
     SplashWriter() = delete;
     ~SplashWriter(){}
 
-    void SetCurrentDataset(const std::string& name);
-    std::string GetCurrentDataset() const { return curDatasetName_; }
+    void setCurrentDataset(const std::string& name);
+    std::string getCurrentDataset() const { return curDatasetName_; }
 
     // Create a copy with a given dataset
     SplashWriter operator()(const std::string& name);
     // Create a copy with the dataset appended (separated by "/")
     SplashWriter operator[](const std::string& name);
 
-    SplashGlobalAttributeWriter GetGlobalAttributeWriter();
-    SplashAttributeWriter GetAttributeWriter();
-    SplashFieldWriter GetFieldWriter();
-    SplashDomainWriter GetDomainWriter();
-    SplashPolyDataWriter GetPolyDataWriter();
+    SplashGlobalAttributeWriter getGlobalAttributeWriter();
+    SplashAttributeWriter getAttributeWriter();
+    SplashFieldWriter getFieldWriter();
+    SplashDomainWriter getDomainWriter();
+    SplashPolyDataWriter getPolyDataWriter();
 
-    SplashAttributeReader GetAttributeReader();
-    SplashFieldReader GetFieldReader();
-    SplashDomainReader GetDomainReader();
+    SplashAttributeReader getAttributeReader();
+    SplashGlobalAttributeReader getGlobalAttributeReader();
+    SplashFieldReader getFieldReader();
+    SplashDomainReader getDomainReader();
 
-    T_DataCollector& GetDC(){ return *hdfFile_; }
-    int32_t GetId() const { return id_; }
+    T_DataCollector& getDC(){ return *hdfFile_; }
+    int32_t getId() const { return id_; }
+    void setId(int32_t id) { id_ = id; }
 private:
 
     T_DataCollector* hdfFile_;
@@ -58,13 +60,13 @@ SplashWriter<T_DataCollector> makeSplashWriter(T_DataCollector& hdfFile, int32_t
 }
 
 template<class T_DataCollector>
-void SplashWriter<T_DataCollector>::SetCurrentDataset(const std::string& name)
+void SplashWriter<T_DataCollector>::setCurrentDataset(const std::string& name)
 {
     curDatasetName_ = name;
 }
 
 template<class T_DataCollector>
-SplashGlobalAttributeWriter SplashWriter<T_DataCollector>::GetGlobalAttributeWriter()
+SplashGlobalAttributeWriter SplashWriter<T_DataCollector>::getGlobalAttributeWriter()
 {
     return SplashGlobalAttributeWriter(*hdfFile_, id_);
 }
@@ -73,7 +75,7 @@ template<class T_DataCollector>
 SplashWriter<T_DataCollector> SplashWriter<T_DataCollector>::operator()(const std::string& name)
 {
     SplashWriter<T_DataCollector> result(*hdfFile_, id_);
-    result.SetCurrentDataset(name);
+    result.setCurrentDataset(name);
     return result;
 }
 
@@ -88,46 +90,58 @@ SplashWriter<T_DataCollector> SplashWriter<T_DataCollector>::operator[](const st
     return result;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Write methods
+////////////////////////////////////////////////////////////////////////////////
+
 template<class T_DataCollector>
-SplashAttributeWriter SplashWriter<T_DataCollector>::GetAttributeWriter()
+SplashAttributeWriter SplashWriter<T_DataCollector>::getAttributeWriter()
 {
     return SplashAttributeWriter(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>
-SplashFieldWriter SplashWriter<T_DataCollector>::GetFieldWriter()
+SplashFieldWriter SplashWriter<T_DataCollector>::getFieldWriter()
 {
     return SplashFieldWriter(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>
-SplashDomainWriter SplashWriter<T_DataCollector>::GetDomainWriter()
+SplashDomainWriter SplashWriter<T_DataCollector>::getDomainWriter()
 {
     return SplashDomainWriter(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>
-SplashPolyDataWriter SplashWriter<T_DataCollector>::GetPolyDataWriter()
+SplashPolyDataWriter SplashWriter<T_DataCollector>::getPolyDataWriter()
 {
     return SplashPolyDataWriter(*hdfFile_, id_, curDatasetName_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Read methods
+////////////////////////////////////////////////////////////////////////////////
 
 template<class T_DataCollector>
-SplashAttributeReader SplashWriter<T_DataCollector>::GetAttributeReader()
+SplashGlobalAttributeReader SplashWriter<T_DataCollector>::getGlobalAttributeReader()
+{
+    return SplashGlobalAttributeReader(*hdfFile_, id_, curDatasetName_);
+}
+
+template<class T_DataCollector>
+SplashAttributeReader SplashWriter<T_DataCollector>::getAttributeReader()
 {
     return SplashAttributeReader(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>
-SplashFieldReader SplashWriter<T_DataCollector>::GetFieldReader()
+SplashFieldReader SplashWriter<T_DataCollector>::getFieldReader()
 {
     return SplashFieldReader(*hdfFile_, id_, curDatasetName_);
 }
 
 template<class T_DataCollector>
-SplashDomainReader SplashWriter<T_DataCollector>::GetDomainReader()
+SplashDomainReader SplashWriter<T_DataCollector>::getDomainReader()
 {
     return SplashDomainReader(*hdfFile_, id_, curDatasetName_);
 }

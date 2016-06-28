@@ -178,13 +178,13 @@ namespace plugins {
         auto writer = hdf5::makeSplashWriter(hdf5DataFile, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
-        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
-        writer.GetFieldWriter()(buffer.getPointer(), 2,
+        writer.setCurrentDataset(std::string("meshes/") + Detector::getName());
+        writer.getFieldWriter()(buffer.getPointer(), 2,
                                 hdf5::makeSplashSize(size),
                                 hdf5::makeSplashDomain(Space2D::create(0), size)
                                );
 
-        auto writeAttribute = writer.GetAttributeWriter();
+        auto writeAttribute = writer.getAttributeWriter();
         writeAttribute("geometry", "cartesian");;
         writeAttribute("dataOrder", "C");
         writeAttribute("axisLabels", "y\0x\0", 2); //[y][x]
@@ -225,7 +225,7 @@ namespace plugins {
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5: write detector: %1%") % Detector::getName();
 
         /* Change dataset */
-        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
+        writer.setCurrentDataset(std::string("meshes/") + Detector::getName());
 
         auto& dc = Environment::get().DataConnector();
         Detector& detector = dc.getData<Detector>(Detector::getName());
@@ -254,17 +254,17 @@ namespace plugins {
         const bool isIntegral = std::is_integral<Type>::value;
         std::array<float_X, simDim> positions;
         positions.fill(0.5);
-        auto writeAttribute = (isIntegral ? writer : writer["real"]).GetAttributeWriter();
+        auto writeAttribute = (isIntegral ? writer : writer["real"]).getAttributeWriter();
         writeAttribute("position", positions);
         writeAttribute("unitSI", float_64(1));
         if(!isIntegral)
         {
-            writeAttribute = writer["imag"].GetAttributeWriter();
+            writeAttribute = writer["imag"].getAttributeWriter();
             writeAttribute("position", positions);
             writeAttribute("unitSI", float_64(1));
         }
 
-        writeAttribute = writer.GetAttributeWriter();
+        writeAttribute = writer.getAttributeWriter();
         writeAttribute("unitDimension", std::vector<float_64>(7, 0));
         writeAttribute("timeOffset", float_X(0));
         writeAttribute("geometry", "cartesian");
@@ -297,7 +297,7 @@ namespace plugins {
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5: read detector: %1%") % Detector::getName();
 
         /* Change dataset */
-        writer.SetCurrentDataset(std::string("meshes/") + Detector::getName());
+        writer.setCurrentDataset(std::string("meshes/") + Detector::getName());
 
         auto& dc = Environment::get().DataConnector();
         Detector& detector = dc.getData<Detector>(Detector::getName(), true);

@@ -154,7 +154,7 @@ struct WriteSpecies
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write particle records for %1% (%2%:%3%)")
                 % Hdf5FrameType::getName() % numParticles % numParticlesOffset;
 
-        writer.SetCurrentDataset(std::string("particles/") + FrameType::getName());
+        writer.setCurrentDataset(std::string("particles/") + FrameType::getName());
 
         ForEach<typename Hdf5FrameType::ValueTypeSeq, hdf5::WriteParticleAttribute<bmpl::_1> > writeToHdf5;
         writeToHdf5(
@@ -184,7 +184,7 @@ struct WriteSpecies
         massUnitDimension.at(traits::SIBaseUnits::mass) = 1.0;
         writeConstantRecord(writer["mass"], numParticlesGlobal, massVal, UNIT_MASS, massUnitDimension);
 
-        auto writeAttribute = writer.GetAttributeWriter();
+        auto writeAttribute = writer.getAttributeWriter();
         writeAttribute("particleShape", float(0));
         writeAttribute("currentDeposition", "none");
         writeAttribute("particlePush", "other");
@@ -196,7 +196,7 @@ struct WriteSpecies
         /* write species particle patch meta information */
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) writing particlePatches for %1%") % Hdf5FrameType::getName();
 
-        writer.SetCurrentDataset(writer.GetCurrentDataset() + "/particlePatches");
+        writer.setCurrentDataset(writer.getCurrentDataset() + "/particlePatches");
 
         /* offset and size of our particle patches
          *   - numPatches: we write as many patches as MPI ranks
@@ -207,10 +207,10 @@ struct WriteSpecies
         const splash::Domain localDomain = hdf5::makeSplashDomain<1>(myRank, 1);
 
         /* numParticles: number of particles in this patch */
-        writer["numParticles"].GetFieldWriter()(numParticles, numPatches, localDomain);
+        writer["numParticles"].getFieldWriter()(numParticles, numPatches, localDomain);
 
         /* numParticlesOffset: number of particles before this patch */
-        writer["numParticlesOffset"].GetFieldWriter()(numParticlesOffset, numPatches, localDomain);
+        writer["numParticlesOffset"].getFieldWriter()(numParticlesOffset, numPatches, localDomain);
 
         /* offset: absolute position where this particle patch begins including
          *         global domain offsets (slides), etc.
@@ -230,18 +230,18 @@ struct WriteSpecies
             std::vector<float_64> unitCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>, FrameType>::get();
 
             auto curWriter = offsetWriter[name_lookup[d]];
-            curWriter.GetFieldWriter()(patchOffset, numPatches, localDomain);
-            curWriter.GetAttributeWriter()("unitSI", unitCellIdx.at(d));
+            curWriter.getFieldWriter()(patchOffset, numPatches, localDomain);
+            curWriter.getAttributeWriter()("unitSI", unitCellIdx.at(d));
 
             curWriter = extentWriter[name_lookup[d]];
-            curWriter.GetFieldWriter()(patchExtent, numPatches, localDomain);
-            curWriter.GetAttributeWriter()("unitSI", unitCellIdx.at(d));
+            curWriter.getFieldWriter()(patchExtent, numPatches, localDomain);
+            curWriter.getAttributeWriter()("unitSI", unitCellIdx.at(d));
         }
 
         std::vector<float_64> unitDimensionCellIdx = traits::OpenPMDUnit<PMacc::globalCellIdx<globalCellIdx_pic>, FrameType>::getDimension();
 
-        offsetWriter.GetAttributeWriter()("unitDimension", unitDimensionCellIdx);
-        extentWriter.GetAttributeWriter()("unitDimension", unitDimensionCellIdx);
+        offsetWriter.getAttributeWriter()("unitDimension", unitDimensionCellIdx);
+        extentWriter.getAttributeWriter()("unitDimension", unitDimensionCellIdx);
 
 
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) writing particlePatches for %1%") % Hdf5FrameType::getName();
@@ -267,13 +267,13 @@ private:
     {
         // Write a dummy field so we can add attributes (workaround for splash)
         auto& gc = Environment::get().GridController();
-        writer["dummy"].GetFieldWriter()(
+        writer["dummy"].getFieldWriter()(
             uint32_t(0),
             hdf5::makeSplashSize<1>(gc.getGlobalSize()),
             hdf5::makeSplashDomain<1>(gc.getGlobalRank(), 1)
             );
 
-        auto writeAttribute = writer.GetAttributeWriter();
+        auto writeAttribute = writer.getAttributeWriter();
         writeAttribute("value", value);
         writeAttribute("shape", std::array<uint64_t,1>{numParticles});
         writeAttribute("unitSI", unitSI);
