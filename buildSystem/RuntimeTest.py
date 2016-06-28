@@ -38,6 +38,7 @@ class RuntimeTest:
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
         self.dependency = testDocu.get('dependency', None)
+        self.preRunCmds = list(flattenList(testDocu.get('pre-run', [])))
         self.postRunCmds = list(flattenList(testDocu.get('post-run', [])))
         
         self.lastResult = False
@@ -170,6 +171,10 @@ class RuntimeTest:
         outputDir = "out_" + self.name
         self.lastOutputPath = os.path.abspath(compilation.getInstallPath() + '/' + outputDir)
         
+        preRunResult = self.__execCmds(self.preRunCmds, "pre-run", dryRun, verbose)
+        if not preRunResult == None:
+            return preRunResult
+        
         cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         with(cd(compilation.getInstallPath() if not dryRun else ".")):
             result = self.__submit(compilation, outputDir, dryRun, verbose)
@@ -206,20 +211,10 @@ class RuntimeTest:
                 if(verbose):
                     cprint("Program did not finish successfully", "red")
                 return result
-                    
-        with(cd(self.lastOutputPath if not dryRun else ".")):
-            cprint("Executing post-run commands for " + self.name+ "...", "yellow")
-            envSetupCmd = self.getSetupCmd(compilation)
-            if verbose:
-                print("Environment: " + envSetupCmd)
-            
-            for cmd in self.postRunCmds:
-                if dryRun or verbose:
-                    print(cmd)
-                if not dryRun:
-                    result = execCmd(envSetupCmd + cmd)
-                    if(result.result != 0):
-                        return result.result
+        
+        postRunResult = self.__execCmds(self.postRunCmds, "post-run", dryRun, verbose)
+        if not postRunResult == None:
+            return postRunResult
            
         cprint("Test \"" + self.name + "\" finished successfully!", "green")
         self.lastResult = True
@@ -281,6 +276,27 @@ class RuntimeTest:
             self.monitor = statusMonitors.GetMonitor(os.environ['TBG_SUBMIT'], res.stdout, res.stderr)
         return 0
     
+    def __execCmds(self, cmds, descr, dryRun, verbose):
+        """Execute given commands in lastOutputPath. Descr should be something like 'pre-run' or 'post-run'
+        
+           Return error result or None on success
+        """
+        if self.cmds:
+            with(cd(self.lastOutputPath if not dryRun else ".")):
+                cprint("Executing " + descr + " commands for " + self.name+ "...", "yellow")
+                envSetupCmd = self.getSetupCmd(compilation)
+                if verbose:
+                    print("Environment: " + envSetupCmd)
+                
+                for cmd in cmds:
+                    if dryRun or verbose:
+                        print(cmd)
+                    if not dryRun:
+                        result = execCmd(envSetupCmd + cmd)
+                        if(result.result != 0):
+                            return result.result
+        return None
+
     def __str__(self):
         (exName, cmakeCfg, profileFile) = self.getConfig()
         result = "Runtime test " + exName + "/" + self.name + ", cmakeCfg: " + str(cmakeCfg)
