@@ -22,6 +22,8 @@ namespace hdf5 {
         template<typename T>
         void operator()(T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain);
     private:
+        template<typename T_In, typename T_Out>
+        bool tryConvertedRead(T_Out* data, const splash::Domain& domain, const splash::CollectionType& colTypeData);
         splash::ParallelDataCollector& hdfFile_;
         const int32_t id_;
         std::string datasetName_;
@@ -40,33 +42,62 @@ namespace hdf5 {
         // Validate dataset
         // sizeRead will be set
         splash::Dimensions sizeRead;
-        splash::CollectionType* colType = hdfFile_.readMeta(
+        std::unique_ptr<splash::CollectionType> colType(hdfFile_.readMeta(
             id_,
             datasetName_.c_str(),
             globalSize,
             splash::Dimensions(0, 0, 0),
-            sizeRead);
+            sizeRead));
 
         if(sizeRead != globalSize)
-            throw std::runtime_error("Invalid size read");
+            throw std::runtime_error(std::string("Invalid global size: ") + sizeRead.toString() + "!=" + globalSize.toString());
 
-        if(colType->getDataType() != splashType.getDataType())
-            throw std::runtime_error("Invalid data type");
+        // Simple case: Same types
+        if(tryConvertedRead<T>(data, localDomain, *colType))
+            return;
+        // float64->float32
+        if(std::is_same<T, float_32>::value && tryConvertedRead<float_64>(data, localDomain, *colType))
+            return;
+        // float32->float64
+        if(std::is_same<T, float_64>::value && tryConvertedRead<float_32>(data, localDomain, *colType))
+            return;
 
-        __delete(colType);
+        // No match -> Error
+        throw std::runtime_error(std::string("Invalid data type: ") + colType->toString() + "!=" + splashType.toString());
+    }
 
+    template<typename T_In, typename T_Out>
+    bool SplashFieldReader::tryConvertedRead(T_Out* data, const splash::Domain& domain, const splash::CollectionType& colTypeData)
+    {
+        using ColTypeIn = typename traits::PICToSplash<T_In>::type;
+
+        if(typeid(ColTypeIn) != typeid(colTypeData))
+            return false;
+        std::unique_ptr<T_In[]> tmpData;
+        if(!std::is_same<T_In, T_Out>::value)
+            tmpData.reset(new T_In[domain.getSize().getScalarSize()]);
+
+        splash::Dimensions sizeRead;
         // Read dataset
         hdfFile_.read(
             id_,
-            localDomain.getSize(),
-            localDomain.getOffset(),
+            domain.getSize(),
+            domain.getOffset(),
             datasetName_.c_str(),
             sizeRead,
-            data);
+            tmpData ? (void*)tmpData.get() : (void*)data);
 
-        if(sizeRead != localDomain.getSize())
-             throw std::runtime_error("Invalid local size read");
-    }
+        if(sizeRead != domain.getSize())
+             throw std::runtime_error(std::string("Invalid local size: ") + sizeRead.toString() + "!=" + domain.getSize().toString());
+
+        if(!std::is_same<T_In, T_Out>::value)
+        {
+            // Copy-Convert data
+            std::copy(tmpData.get(), tmpData.get() + domain.getSize().getScalarSize(), data);
+        }
+
+        return true;
+   }
 
 }  // namespace hdf5
 }  // namespace plugins
