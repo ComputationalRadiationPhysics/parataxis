@@ -63,6 +63,9 @@ template<class T_DataCollector>
 void SplashWriter<T_DataCollector>::setCurrentDataset(const std::string& name)
 {
     curDatasetName_ = name;
+    // Removing trailing '/'s
+    while(!curDatasetName_.empty() && curDatasetName_.back() == '/')
+        curDatasetName_.resize(curDatasetName_.size() - 1);
 }
 
 template<class T_DataCollector>
@@ -84,9 +87,9 @@ SplashWriter<T_DataCollector> SplashWriter<T_DataCollector>::operator[](const st
 {
     SplashWriter<T_DataCollector> result(*hdfFile_, id_);
     if(curDatasetName_.empty())
-        result.curDatasetName_ = name;
+        result.setCurrentDataset(name);
     else
-        result.curDatasetName_ = curDatasetName_ + "/" + name;
+        result.setCurrentDataset(curDatasetName_ + "/" + name);
     return result;
 }
 

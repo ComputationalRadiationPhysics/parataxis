@@ -24,7 +24,7 @@ namespace detail {
         /// Read a string
         void operator()(const std::string& name, std::string& value);
         /// Read a 1D array of strings of same size separated by #0 chars
-        void operator()(const std::string& name, char* value, size_t sizes, size_t numValues);
+        void operator()(const std::string& name, size_t numValues, char* value, size_t bufSize);
         /// Read a 1D array
         template<typename T, size_t T_size>
         void operator()(const std::string& name, std::array<T, T_size>& value);
@@ -67,23 +67,28 @@ namespace detail {
         }else if(attr->getMemSize() > 0)
         {
             std::vector<char> readVal(attr->getMemSize());
-            attr->read(&readVal[0], readVal.size());
-            // Remove NULL terminator
-            readVal.resize(readVal.size() - 1);
+            // Note: The string may or may not end in a NULL terminator. (Writing with splash: yes, python: No)
+            // Currently there is no way knowing if there should be one.
+            attr->read(attr->getType(), &readVal[0]);
             value.assign(readVal.begin(), readVal.end());
         }else
             value = "";
     }
 
     template<class T_Reader>
-    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& name, char* value, size_t sizes, size_t numValues)
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& name, size_t numValues, char* value, size_t bufSize)
     {
         std::unique_ptr<splash::DCAttributeInfo> attr = getAttribute(name);
         if(typeid(attr->getType()) != typeid(splash::ColTypeString))
             throw std::runtime_error("Attribute is not a string");
         if(attr->getNDims() != 1 || attr->getDims()[0] != numValues)
             throw std::runtime_error("Wrong string array size");
-        attr->read(value, (sizes + 1) * numValues);
+        // We need space for at least 1 char and 1 NULL terminator per value
+        if(bufSize < numValues * 2)
+            throw std::runtime_error("Buffer is to small for string array");
+        // remove NULL terminators and divide by number of values
+        size_t strLen = (bufSize - numValues) / numValues;
+        attr->read(splash::ColTypeString(strLen), value);
     }
 
     template<class T_Reader>

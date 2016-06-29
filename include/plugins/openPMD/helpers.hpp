@@ -2,10 +2,38 @@
 
 #include <stdexcept>
 #include <string>
+#include <cstdio>
 
 namespace xrt {
 namespace plugins {
 namespace openPMD {
+
+struct Version{
+    Version(const std::string& version){
+        if(sscanf(version.c_str(), "%u.%u.%u", &data[0], &data[1], &data[2]) != static_cast<int>(data.size()))
+            throw std::invalid_argument(version + " is not a valid version string");
+    }
+    Version(uint32_t major, uint32_t minor, uint32_t revision): data{major, minor, revision}
+    {}
+
+    std::string toString() const
+    {
+        return std::to_string(data[0]) + "." + std::to_string(data[1]) + "." +  std::to_string(data[2]);
+    }
+
+    std::array<uint32_t, 3> data;
+};
+
+bool operator<(const Version& lhs, const Version& rhs)
+{
+    for(unsigned i=0; i<lhs.data.size(); i++)
+    {
+        if(lhs.data[i] < rhs.data[i])
+            return true;
+    }
+    return false;
+}
+
 
 /** Perform basic checks that the file is in correct openPMD format */
 template<class T_SplashReader>
@@ -17,8 +45,9 @@ void validate(T_SplashReader&& reader, bool usePicExtension)
     readAttr("openPMD", version);
     readAttr("openPMDextension", ext);
     readAttr("iterationEncoding", iterEnc);
-    if(version != "1.0.0")
-        throw std::runtime_error(std::string("Invalid version. Expected 1.0.0, found ") + version);
+    Version reqVersion(1, 0, 0);
+    if(version < reqVersion)
+        throw std::runtime_error(std::string("Invalid version. Expected ") + reqVersion.toString() + ", found " + version);
     if(usePicExtension && (ext & 1) != 1)
         throw std::runtime_error(std::string("ED-PIC extension not found, found ") + std::to_string(ext));
     if(iterEnc != "fileBased")
@@ -29,13 +58,18 @@ void validate(T_SplashReader&& reader, bool usePicExtension)
 template<class T_SplashReader>
 std::string getBasePath(T_SplashReader&& reader)
 {
-    std::string basePath = reader.getGlobalAttributeReader().readString("basePath");
-    size_t placeholderPos;
-    while((placeholderPos = basePath.find("%T")) != std::string::npos)
-    {
-        basePath.replace(placeholderPos, 2, std::to_string(reader.getId()));
+    // ATM libSplash already uses 'data/<id>' as the base path. No way out of this...
+    if(true)
+        return "";
+    else{
+        std::string basePath = reader.getGlobalAttributeReader().readString("basePath");
+        size_t placeholderPos;
+        while((placeholderPos = basePath.find("%T")) != std::string::npos)
+        {
+            basePath.replace(placeholderPos, 2, std::to_string(reader.getId()));
+        }
+        return basePath;
     }
-    return basePath;
 }
 
 /** Return the meshes path for the current iteration */
@@ -61,7 +95,35 @@ float_X getTime(T_SplashReader&& reader)
     float_X time;
     readAttr("time", time);
     readAttr("timeUnitSI", timeUnitSI);
-    return time * UNIT_TIME/timeUnitSI;
+    return time * timeUnitSI / UNIT_TIME;
+}
+
+/** Returns the axis labels (fastest varying dimension first) of a record */
+template<size_t T_dims, class T_SplashReader>
+std::array<char, T_dims> getAxisLabels(T_SplashReader&& reader)
+{
+    const std::string dataOrder = reader.getAttributeReader().readString("dataOrder");
+    // 1 Char label, 1 Char NULL terminator
+    char axisLabels[T_dims * 2];
+    reader.getAttributeReader()("axisLabels", T_dims, axisLabels, sizeof(axisLabels));
+    std::array<char, T_dims> result;
+    if(dataOrder == "C")
+    {
+        for(size_t i=0; i<T_dims; i++)
+        {
+            result[T_dims - i - 1] = axisLabels[i * 2];
+            assert(axisLabels[i * 2 + 1] == '\0');
+        }
+    } else if(dataOrder == "F")
+    {
+        for(size_t i=0; i<T_dims; i++)
+        {
+            result[i] = axisLabels[i * 2];
+            assert(axisLabels[i * 2 + 1] == '\0');
+        }
+    } else
+        throw std::runtime_error(std::string("Unknown data order: ") + dataOrder);
+    return result;
 }
 
 }  // namespace openPMD
