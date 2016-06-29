@@ -170,11 +170,11 @@ class RuntimeTest:
         
         outputDir = "out_" + self.name
         self.lastOutputPath = os.path.abspath(compilation.getInstallPath() + '/' + outputDir)
-        
-        preRunResult = self.__execCmds(self.preRunCmds, "pre-run", dryRun, verbose)
+                
+        preRunResult = self.__execCmds(True, compilation, dryRun, verbose)
         if not preRunResult == None:
             return preRunResult
-        
+
         cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         with(cd(compilation.getInstallPath() if not dryRun else ".")):
             result = self.__submit(compilation, outputDir, dryRun, verbose)
@@ -212,7 +212,7 @@ class RuntimeTest:
                     cprint("Program did not finish successfully", "red")
                 return result
         
-        postRunResult = self.__execCmds(self.postRunCmds, "post-run", dryRun, verbose)
+        postRunResult = self.__execCmds(False, compilation, dryRun, verbose)
         if not postRunResult == None:
             return postRunResult
            
@@ -276,13 +276,21 @@ class RuntimeTest:
             self.monitor = statusMonitors.GetMonitor(os.environ['TBG_SUBMIT'], res.stdout, res.stderr)
         return 0
     
-    def __execCmds(self, cmds, descr, dryRun, verbose):
-        """Execute given commands in lastOutputPath. Descr should be something like 'pre-run' or 'post-run'
+    def __execCmds(self, preRunOrPostRun, compilation, dryRun, verbose):
+        """Execute pre- or post-run commands'
         
            Return error result or None on success
         """
-        if self.cmds:
-            with(cd(self.lastOutputPath if not dryRun else ".")):
+        if preRunOrPostRun:
+            cmds = self.preRunCmds
+            runDir = compilation.getInstallPath()
+            descr = "pre-run"
+        else:
+            cmds = self.postRunCmds
+            runDir = self.lastOutputPath
+            descr = "post-run"
+        if cmds:
+            with(cd(runDir if not dryRun else ".")):
                 cprint("Executing " + descr + " commands for " + self.name+ "...", "yellow")
                 envSetupCmd = self.getSetupCmd(compilation)
                 if verbose:

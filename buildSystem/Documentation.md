@@ -24,7 +24,7 @@ The global `buildSystem` folder and optionally a `testData` folder from inside t
         description: #?
         cmakeFlag:   # CMake setting index used
         cfgFile:     # Cfg file to use 
-        pre-run:     #? List of shell commands to run inside the output folder before execution. List of lists get flattened
+        pre-run:     #? List of shell commands to run inside the install folder before execution. List of lists get flattened
         post-run:    #? List of shell commands to run inside the output folder after execution. List of lists get flattened
         dependency:  #? Name of the Run-Time tests this one depends on (only 1 level og dependencies allowed)
         
