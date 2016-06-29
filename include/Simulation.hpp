@@ -56,6 +56,7 @@ namespace xrt {
         std::unique_ptr<fields::DensityField> densityField;
         std::unique_ptr<Detector> detector_;
         std::unique_ptr<RNGProvider> rngProvider_;
+        // Created with the Simulation class
         std::unique_ptr<fields::IFieldManipulator> fieldManipulator_;
 
     public:
@@ -63,7 +64,8 @@ namespace xrt {
         Simulation() :
             mallocMCBuffer(nullptr),
             particleStorage(nullptr),
-            globalSeed(42)
+            globalSeed(42),
+            fieldManipulator_(new Resolve_t<FieldManipulator>)
         {}
 
         virtual ~Simulation()
@@ -268,9 +270,6 @@ namespace xrt {
             /* Create with 1 border and 1 guard super cell */
             cellDescription = MappingDesc(layout.getDataSpace(), 1, 1);
             checkGridConfiguration(gridSize, layout);
-
-            // Add FieldManipulators (possible plugins)
-            fieldManipulator_.reset(new Resolve_t<FieldManipulator>(cellDescription));
         }
 
         void pluginUnload() override

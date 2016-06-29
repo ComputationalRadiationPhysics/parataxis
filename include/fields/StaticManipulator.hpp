@@ -6,7 +6,7 @@
 namespace xrt {
 namespace fields {
 
-/** Manipulator that does nothing, which results in a random field */
+/** Manipulator that does nothing, which results in a static field */
 template<class T_Field>
 class StaticManipulator: public IFieldManipulator
 {

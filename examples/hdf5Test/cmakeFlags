@@ -6,8 +6,9 @@
 #   - start with zero index
 #   - increase by 1, no gaps
 
-flags[0]="-DXRT_VERBOSE=13 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=AddWaveParticles"
-flags[1]="-DXRT_VERBOSE=255 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=CountParticles"
+flags[0]="-DXRT_VERBOSE=13 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=AddWaveParticles;-DPARAM_FIELD_MANIPULATOR=Random"
+flags[1]="-DXRT_VERBOSE=13 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=CountParticles;-DPARAM_FIELD_MANIPULATOR=Random"
+flags[2]="-DXRT_VERBOSE=255 -DPARAM_OVERWRITES:LIST=-DPARAM_PARTICLEHANDLER=CountParticles;-DPARAM_FIELD_MANIPULATOR=HDF5Interpolator"
 
 
 ################################################################################

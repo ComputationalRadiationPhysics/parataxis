@@ -12,7 +12,7 @@ example:
 
 compile:
   - cmakeFlags:
-        - 0
+        - 0-2
         
 aliases:
   validateOpenPMD: &validateOpenPMD
@@ -55,4 +55,16 @@ tests:
     cfgFile:   0001gpusRestart.cfg
     dependency: CheckpointCt
     post-run: *restartPostRun
+  - name: HDF5FieldInterpolator
+    description: Uses HDF5 files to interpolate the field between timesteps
+    cmakeFlag: 2
+    cfgFile:   0001gpusHDF5Field.cfg
+    pre-run:
+        - mkdir "${TEST_INSTALL_PATH}/testData/$TEST_NAME"
+        - python3 "${TEST_INSTALL_PATH}/testData/createHDF5Filesets.py" --folder "${TEST_INSTALL_PATH}/testData/$TEST_NAME" --size ${TEST_GRID_SIZE} --dt "2e-16" --time "1.5e-15"
+    post-run:
+        - *validateOpenPMD
+        - python3 "${TEST_INSTALL_PATH}/testData/validateCheckpoint.py"
+        - python3 "${TEST_INSTALL_PATH}/testData/validateFieldInterpolator.py"
+
 

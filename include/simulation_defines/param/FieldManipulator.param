@@ -7,6 +7,8 @@ namespace xrt {
         struct Static;
         /** Random field in each step */
         struct Random;
+        /** Interpolates the field between values given in HDF5 file */
+        struct HDF5Interpolator;
 
     }  // namespace fieldManipulators
 

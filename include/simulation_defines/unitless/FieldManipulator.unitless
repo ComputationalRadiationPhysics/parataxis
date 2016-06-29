@@ -3,6 +3,7 @@
 #include "fields/DensityField.hpp"
 #include "fields/StaticManipulator.hpp"
 #include "fields/RandomManipulator.hpp"
+#include "fields/HDF5FieldInterpolator.hpp"
 
 namespace PMacc {
 namespace traits {
@@ -17,6 +18,12 @@ namespace traits {
     struct Resolve<xrt::fieldManipulators::Random>
     {
         using type = xrt::fields::RandomManipulator<xrt::fields::DensityField>;
+    };
+
+    template<>
+    struct Resolve<xrt::fieldManipulators::HDF5Interpolator>
+    {
+        using type = xrt::fields::HDF5FieldInterpolator<xrt::fields::DensityField>;
     };
 
 }  // namespace traits

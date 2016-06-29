@@ -2,6 +2,7 @@
 
 #include "xrtTypes.hpp"
 #include "fields/IFieldManipulator.hpp"
+#include "plugins/ISimulationPlugin.hpp"
 
 namespace xrt {
 namespace fields {
@@ -21,17 +22,20 @@ namespace fields {
 
 /** Manipulator that produces a random field in each timestep */
 template<class T_Field>
-class RandomManipulator: public IFieldManipulator
+class RandomManipulator: public IFieldManipulator, public ISimulationPlugin
 {
-    MappingDesc cellDescription_;
 public:
-    RandomManipulator(MappingDesc cellDescription): cellDescription_(cellDescription){}
+
+    RandomManipulator()
+    {
+        Environment::get().PluginConnector().registerPlugin(this);
+    }
 
     void update(uint32_t currentStep) override
     {
         auto& dc = Environment::get().DataConnector();
         T_Field& field = dc.getData<T_Field>(T_Field::getName(), true);
-        __cudaKernelArea(kernel::updateRandomly, cellDescription_, PMacc::CORE + PMacc::BORDER)
+        __cudaKernelArea(kernel::updateRandomly, *cellDescription_, PMacc::CORE + PMacc::BORDER)
                 (MappingDesc::SuperCellSize::toRT().toDim3())
                 (field.getDeviceDataBox(),
                 Random<>());
@@ -62,6 +66,12 @@ public:
     private:
         PMACC_ALIGN8(rand, RandomType);
     };
+private:
+    // Unused methods from IPlugin
+    void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override {}
+    void restart(uint32_t restartStep, const std::string restartDirectory) override {}
+    void pluginRegisterHelp(boost::program_options::options_description& desc) override {}
+    std::string pluginGetName() const override {return "";}
 };
 
 }  // namespace fields
