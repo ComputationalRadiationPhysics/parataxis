@@ -15,11 +15,11 @@
 TBG_wallTime="3:00:00"
 
 TBG_gpu_x=1
-TBG_gpu_y=1
-TBG_gpu_z=1
+TBG_gpu_y=2
+TBG_gpu_z=2
 
 TBG_gridSize="-g 32 256 256"
-TBG_steps="-s 40000"
+TBG_steps="-s 200000"
 
 TBG_program="@PROJECT_NAME@"
 
@@ -27,12 +27,11 @@ TBG_program="@PROJECT_NAME@"
 ## Section: Optional Variables ##
 #################################
 
-TBG_plugins="--p_position.period 99999                    \
-             !TBG_globalSeed                              \
-             --DensityField_printSlice.period 99999       \
+TBG_plugins="--p_position.period 999999                   \
+             --DensityField_printSlice.period 999999      \
              --DensityField_printSlice.axis 0             \
              --DensityField_printSlice.slicePoint 10      \
-             --PhotonDetector_print.period 5000           \
+             --PhotonDetector_print.period 500            \
              "
 
 #################################

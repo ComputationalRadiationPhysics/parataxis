@@ -19,17 +19,17 @@ tests:
                Particles are placed in the middle of the cells
     cmakeFlag:   0
     cfgFile:     0004gpus.cfg
-
     post-run: &simplePostRun
         - cp "${TEST_SIMOUTPUT_PATH}/detector_040000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        
   - name: 256CellsRandPos
     description: |
                Double slit is in the middle of Nx256x256 volume
                Particles are placed randomly in the cells
     cmakeFlag:   2
     cfgFile:     0004gpus.cfg
-
     post-run: *simplePostRun
+    
   - name: 256CellsConstPosDouble
     description: |
                Double slit is in the middle of Nx256x256 volume
@@ -37,8 +37,8 @@ tests:
                Using double precision
     cmakeFlag:   4
     cfgFile:     0004gpus.cfg
-
     post-run: *simplePostRun
+    
   - name: 256CellsRandPosDouble
     description: |
                Double slit is in the middle of Nx256x256 volume
@@ -46,6 +46,14 @@ tests:
                Using double precision
     cmakeFlag:   6
     cfgFile:     0004gpus.cfg
-
     post-run: *simplePostRun
+    
+  - name: 256CellsRandPosDoubleLong
+    description: |
+               Double slit is in the middle of Nx256x256 volume
+               Particles are placed randomly in the cells
+               Using double precision
+               Long run
+    cmakeFlag:   6
+    cfgFile:     0004gpusLong.cfg
 
