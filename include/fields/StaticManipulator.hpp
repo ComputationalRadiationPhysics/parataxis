@@ -12,7 +12,7 @@ class StaticManipulator: public IFieldManipulator
 {
 public:
 
-    StaticManipulator(MappingDesc cellDescription){}
+    StaticManipulator(){}
 
 
     void update(uint32_t currentStep) override
