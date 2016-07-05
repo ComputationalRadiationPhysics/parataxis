@@ -68,6 +68,7 @@ public:
     };
 private:
     // Unused methods from IPlugin
+    void notify(uint32_t currentStep) override {}
     void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override {}
     void restart(uint32_t restartStep, const std::string restartDirectory) override {}
     void pluginRegisterHelp(boost::program_options::options_description& desc) override {}
