@@ -204,7 +204,7 @@ class Example:
         """Create the compilations for this example as in the docu dictionary and return as a list"""
         result = []
         configs = []
-        for compilation in docu['compile']:
+        for compilation in docu.get('compile', []):
             cmakePresets = expandList(compilation['cmakeFlags'])
             for cmakePreset in cmakePresets:
                 if(cmakePreset < 0):
