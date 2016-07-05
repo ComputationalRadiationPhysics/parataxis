@@ -71,7 +71,7 @@ namespace laserConfig {
 
 
     /** Laser pulse length in s */
-    constexpr float_X PULSE_LENGTH = 100e-15;
+    constexpr float_X PULSE_LENGTH = 1;
     /** Entry-Direction of the laser pulse: 0=Left->Right, 1=Top->Bottom, 2=Front->Back
      *  Ignored for 2D, there it is always Left->Right */
     constexpr int32_t DIRECTION = 0;
