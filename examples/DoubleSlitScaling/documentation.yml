@@ -1,0 +1,34 @@
+# Description
+example:
+  name:        Double Slit Scaling Test
+  short:       DoubleSlitScaling
+  author:      Alexander Grund
+
+  description: |
+               Simulates a pair of slits with a density of 1
+               There is only 1 configuration but multiple configs to test the scaling behaviour
+
+# Run-Time Tests
+tests:
+  - name: 1GPU
+    cmakeFlag:   0
+    cfgFile:     1gpu32x256x256.cfg
+    post-run: &copyTime
+        - grep "simulation time" "${TEST_SIMOUTPUT_PATH}/output" >> "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_time.txt"
+  - name: 2GPU
+    cmakeFlag:   0
+    cfgFile:     2gpu64x256x256.cfg
+    post-run: *copyTime
+  - name: 4GPU
+    cmakeFlag:   0
+    cfgFile:     4gpu64x512x256.cfg
+    post-run: *copyTime
+  - name: 8GPU
+    cmakeFlag:   0
+    cfgFile:     8gpu64x512x512.cfg
+    post-run: *copyTime
+  - name: 64GPU
+    cmakeFlag:   0
+    cfgFile:     64gpu512x512x512.cfg
+    post-run: *copyTime
+

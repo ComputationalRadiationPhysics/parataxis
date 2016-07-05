@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+################################################################################
+# add presets here
+#   - default: index 0
+#   - start with zero index
+#   - increase by 1, no gaps
+
+flags[7]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=512;-DPARAM_PRECISION=precision64Bit"
+
+
+################################################################################
+# execution
+
+case "$1" in
+    -l)  echo ${#flags[@]}
+         ;;
+    -ll) for f in "${flags[@]}"; do echo $f; done
+         ;;
+    *)   echo -n ${flags[$1]}
+         ;;
+esac
