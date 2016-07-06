@@ -29,7 +29,7 @@ tests:
     post-run: *copyTime
   - name: 16GPU
     cmakeFlag:   0
-    cfgFile:     32gpu.cfg
+    cfgFile:     16gpu.cfg
     post-run: *copyTime
   - name: 32GPU
     cmakeFlag:   0

@@ -32,7 +32,7 @@ TBG_plugins="--p_position.period 999999                   \
              --DensityField_printSlice.period 999999      \
              --DensityField_printSlice.axis 0             \
              --DensityField_printSlice.slicePoint 10      \
-             --PhotonDetector_print.period 100000         \
+             --PhotonDetector_print.period 30000          \
              "
 
 #################################
