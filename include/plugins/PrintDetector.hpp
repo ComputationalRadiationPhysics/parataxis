@@ -230,7 +230,6 @@ namespace plugins {
         auto& dc = Environment::get().DataConnector();
         Detector& detector = dc.getData<Detector>(Detector::getName());
 
-        const SubGrid& subGrid = Environment::get().SubGrid();
         hdf5::writeDataBox(
                     writer,
                     detector.getHostDataBox(),
@@ -302,7 +301,6 @@ namespace plugins {
         auto& dc = Environment::get().DataConnector();
         Detector& detector = dc.getData<Detector>(Detector::getName(), true);
 
-        const SubGrid& subGrid = Environment::get().SubGrid();
         hdf5::readDataBox(
                     writer,
                     detector.getHostDataBox(),
