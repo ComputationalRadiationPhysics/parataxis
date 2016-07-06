@@ -42,6 +42,7 @@ class RuntimeTest:
         self.postRunCmds = list(flattenList(testDocu.get('post-run', [])))
         
         self.lastResult = False
+        self.lastOutputPath = None
         
     def getConfig(self):
         """Return the tuple (exampleName, cmakePreset, profileFile) that identifies this RuntimeTest"""
