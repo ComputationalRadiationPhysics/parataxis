@@ -14,12 +14,12 @@
 
 TBG_wallTime="1:00:00"
 
-TBG_gpu_x=2
-TBG_gpu_y=2
-TBG_gpu_z=2
+TBG_gpu_x=1
+TBG_gpu_y=1
+TBG_gpu_z=16
 
-TBG_gridSize="-g 64 512 512"
-TBG_steps="-s 100000"
+TBG_gridSize="-g 512 256 512"
+TBG_steps="-s 30000"
 
 TBG_program="@PROJECT_NAME@"
 
