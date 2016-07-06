@@ -234,7 +234,7 @@ class RuntimeTest:
         with open(os.path.join(compilation.getInstallPath(), "submit", self.cfgFile), 'r') as cfgFile:
             content = cfgFile.read()
             gridSize = re.search("TBG_gridSize=\"-g (\\d+( \\d+)*)\"", content)
-            assert(gridSize, "Gridsize not found. Please define it in your cfg file using TBG_gridSize")
+            assert gridSize != None, "Gridsize not found. Please define it in your cfg file using TBG_gridSize"
             gridSize = gridSize.group(1)
         cmd = compilation.getSetupCmd()
         variables = [('NAME',           self.name),
