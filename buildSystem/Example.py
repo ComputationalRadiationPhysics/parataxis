@@ -4,7 +4,7 @@ import sys
 import traceback
 import re
 from execHelpers import execCmd
-from Compilation import Compilation
+from Compilation import Compilation, mergeCompilations
 from RuntimeTest import RuntimeTest
 
 def expandList(lst):
@@ -82,13 +82,8 @@ def getCompilations(examples, parentBuildPath = None, runtimeTestNames = None):
         for example in examples:
             result.extend(example.getCompilations(parentBuildPath))
     else:
-        cfgs = []
         tests = getRuntimeTests(examples, runtimeTestNames)
-        for test in tests:
-            c = test.findCompilation(parentBuildPath)
-            if not c.getConfig() in cfgs:
-                cfgs.append(c.getConfig())
-                result.append(c)
+        result = mergeCompilations(result, [test.findCompilation(parentBuildPath) for test in tests])
     return result
 
 def getRuntimeTests(examples, names = None):

@@ -2,6 +2,25 @@ import re
 import os
 from execHelpers import execCmd, ExecReturn
 
+def mergeCompilations(compilations, additionalCompilations):
+    """Add all compilations from additionalCompilations to compilations that are not already present and return it
+    
+    No duplicates are allowed in compilations, but they are allowed in additionalCompilations
+    """
+    cfgs = []
+    # Collect all current configs
+    for c in compilations:
+        cfg = c.getConfig()
+        assert(not cfg in cfgs)
+        cfgs.append(cfg)
+    # Add new ones
+    for c in additionalCompilations:
+        cfg = c.getConfig()
+        if not cfg in cfgs:
+            cfgs.append(cfg)
+            compilations.append(c)
+    return compilations
+
 class Compilation:
     """Represents a specific configuration of an example that can be compiled into a given folder"""
     def __init__(self, example, cmakePreset, parentBuildPath = 'build', profileFile = None):
@@ -14,9 +33,9 @@ class Compilation:
         self.profileFile = profileFile
         self.cmakePreset = cmakePreset
         self.setParentBuildPath(parentBuildPath)
-        self.buildFolderName = "build_" + example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
+        outputFolderName = example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
         # Remove non-alphanumeric chars
-        self.buildFolderName = re.sub("\W", "", self.buildFolderName)
+        self.outputFolderName = re.sub("\W", "", outputFolderName)
         if self.cmakePreset >= len(self.example.getCMakeFlags()):
             raise Exception("Invalid cmakePreset: " + str(self.cmakePreset) + " of " + str(len(self.example.getCMakeFlags())) + " for " + str(self))
         
@@ -49,11 +68,11 @@ class Compilation:
         
     def getBuildPath(self):
         """Get the path where this is build"""
-        return self.parentBuildPath + "/" + self.buildFolderName
+        return os.path.join(self.parentBuildPath, "build", self.outputFolderName)
     
     def getInstallPath(self):
         """Get the path to which this is installed"""
-        return self.getBuildPath() + '/installed'
+        return os.path.join(self.parentBuildPath, "installed", self.outputFolderName)
     
     def configure(self, pathToCMakeLists, dryRun, verbose, silent):
         """Configure the example via CMake

@@ -169,8 +169,9 @@ class RuntimeTest:
         if(result != None and result.result != 0):
             return result.result
         
-        outputDir = "out_" + self.name
-        self.lastOutputPath = os.path.abspath(compilation.getInstallPath() + '/' + outputDir)
+        outputFolderName = self.example.getMetaData()["name"] + "_" + self.name
+        outputFolderName = re.sub("\W", "", outputFolderName)
+        self.lastOutputPath = os.path.abspath(os.path.join(parentBuildPath, "output", outputFolderName))
                 
         preRunResult = self.__execCmds(True, compilation, dryRun, verbose)
         if not preRunResult == None:
@@ -178,7 +179,7 @@ class RuntimeTest:
 
         cprint("Changing to install directory " + compilation.getInstallPath(), "yellow")
         with(cd(compilation.getInstallPath() if not dryRun else ".")):
-            result = self.__submit(compilation, outputDir, dryRun, verbose)
+            result = self.__submit(compilation, self.lastOutputPath, dryRun, verbose)
             
         if result:
             return result

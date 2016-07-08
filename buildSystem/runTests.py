@@ -9,6 +9,7 @@ from distutils.util import strtobool
 from termHelpers import cprint, thumbsUp, thumbsDown
 from execHelpers import execCmd
 import Example
+from Compilation import mergeCompilations
 
 def getExampleFolders(exampleNameOrFolder, getAll):
     """Return list of absolute paths to the examples
@@ -162,7 +163,7 @@ def main(argv):
     parser.add_argument('-D', action='append', help='Additional defines that are directly passed to CMake')
     parser.add_argument('-s', '--seed', default=None, help='Global seed used to init the random number generators')
     parser.add_argument('--compile-only', action='store_true', help='Run only compile tests (do not run compiled programs)')
-    parser.add_argument('--no-install-clean', action='store_true', help='Do not delete install folders before compiling')
+    parser.add_argument('--no-clean', action='store_true', help='Do not clean build/install folders before compiling')
     parser.add_argument('-r', '--release', action='store_true', help='Build in release mode')
     options = parser.parse_args(argv)
     if options.j < 0:
@@ -201,7 +202,10 @@ def main(argv):
     if(examples == None):
         return 1
     compilations = Example.getCompilations(examples, options.output, options.test)
-    if not options.no_install_clean:
+    # If we will run also runtime tests, then add those compilations here
+    if not options.test and not options.compile_only:
+        compilations = mergeCompilations(compilations, Example.getCompilations(examples, options.output, "*"))
+    if not options.no_clean:
         cprint("Cleaning install directories", "yellow")
         for c in compilations:
             print("\t" + c.getInstallPath())
