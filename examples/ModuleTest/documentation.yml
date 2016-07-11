@@ -32,7 +32,7 @@ tests:
     cmakeFlag: 0
     cfgFile:   0001gpusNoBeamstop.cfg
     post-run: &simplePostRun
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_000100.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_`printf "%06i" "${TEST_TIMESTEPS}"`.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
 
   - name: NoDensityDouble
@@ -79,6 +79,16 @@ tests:
     cmakeFlag: 5
     cfgFile:   0001gpus.cfg
     post-run: *SingleCellValidation
+    
+  - name: SingleCellWaveBig
+    description: |
+               Single point of density at [31, 31, 31]
+               Regular (wave) detector
+               Longer extension in laser direction -> Test correct propagation
+    cmakeFlag: 4
+    cfgFile:   0001gpusBig.cfg
+    post-run: *SingleCellValidation
+    
   - name: ScatterOnLineDensity
     description: |
                Line of density at [31, n, 10] with density n+1.
@@ -89,6 +99,7 @@ tests:
     post-run: &lineDensityValidation
         - *simplePostRun
         - python3 "${TEST_INSTALL_PATH}/testData/validateScatterOnLineDensity.py"
+        
   - name: ScatterOnLineDensityDouble
     description: |
                Line of density at [31, n, 10] with density n+1.
@@ -98,6 +109,7 @@ tests:
     cmakeFlag: 7
     cfgFile:   0001gpus.cfg
     post-run: *lineDensityValidation
+    
   - name: SimpleRandomScattering
     description: |
                Single point of density at [31, 31, 31]
@@ -109,6 +121,7 @@ tests:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
+        
   - name: SimpleRandomScatteringDouble
     description: |
                Single point of density at [31, 31, 31]
@@ -121,6 +134,7 @@ tests:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
+        
   - name: RandomScattering
     description: |
                Single point of density at [31, 31, 31]
@@ -132,6 +146,7 @@ tests:
         - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandom.py"
+        
   - name: RandomScatteringDouble
     description: |
                Single point of density at [31, 31, 31]
