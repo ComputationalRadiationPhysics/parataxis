@@ -40,5 +40,6 @@ The global `buildSystem` folder and optionally a `testData` folder from inside t
 - `TEST_NAME`           : Name of the runtime test from YAML
 - `TEST_OUTPUT_PATH`    : Path in which the test is run
 - `TEST_SIMOUTPUT_PATH` : Path in which simulation data is put
-- `TEST_GRID_SIZE`      : Size of the grid from CFG file
+- `TEST_GRID_SIZE`      : Size of the grid from CFG file (TBG_gridSize)
+- `TEST_TIMESTEPS`      : Number of timesteps to run from CFG file (TBG_step)
 

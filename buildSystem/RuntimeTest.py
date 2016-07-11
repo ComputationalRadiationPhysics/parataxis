@@ -237,11 +237,15 @@ class RuntimeTest:
             gridSize = re.search("TBG_gridSize=\"-g (\\d+( \\d+)*)\"", content)
             assert gridSize != None, "Gridsize not found. Please define it in your cfg file using TBG_gridSize"
             gridSize = gridSize.group(1)
+            numTimesteps = re.search("TBG_steps=\"-s (\\d+)\"", content)
+            assert numTimesteps != None, "Timesteps not found. Please define it in your cfg file using TBG_step"
+            numTimesteps = numTimesteps.group(1)
         cmd = compilation.getSetupCmd()
         variables = [('NAME',           self.name),
                      ('OUTPUT_PATH',    self.getOutputPath()),
                      ('SIMOUTPUT_PATH', self.getSimOutputPath()),
-                     ('GRID_SIZE',      gridSize)
+                     ('GRID_SIZE',      gridSize),
+                     ('TIMESTEPS',      numTimesteps)
                     ]
         for (name, value) in variables:
             cmd += 'export TEST_' + name + '="' + value + '"\n'
