@@ -1,7 +1,7 @@
 #pragma once
 
-#include <xrtTypes.hpp>
-#include <type_traits>
+#include "xrtTypes.hpp"
+#include "traits/stdRenamings.hpp"
 
 namespace xrt {
 
@@ -15,15 +15,15 @@ namespace xrt {
         T_Transform transformation;
     public:
         static constexpr unsigned Dim = T_BaseBox::Dim;
-        using RefValueType = std::result_of_t<T_Transform(BaseValueType&)>;
-        using ValueType = std::remove_reference_t<RefValueType>;
+        using RefValueType = traits::result_of_t<T_Transform(BaseValueType&)>;
+        using ValueType = traits::remove_reference_t<RefValueType>;
 
         HDINLINE TransformBox(const T_BaseBox& base, const T_Transform& transformation): T_BaseBox(base), transformation(transformation)
         {}
 
         template<unsigned T_Dim>
         HDINLINE auto operator()(const PMacc::DataSpace<T_Dim>& idx) const
-        -> std::result_of_t<T_Transform(std::result_of_t<T_BaseBox(decltype(idx))>)>
+        -> traits::result_of_t<T_Transform(traits::result_of_t<T_BaseBox(decltype(idx))>)>
         {
             return transformation(T_BaseBox::operator()(idx));
         }
@@ -42,7 +42,7 @@ namespace xrt {
 
             PMACC_NO_NVCC_HDWARNING
             template<typename T>
-            HDINLINE std::result_of_t<T_Transform(T)> operator()(T&& input) const
+            HDINLINE traits::result_of_t<T_Transform(T)> operator()(T&& input) const
             {
                 return transformation(input);
             }
@@ -52,18 +52,18 @@ namespace xrt {
     }  // namespace detail
 
     template<class T_BaseBox, class T_Transform>
-    HDINLINE TransformBox<std::remove_cv_t<std::remove_reference_t<T_BaseBox>>, T_Transform>
+    HDINLINE TransformBox<traits::remove_cv_t<traits::remove_reference_t<T_BaseBox>>, T_Transform>
     makeTransformBox(T_BaseBox&& box, T_Transform&& transformation = T_Transform())
     {
-        using BaseBox = std::remove_cv_t<std::remove_reference_t<T_BaseBox>>;
+        using BaseBox = traits::remove_cv_t<traits::remove_reference_t<T_BaseBox>>;
         return TransformBox<BaseBox, T_Transform>(box, transformation);
     }
 
     template<class T_BaseBox, class T_Transform>
-    TransformBox<std::remove_cv_t<std::remove_reference_t<T_BaseBox>>, detail::HostTransformWrapper<T_Transform>>
+    TransformBox<traits::remove_cv_t<traits::remove_reference_t<T_BaseBox>>, detail::HostTransformWrapper<T_Transform>>
     makeHostTransformBox(T_BaseBox&& box, T_Transform&& transformation = T_Transform())
     {
-        using BaseBox = std::remove_cv_t<std::remove_reference_t<T_BaseBox>>;
+        using BaseBox = traits::remove_cv_t<traits::remove_reference_t<T_BaseBox>>;
         return TransformBox<BaseBox, detail::HostTransformWrapper<T_Transform>>(box, transformation);
     }
 }  // namespace xrt

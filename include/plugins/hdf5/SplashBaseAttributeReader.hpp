@@ -67,7 +67,8 @@ namespace detail {
         }else if(attr->getMemSize() > 0)
         {
             std::vector<char> readVal(attr->getMemSize());
-            // Note: The string may or may not end in a NULL terminator. (Writing with splash: yes, python: No)
+            // Note: The string may or may not end in a NULL terminator.
+            // (Writing with splash: yes (NULL_TERMINATED), h5py: No (NULL_PADDED))
             // Currently there is no way knowing if there should be one.
             attr->read(attr->getType(), &readVal[0]);
             value.assign(readVal.begin(), readVal.end());

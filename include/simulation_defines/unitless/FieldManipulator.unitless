@@ -3,7 +3,9 @@
 #include "fields/DensityField.hpp"
 #include "fields/StaticManipulator.hpp"
 #include "fields/RandomManipulator.hpp"
-#include "fields/HDF5FieldInterpolator.hpp"
+#if (XRT_ENABLE_HDF5 == 1)
+#   include "fields/HDF5FieldInterpolator.hpp"
+#endif
 
 namespace PMacc {
 namespace traits {
@@ -20,11 +22,13 @@ namespace traits {
         using type = xrt::fields::RandomManipulator<xrt::fields::DensityField>;
     };
 
+#if (XRT_ENABLE_HDF5 == 1)
     template<>
     struct Resolve<xrt::fieldManipulators::HDF5Interpolator>
     {
         using type = xrt::fields::HDF5FieldInterpolator<xrt::fields::DensityField>;
     };
+#endif
 
 }  // namespace traits
 }  // namespace PMacc

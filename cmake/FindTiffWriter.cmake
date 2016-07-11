@@ -34,22 +34,12 @@ find_path(TiffWriter_ROOT_DIR
     PATH_SUFFIXES src include src/include
     DOC "TiffWriter ROOT directory")
 
-if(TiffWriter_ROOT_DIR)
-    set(TiffWriter_FOUND TRUE)
-else()
-	set(TiffWriter_FOUND FALSE)
-endif()
-
 # find libTIFF install #########################################################
 find_package(TIFF)
 
 if(NOT TIFF_FOUND)
     message(WARNING "Did not find libTIFF. Cannot use TiffWriter")
-    set(TiffWriter_FOUND FALSE)
-endif()
-
-
-if(TiffWriter_FOUND)
+elseif(TiffWriter_ROOT_DIR)
     set(TiffWriter_INCLUDE_DIRS ${TiffWriter_ROOT_DIR} ${TIFF_INCLUDE_DIR})
     set(TiffWriter_LIBRARIES ${TIFF_LIBRARIES})
 
@@ -73,18 +63,9 @@ if(TiffWriter_FOUND)
     unset(TiffWriter_VERSION_MINOR_HPP)
     unset(TiffWriter_VERSION_PATCH_HPP)
 
-else(TiffWriter_FOUND)
+else()
     message(STATUS "Can NOT find TiffWriter - set TIFFWRITER_ROOT")
-endif(TiffWriter_FOUND)
-
-
-# unset checked variables if not found ########################################
-if(NOT TiffWriter_FOUND)
-    unset(TiffWriter_INCLUDE_DIRS)
-    unset(TiffWriter_LIBRARIES)
-    unset(TiffWriter_DEFINITIONS)
-endif(NOT TiffWriter_FOUND)
-
+endif()
 
 ###############################################################################
 # FindPackage Options
@@ -93,6 +74,7 @@ endif(NOT TiffWriter_FOUND)
 # handles the REQUIRED, QUIET and version-related arguments for find_package
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TiffWriter
+    FOUND_VAR TiffWriter_FOUND
     REQUIRED_VARS TiffWriter_LIBRARIES TiffWriter_INCLUDE_DIRS
     VERSION_VAR TiffWriter_VERSION
 )

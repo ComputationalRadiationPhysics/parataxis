@@ -2,8 +2,12 @@
 
 #include "xrtTypes.hpp"
 #include "GatherSlice.hpp"
-#include "plugins/imaging/PngCreator.hpp"
-#include "plugins/imaging/TiffCreator.hpp"
+#if XRT_ENABLE_PNG
+#   include "plugins/imaging/PngCreator.hpp"
+#endif
+#if XRT_ENABLE_TIFF
+#   include "plugins/imaging/TiffCreator.hpp"
+#endif
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
@@ -89,12 +93,16 @@ namespace plugins {
                         ));
                 if(format == "png")
                 {
+#if XRT_ENABLE_PNG
                     imaging::PngCreator img;
                     img(fileName.str(), data, gather_->getData().size());
+#endif
                 }else
                 {
+#if XRT_ENABLE_TIFF
                     imaging::TiffCreator img;
                     img(fileName.str(), data, gather_->getData().size());
+#endif
                 }
             }
 
@@ -122,8 +130,17 @@ namespace plugins {
             std::transform(format.begin(), format.end(), format.begin(), ::tolower);
             if(format != "tiff" && format != "tif")
                 format = "png";
+#if !XRT_ENABLE_PNG
+            format = "tif";
+#elif !XRT_ENABLE_TIFF
+            format = "png";
+#endif
+#if XRT_ENABLE_PNG || XRT_ENABLE_TIFF
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
             gather_.reset(new UsedGatherSlice(slicePoint, nAxis_));
+#else
+            PMacc::log<XRTLogLvl::PLUGINS>("Did not found tiff or png library. %1% is disabled") % getName();
+#endif
         }
 
         void pluginUnload() override

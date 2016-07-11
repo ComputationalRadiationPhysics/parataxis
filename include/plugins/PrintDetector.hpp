@@ -5,11 +5,14 @@
 #include "debug/LogLevels.hpp"
 #include "ComplexTraits.hpp"
 #include "math/abs.hpp"
-#include "plugins/imaging/TiffCreator.hpp"
-#if (ENABLE_HDF5 == 1)
+#if (XRT_ENABLE_TIFF == 1)
+#   include "plugins/imaging/TiffCreator.hpp"
+#endif
+#if (XRT_ENABLE_HDF5 == 1)
 #   include "plugins/openPMD/WriteHeader.hpp"
 #   include "plugins/hdf5/DataBoxWriter.hpp"
 #   include "plugins/hdf5/DataBoxReader.hpp"
+#   include <splash/splash.h>
 #endif
 #include "plugins/hdf5/BasePlugin.hpp"
 #include "TransformBox.hpp"
@@ -22,7 +25,6 @@
 #include <mpi/reduceMethods/Reduce.hpp>
 #include <nvidia/functors/Add.hpp>
 #include <memory/buffers/HostBufferIntern.hpp>
-#include <splash/splash.h>
 #include <string>
 #include <sstream>
 #include <array>
@@ -99,10 +101,12 @@ namespace plugins {
                          << "_" << std::setw(6) << std::setfill('0') << currentStep
                          << ".tif";
 
-                imaging::TiffCreator tiff;
                 auto transformedBox = makeTransformBox(masterBuffer_->getDataBox(), typename Detector::OutputTransformer());
+#if (XRT_ENABLE_TIFF==1)
+                imaging::TiffCreator tiff;
                 tiff(fileName.str(), transformedBox, size);
-#if (ENABLE_HDF5==1)
+#endif
+#if (XRT_ENABLE_HDF5==1)
                 writeHDF5(transformedBox, size, currentStep);
 #endif
                 }
@@ -149,13 +153,13 @@ namespace plugins {
         void writeHDF5(T_DataBox&& data, const Space2D& size, uint32_t currentStep) const;
     };
 
-#if (ENABLE_HDF5==1)
+#if (XRT_ENABLE_HDF5==1)
 
     template<class T_Detector>
     template<class T_DataBox>
     void PrintDetector<T_Detector>::writeHDF5(T_DataBox&& data, const Space2D& size, uint32_t currentStep) const
     {
-    	using OutputType = typename std::remove_reference_t<T_DataBox>::ValueType;
+    	using OutputType = typename std::remove_reference<T_DataBox>::type::ValueType;
         PMacc::HostBufferIntern<OutputType, 2> buffer(size);
         auto bufferBox = buffer.getDataBox();
         for (int32_t y = 0; y < size.y(); ++y)
@@ -325,7 +329,13 @@ namespace plugins {
 
         closeH5File();
     }
-#endif // ENABLE_HDF5
+#else
+    template<class T_Detector>
+    void PrintDetector<T_Detector>::checkpoint(uint32_t currentStep, const std::string checkpointDirectory){}
+
+    template<class T_Detector>
+    void PrintDetector<T_Detector>::restart(uint32_t currentStep, const std::string restartDirectory){}
+#endif // XRT_ENABLE_HDF5
 
 }  // namespace plugins
 }  // namespace xrt

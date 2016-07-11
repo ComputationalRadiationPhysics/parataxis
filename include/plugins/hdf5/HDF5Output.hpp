@@ -8,6 +8,7 @@
 #include "plugins/hdf5/RngStateBoxReader.hpp"
 #include "plugins/hdf5/splashUtils.hpp"
 #include "plugins/hdf5/BasePlugin.hpp"
+#include "plugins/openPMD/WriteHeader.hpp"
 #include "plugins/openPMD/WriteFields.hpp"
 #include "plugins/openPMD/LoadFields.hpp"
 #include "plugins/openPMD/WriteSpecies.hpp"

@@ -274,7 +274,6 @@ endif(PARAM_OVERWRITES)
 
 set(XRT_VERBOSE "1" CACHE STRING "Set verbosity level for XRT")
 add_definitions(-DXRT_VERBOSE_LVL=${XRT_VERBOSE})
-option(XRT_DEBUG_RNG "Output test of RNG provider" OFF)
 option(XRT_CHECK_PHOTON_CT "Checks if the number of photons generated can fit into the memory" ON)
 set(XRT_NVPROF_START_TS 200 CACHE STRING "Start profiling at this timestep")
 set(XRT_NVPROF_NUM_TS 5 CACHE STRING "Number of timesteps to profile. 0 = Disabled") 
@@ -320,9 +319,12 @@ find_package(Splash 1.4.0 COMPONENTS PARALLEL)
 
 if(Splash_FOUND)
     include_directories(SYSTEM ${Splash_INCLUDE_DIRS})
-    list(APPEND Splash_DEFINITIONS "-DENABLE_HDF5=1")
+    list(APPEND Splash_DEFINITIONS "-DXRT_ENABLE_HDF5=1")
     add_definitions(${Splash_DEFINITIONS})
     list(APPEND LIBS ${Splash_LIBRARIES})
+    message(STATUS "HDF5 support activated")
+else()
+    add_definitions("-DXRT_ENABLE_HDF5=0")
 endif(Splash_FOUND)
 
 
@@ -338,19 +340,25 @@ if(PNGwriter_FOUND)
     list(APPEND PNGwriter_DEFINITIONS "-DXRT_ENABLE_PNG=1")
     add_definitions(${PNGwriter_DEFINITIONS})
     list(APPEND LIBS ${PNGwriter_LIBRARIES})
+    message(STATUS "PNG output support activated")
+else()
+    add_definitions("-DXRT_ENABLE_PNG=0")
 endif()
 
 ################################################################################
 # TiffWriter
 ################################################################################
 
-find_package(TiffWriter)
+find_package(TiffWriter 0.2.0)
 
 if(TiffWriter_FOUND)
     include_directories(${TiffWriter_INCLUDE_DIRS})
     list(APPEND TiffWriter_DEFINITIONS "-DXRT_ENABLE_TIFF=1")
     add_definitions(${TiffWriter_DEFINITIONS})
     list(APPEND LIBS ${TiffWriter_LIBRARIES})
+    message(STATUS "TIFF output support activated")
+else()
+    add_definitions("-DXRT_ENABLE_TIFF=0")
 endif()
 
 ################################################################################

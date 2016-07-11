@@ -1,6 +1,6 @@
 #pragma once
 
-#if (ENABLE_HDF5==1)
+#if (XRT_ENABLE_HDF5==1)
 #include <splash/splash.h>
 
 #include "simulation_defines.hpp"
@@ -65,4 +65,4 @@ namespace traits {
 } //namespace traits
 }// namespace xrt
 
-#endif // (ENABLE_HDF5==1)
+#endif // (XRT_ENABLE_HDF5==1)
