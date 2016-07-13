@@ -243,12 +243,12 @@ class ParamParser:
                 self.addDescription(data[name], self.curDescription)
                 self.curDescription = None
                 continue                
-            valueId = re.match(r"value_identifier\((\w+), ?(\w+), ?([^,])+\);$", line)
+            valueId = re.match(r"value_identifier\((\w+), ?(\w+), ?([^,]+)\);$", line)
             if valueId:
                 valType = valueId.group(1)
                 name = valueId.group(2)
                 value = valueId.group(3)
-                self.log("Found value_identifier: " + name + " = " + value + "(" + valType+ ")", level)
+                self.log("Found value_identifier: " + name + " = " + value + " (" + valType+ ")", level)
                 if not "__valID" in data:
                     data["__valID"] = {}
                 data["__valID"][name] = {"__value": value, "__type": valType}
@@ -352,10 +352,10 @@ class ParamParser:
         node = self.GetNode(name)
         return node['__value']
         
-    def GetNumber(self, name):
+    def GetNumber(self, name, getFromValueIdentifier = False):
         if not name.startswith("::"):
             name = self.curNamespaceName + name
-        return GetNumber(name, self.data)
+        return GetNumber(name, self.data, getFromValueIdentifier = getFromValueIdentifier)
         
     def GetVector(self, name):
         if not name.startswith("::"):
@@ -396,11 +396,22 @@ def GetNodeFromMemberScope(name, scopeMemberName, mainScope):
     scopeName = scopeMemberName.rsplit("::", 1)[0] if "::" in scopeMemberName else ""
     return GetNodeInScope(name, scopeName, mainScope)
 
-def GetNumber(name, mainScope, node = None, lvl = 0):
+def GetNumber(name, mainScope, node = None, lvl = 0, getFromValueIdentifier = False):
     """Get numeric value from a node and/or name. Resolve variable references and simple arithmetics"""
     # Get node if not given
     if not node:
-        node = GetNode(name, mainScope)
+        if getFromValueIdentifier:
+            names = name.split("::")
+            entryName = names[-1]
+            names[-1] = "__valID"
+            node = GetNode("::".join(names), mainScope)
+            if node and entryName in node:
+                node = node[entryName]
+            else:
+                return None
+            print("FOUND")
+        else:
+            node = GetNode(name, mainScope)
         if not node:
             return None
     # Detect type
