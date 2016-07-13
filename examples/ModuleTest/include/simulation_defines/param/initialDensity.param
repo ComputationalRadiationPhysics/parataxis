@@ -49,6 +49,23 @@ namespace initialDensity {
             static constexpr size_t offsetX = PARAM_OFFSET_X;
             static constexpr size_t offsetOther = 10;
         };
+        /** Density only on 2 points */
+        struct DoublePoint
+        {
+            static constexpr size_t offsetX = 31;
+            static constexpr size_t offsetY = 10;
+            static constexpr size_t offsetZ1 = 0;
+            static constexpr size_t offsetZ2 = 14;
+            
+            template<class T_Idx>
+            HDINLINE float_X operator()(T_Idx&& idx) const
+            {
+                if(idx.x() == offsetX && idx.y() == offsetY &&
+                  (idx.z() == offsetZ1 || idx.z() == offsetZ2))
+                    return 1;
+                return 0;
+            }
+        };
     };
 
     using Generator =

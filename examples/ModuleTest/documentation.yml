@@ -117,9 +117,8 @@ tests:
                Count particles on detector
     cmakeFlag: 8
     cfgFile:   0001gpusLong.cfg
-    post-run:
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
-        - *validateOpenPMD
+    post-run: &randomRectValidation
+        - *simplePostRun
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
         
   - name: SimpleRandomScatteringDouble
@@ -130,10 +129,7 @@ tests:
                Double precision
     cmakeFlag: 9
     cfgFile:   0001gpusLong.cfg
-    post-run:
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
-        - *validateOpenPMD
-        - python3 "${TEST_INSTALL_PATH}/testData/validateRandomRect.py"
+    post-run: *randomRectValidation
         
   - name: RandomScattering
     description: |
@@ -142,9 +138,8 @@ tests:
                Count particles on detector
     cmakeFlag: 10
     cfgFile:   0001gpusLong.cfg
-    post-run:
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
-        - *validateOpenPMD
+    post-run: &randomValidation
+        - *simplePostRun
         - python3 "${TEST_INSTALL_PATH}/testData/validateRandom.py"
         
   - name: RandomScatteringDouble
@@ -155,8 +150,15 @@ tests:
                Double precision
     cmakeFlag: 11
     cfgFile:   0001gpusLong.cfg
+    post-run: *randomValidation
+
+  - name: Interference
+    description: |
+               2 points of density at same x,y but different z position
+               Constant scattering
+    cmakeFlag: 12
+    cfgFile:   0001gpus.cfg
     post-run:
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_100000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
-        - *validateOpenPMD
-        - python3 "${TEST_INSTALL_PATH}/testData/validateRandom.py"
+        - *simplePostRun
+        - python3 "${TEST_INSTALL_PATH}/testData/validateInterference.py"
 
