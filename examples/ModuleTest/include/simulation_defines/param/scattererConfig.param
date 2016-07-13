@@ -28,7 +28,7 @@ namespace scatterer {
         /** Scatter to a fixed direction given by the angle in Y and Z */
         struct Fixed{
             static constexpr float_64 angleY = 0;
-            static constexpr float_64 angleZ = 3e-3;
+            static constexpr float_64 angleZ = 9e-3;
         };
         /** This scatters in a direction linear to the density at the point (angle = factorY|Z * density) */
         struct LinearDensity{
