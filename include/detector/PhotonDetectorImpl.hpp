@@ -4,7 +4,9 @@
 #include "particles/functors/GetWavelength.hpp"
 #include "debug/LogLevels.hpp"
 #include "math/angleHelpers.hpp"
+#include "detector/DetectorConfig.hpp"
 
+#include <math/Vector.hpp>
 #include <algorithms/math.hpp>
 #include <memory/buffers/HostDeviceBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
@@ -30,8 +32,8 @@ namespace detector {
              * @param xPosition Position of the detector in x direction
              * @param size      Size of the detector
              */
-            GetTargetCellIdx(Space2D size, float_X angleRangeX, float_X angleRangeY):
-                size_(size), angleRangeX_(angleRangeX), angleRangeY_(angleRangeY), simSize_(Environment::get().SubGrid().getTotalDomain().size.shrink<2>(1))
+            GetTargetCellIdx(const DetectorConfig& detector):
+                detector_(detector), simSize_(Environment::get().SubGrid().getTotalDomain().size.shrink<2>(1))
             {}
 
             /**
@@ -53,7 +55,7 @@ namespace detector {
                 // Calculate angle in "back" dimension (when viewed from front) -> X-dimension of detector
                 float_X angleBack = PMaccMath::atan2<trigo_X>(dir.z(), dir.x());
                 // Calculate cell index on detector by angle (histogram-like binning)
-                float_X cellIdxX  = angleBack / angleRangeX_;
+                float_X cellIdxX  = angleBack / detector_.anglePerCell.x();
                 targetIdx.x() = float2int_rd(cellIdxX);
                 // The angles are taken from the center of the volume. If the volume is larger than 1 detector cell
                 // particles from the outside of the volume might hit another detector cell.
@@ -66,25 +68,22 @@ namespace detector {
                 targetIdx.x() += float2int_rd(cellIdxX);
                 // Same for "down" dimension -> Y-dimension of detector
                 float_X angleDown = PMaccMath::atan2<trigo_X>(dir.y(), dir.x());
-                float_X cellIdxY  = angleDown / angleRangeY_;
+                float_X cellIdxY  = angleDown / detector_.anglePerCell.y();
                 targetIdx.y() = float2int_rd(cellIdxY);
                 cellIdxY -= targetIdx.y();
                 cellIdxY += (globalIdx.y() - simSize_.x() / 2) * CELL_HEIGHT / cellHeight;
                 targetIdx.y() += float2int_rd(cellIdxY);
 
                 // Origin is the center of the detector
-                targetIdx.x() += size_.x() / 2;
-                targetIdx.y() += size_.y() / 2;
+                targetIdx += detector_.size / 2;
 
                 /* Check bounds */
-                return targetIdx.x() >= 0 && targetIdx.x() < size_.x() &&
-                       targetIdx.y() >= 0 && targetIdx.y() < size_.y();
+                return targetIdx.x() >= 0 && targetIdx.x() < detector_.size.x() &&
+                       targetIdx.y() >= 0 && targetIdx.y() < detector_.size.y();
             }
 
         private:
-            PMACC_ALIGN(angleRangeX_, const float_X);
-            PMACC_ALIGN(angleRangeY_, const float_X);
-            PMACC_ALIGN(size_, const Space2D);
+            PMACC_ALIGN(detector_, const DetectorConfig);
             PMACC_ALIGN(simSize_, const Space2D);
         };
 
@@ -147,7 +146,7 @@ namespace detector {
         using Buffer = PMacc::HostDeviceBuffer< Type, 2 >;
         std::unique_ptr< Buffer > buffer;
         // which angles are covered by 1 cell
-        float_X angleRangePerCellX_, angleRangePerCellY_;
+        PMacc::math::Vector<float_64, 2> anglePerCell_;
 
     public:
 
@@ -156,8 +155,8 @@ namespace detector {
         PhotonDetectorImpl(const Space2D& size)
         {
             buffer.reset(new Buffer(size));
-            angleRangePerCellX_ = atan(cellWidth / distance);
-            angleRangePerCellY_ = atan(cellHeight / distance);;
+            anglePerCell_.x() = atan(cellWidth / distance);
+            anglePerCell_.y() = atan(cellHeight / distance);;
 
             validateConstraints();
         }
@@ -214,7 +213,8 @@ namespace detector {
         DetectParticle
         getDetectParticle(uint32_t timeStep) const
         {
-            return DetectParticle(detail::GetTargetCellIdx<Config>(getSize(), angleRangePerCellX_, angleRangePerCellY_), AccumPolicy(timeStep));
+            DetectorConfig cfg(getSize(), precisionCast<float_X>(anglePerCell_));
+            return DetectParticle(detail::GetTargetCellIdx<Config>(cfg), AccumPolicy(timeStep, cfg));
         }
 
     private:
@@ -228,11 +228,12 @@ namespace detector {
             if(doReport)
             {
                 using math::rad2deg;
+                PMacc::math::Vector<float_64, 2> angleRange = anglePerCell_ * precisionCast<float_64>(size) / 2;
                 PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %g/%g(%g°/%g°) with resolution %g/%g(%g°/%g°)")
-                            % (angleRangePerCellX_ * size.x() / 2) % (angleRangePerCellY_ * size.y() / 2)
-                            % rad2deg(angleRangePerCellX_ * size.x() / 2) % rad2deg(angleRangePerCellY_ * size.y() / 2)
-                            % angleRangePerCellX_ % angleRangePerCellY_
-                            % rad2deg(angleRangePerCellX_) % rad2deg(angleRangePerCellY_);
+                            % angleRange.x() % angleRange.y()
+                            % rad2deg(angleRange.x()) % rad2deg(angleRange.y())
+                            % anglePerCell_.x() % anglePerCell_.y()
+                            % rad2deg(anglePerCell_.x()) % rad2deg(anglePerCell_.y());
             }
 
             const float_64 wavelength = particles::functors::GetWavelength<Species>()() * UNIT_LENGTH;

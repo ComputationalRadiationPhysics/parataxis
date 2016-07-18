@@ -4,6 +4,7 @@
 #include "particles/functors/GetPhaseByTimestep.hpp"
 #include "particles/functors/GetWavelength.hpp"
 #include "particles/functors/GetAngFrequency.hpp"
+#include "detector/DetectorConfig.hpp"
 #include <math/Complex.hpp>
 #include <algorithms/math.hpp>
 #include <basicOperations.hpp>
@@ -37,7 +38,7 @@ namespace detector {
             }
         };
 
-        explicit AddWaveParticles(uint32_t curTimestep):
+        explicit AddWaveParticles(uint32_t curTimestep, const DetectorConfig& detector):
                 curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep + 1) + 2*PI)
         {
             // Phase should be w*t. GetPhaseByTimestep returns phi_0 - w*t -> Invert it and add 2*PI to make it [0, 2*PI)

@@ -75,7 +75,7 @@ def getBinnedDetCellIdx(particle, detector, sim, convertToInt = True):
     if convertToInt:
         return idx.astype(int)
     else:
-        return idx        
+        return idx
 
 def getDetCellIdx(particle, detector, sim, convertToInt = True):
     """Get the cellIdx where the particle hits the detector using ray tracing"""

@@ -5,6 +5,8 @@
 namespace xrt {
 namespace detector {
 
+    struct DetectorConfig;
+
     /**
      * Functor that can be used as an AccumPolicy for \see PhotonDetector
      * It simply counts the number of particles for each cell
@@ -24,7 +26,7 @@ namespace detector {
             }
         };
 
-        explicit CountParticles(uint32_t curTimestep)
+        explicit CountParticles(uint32_t curTimestep, const DetectorConfig& detector)
         {}
 
         template< typename T_Particle >
