@@ -409,7 +409,6 @@ def GetNumber(name, mainScope, node = None, lvl = 0, getFromValueIdentifier = Fa
                 node = node[entryName]
             else:
                 return None
-            print("FOUND")
         else:
             node = GetNode(name, mainScope)
         if not node:
