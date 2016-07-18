@@ -52,11 +52,13 @@ class TestInterference(unittest.TestCase):
         pulseLen = np.floor(params.GetNumber("laserConfig::PULSE_LENGTH") / params.GetNumber("SI::DELTA_T"))
         numPartsPerTsPerCell = params.GetNumber("laserConfig::distribution::Const::numParts")
         waveLen = params.GetNumber("wavelengthPhotons", getFromValueIdentifier = True)
-        print("Wavelen=", waveLen)
+        #print("Wavelen=", waveLen)
 
         with open(os.environ["TEST_BASE_BUILD_PATH"] + "/" + os.environ["TEST_NAME"] + "_detector.tif", 'rb') as imFile:
             im = Image.open(imFile)
             detector.resize(im.size)
+            
+            self.assertTrue(scatter.checkFarFieldConstraint(simulation, detector, waveLen))
             
             ## Calculation
             posOnDet1 = scatter.getBinnedDetCellIdx(scatterParticle1, detector, simulation)
@@ -74,11 +76,11 @@ class TestInterference(unittest.TestCase):
             phi2 = scatter.calcPhase(scatterParticle2, detector, simulation, waveLen)
             real = bf.cos(phi1) + bf.cos(phi2)
             imag = bf.sin(phi1) + bf.sin(phi2)
-            intensity = real*real + imag*imag
-            intensityPerTs = intensity * numPartsPerTsPerCell
-            print("Phis:", phi1, phi2, "Diff", phi1-phi2, "IntensityPerTs", intensityPerTs)
-            expectedDetCellValue = float(intensityPerTs * pulseLen)
-            self.assertAlmostEqual(imgData[tuple(whitePts[0])], expectedDetCellValue, delta = 0.01)
+            sqrtIntensity = bf.sqrt(real*real + imag*imag)
+            sqrtIntensityPerTs = sqrtIntensity * numPartsPerTsPerCell
+            #print("Phis:", phi1, phi2, "Diff", phi1-phi2, "SqrtIntensityPerTs", sqrtIntensityPerTs)
+            expectedDetCellValue = float(bf.sqr(sqrtIntensityPerTs * pulseLen))
+            np.testing.assert_allclose(imgData[tuple(whitePts[0])], expectedDetCellValue, rtol = 1e-3)
 
 if __name__ == '__main__':
     unittest.main()
