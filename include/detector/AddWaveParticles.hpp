@@ -25,6 +25,8 @@ namespace detector {
         using Amplitude = GetResolvedFlag_t<FrameType, amplitude<> >;
 
         const float_X curPhase_; // Phase contribution at current timestep [0, 2*PI)
+        const DetectorConfig detector_;
+        const Space simSize_;
    public:
         using FloatType = float_64;
         using Type = PMacc::math::Complex<FloatType>;
@@ -39,7 +41,8 @@ namespace detector {
         };
 
         explicit AddWaveParticles(uint32_t curTimestep, const DetectorConfig& detector):
-                curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep + 1) + 2*PI)
+                curPhase_(-particles::functors::GetPhaseByTimestep<Species>()(curTimestep + 1) + 2*PI),
+                detector_(detector), simSize_(Environment::get().SubGrid().getTotalDomain().size)
         {
             // Phase should be w*t. GetPhaseByTimestep returns phi_0 - w*t -> Invert it and add 2*PI to make it [0, 2*PI)
             // Note that we need the next timestep. The particles are moved, so they have the position they would have at the END of the current ts
@@ -54,10 +57,12 @@ namespace detector {
             // Also: 2*alpha_max * MaxExtendOfVolume < 10³ * lambda is assumed (about 1000 maxima are far more than enough)
         }
 
-        template< typename T_Particle >
+        template<typename T_DetectorBox, typename T_Particle >
         DINLINE void
-        operator()(Type& oldVal, T_Particle& particle, const Space& globalCellIdx) const
+        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, T_Particle& particle, const Space& globalCellIdx) const
         {
+            Type& oldVal = detectorBox(targetCellIdx);
+
             /* Phase is: k*dn + w*t + phi_0 with dn...distance to detector, k...wavenumber, phi_0...start phase
              * w*t is the same for all particles so we pre-calculate it (reduce to 2*PI) in high precision
              * dn must be exact compared to lambda which is hard.
@@ -71,21 +76,30 @@ namespace detector {
                 phase -= static_cast<float_X>(2*PI);
 
             /* The projection is k * (dir * pos)/|dir| (dot product)
-             * dir is already the unit vector hence we have don't need the division.
+             * We need the direction to a fixed point on the detector. As it is hard to calculate that exactly for the particle due
+             * to the large distance, we use the direction of the reference ray based on the observation
+             * that for "large" distances the angle is the same
              * For better precision summands are reduced mod 2*PI
              */
-            const auto dir = particle[direction_];
+            const PMacc::math::Vector<float_X, 2> detectorAngles = precisionCast<float_X>(targetCellIdx - detector_.size / 2) * detector_.anglePerCell;
+            const PMacc::math::Vector<float_X, 3> dir(1, PMaccMath::tan<trigo_X>(detectorAngles.y()), PMaccMath::tan<trigo_X>(detectorAngles.x()));
+            const float_X dirLen = PMaccMath::abs(dir);
             const float_X omega = particles::functors::GetAngularFrequency<Species>()();
             const float_X k = omega / SPEED_OF_LIGHT;
+            // Reference is the middle of the end of the volume
+            Space globalCellOffset = globalCellIdx - simSize_ / 2;
+            globalCellOffset.x() = globalCellIdx.x() - simSize_.x();
             // Add the negated dot product (reduced by 2*PI), negated as the difference to the reference ray gets smaller with increasing index
-            // the x-Position is 0 by definition so don't use it
-            const float_X distDiffG = globalCellIdx.y() * CELL_HEIGHT * dir.y() + globalCellIdx.z() * CELL_DEPTH * dir.z();
-            phase += PMaccMath::fmod(-distDiffG * k, static_cast<float_X>(2*PI));
+            // Add y,z parts first as those are much smaller than x
+            const float_X distDiffG = globalCellOffset.x() * CELL_WIDTH * dir.x() +
+                                      (globalCellOffset.y() * CELL_HEIGHT * dir.y() +
+                                       globalCellOffset.z() * CELL_DEPTH * dir.z());
+            phase += PMaccMath::fmod(-distDiffG / dirLen * k, static_cast<float_X>(2*PI));
             // Now add the negated dot product for the remaining in-cell position
             const float_X distDiffI = float_X(particle[position_].x()) * CELL_WIDTH  * dir.x() +
-                                      float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
-                                      float_X(particle[position_].z()) * CELL_DEPTH  * dir.z();
-            phase += PMaccMath::fmod(-distDiffI * k, static_cast<float_X>(2*PI));
+                                      (float_X(particle[position_].y()) * CELL_HEIGHT * dir.y() +
+                                       float_X(particle[position_].z()) * CELL_DEPTH  * dir.z());
+            phase += PMaccMath::fmod(-distDiffI / dirLen * k, static_cast<float_X>(2*PI));
 
             /*if(dir.z() > 1e-6)
             {

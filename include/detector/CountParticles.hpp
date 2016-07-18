@@ -29,10 +29,11 @@ namespace detector {
         explicit CountParticles(uint32_t curTimestep, const DetectorConfig& detector)
         {}
 
-        template< typename T_Particle >
+        template<typename T_DetectorBox, typename T_Particle >
         DINLINE void
-        operator()(Type& oldVal, T_Particle& particle, const Space& globalCellIdx) const
+        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, T_Particle& particle, const Space& globalCellIdx) const
         {
+            Type& oldVal = detectorBox(targetCellIdx);
             atomicAdd(&oldVal, 1);
         }
     };

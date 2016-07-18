@@ -111,7 +111,7 @@ namespace detector {
                 Space2D targetIdx;
                 /* Get index on detector, if none found -> go out */
                 if(getTargetCellIdx_(particle, globalCellIdx, targetIdx))
-                    accumPolicy_(detector(targetIdx), particle, globalCellIdx);
+                    accumPolicy_(detector, targetIdx, particle, globalCellIdx);
             }
         };
 
