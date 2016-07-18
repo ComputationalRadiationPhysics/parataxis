@@ -60,7 +60,7 @@ class TestSingleCell(unittest.TestCase):
 
             ## Calculation
 
-            ScatterOffsets = np.tan(ScatterAngle) * DetDist
+            ScatterOffsets = np.tan(ScatterAngle) * (DetDist + (simulation.size[0] - DensityPos[0]) * simulation.cellSize[0])
             ScatterOffsets += (DensityPos2D - SimSize2D / 2) * simulation.cellSize[1:].astype(float)
             # SimZ = DetX, SimY = DetY
             ScatterOffsets = np.flipud(ScatterOffsets)
