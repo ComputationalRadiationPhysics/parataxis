@@ -3,13 +3,13 @@
 #include "math/vector/compile-time/UInt32.hpp"
 
 #ifndef PARAM_OFFSET_X
-#   define PARAM_OFFSET_X 31
+#   define PARAM_OFFSET_X 30
 #endif
 #ifndef PARAM_CUBE_Y
-#   define PARAM_CUBE_Y 31
+#   define PARAM_CUBE_Y 30
 #endif
 #ifndef PARAM_CUBE_Z
-#   define PARAM_CUBE_Z 31
+#   define PARAM_CUBE_Z 30
 #endif
 #ifndef PARAM_GENERATOR
 #   define PARAM_GENERATOR Cuboid
