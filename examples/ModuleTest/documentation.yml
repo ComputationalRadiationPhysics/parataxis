@@ -162,3 +162,14 @@ tests:
         - *simplePostRun
         - python3 "${TEST_INSTALL_PATH}/testData/validateInterference.py"
 
+  - name: InterferenceBig
+    description: |
+               2 points of density at same x,y but different z position
+               Constant scattering
+               More cells in ray direction
+    cmakeFlag: 12
+    cfgFile:   0001gpusBig.cfg
+    post-run:
+        - *simplePostRun
+        - python3 "${TEST_INSTALL_PATH}/testData/validateInterference.py"
+
