@@ -65,10 +65,10 @@ struct LoadSpecies
         const Space patchExtent = subGrid.getLocalDomain().size;
         uint64_t patchNumParticles = 0;
         uint64_t patchParticleOffset = 0;
-        uint64_t totalNumParticles2 = 0;
+        uint64_t totalNumParticles = 0;
 
         for(size_t i = 0; i <particlePatches.size(); ++i)
-            totalNumParticles2 += particlePatches.numParticles[i];
+            totalNumParticles += particlePatches.numParticles[i];
 
         for(size_t i = 0; i <particlePatches.size(); ++i)
         {
@@ -100,7 +100,7 @@ struct LoadSpecies
         mallocMem(PMacc::forward(hostFrame), patchNumParticles);
 
         ForEach<typename Hdf5FrameType::ValueTypeSeq, hdf5::LoadParticleAttribute<bmpl::_1> > loadAttributes;
-        loadAttributes(PMacc::forward(reader), PMacc::forward(hostFrame), patchNumParticles, patchParticleOffset, totalNumParticles2);
+        loadAttributes(PMacc::forward(reader), PMacc::forward(hostFrame), patchNumParticles, patchParticleOffset, totalNumParticles);
 
         if(patchNumParticles > 0)
         {
@@ -114,58 +114,17 @@ struct LoadSpecies
             /* load particle without copy particle data to host */
             T_Species& speciesTmp = dc.getData<T_Species>(FrameType::getName(), true);
 
-            dim3 block(PMacc::math::CT::volume<SuperCellSize>::type::value);
-
-            /* counter is used to apply for work, count used frames and count loaded particles
-             * [0] -> offset for loading particles
-             * [1] -> number of loaded particles
-             * [2] -> number of used frames
-             *
-             * all values are zero after initialization
-             */
-            PMacc::HostDeviceBuffer<uint32_t, 1> counterBuffer(PMacc::DataSpace<1>(3));
-
             constexpr uint32_t cellsInSuperCell = PMacc::math::CT::volume<SuperCellSize>::type::value;
 
-            const uint32_t iterationsForLoad = ceil(float_64(patchNumParticles) / float_64(restartChunkSize));
-            uint32_t leftOverParticles = patchNumParticles;
-
-            for (uint32_t i = 0; i < iterationsForLoad; ++i)
-            {
-                /* only load a chunk of particles per iteration to avoid blow up of frame usage
-                 */
-                uint32_t currentChunkSize = std::min(leftOverParticles, restartChunkSize);
-                PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   load particles on device chunk offset=%1%; chunk size=%2%; left particles %3%") %
-                    (i * restartChunkSize) % currentChunkSize % leftOverParticles;
-
-                __cudaKernel(PMacc::particles::operations::splitIntoListOfFrames)
-                    (ceil(float_64(currentChunkSize) / float_64(cellsInSuperCell)), cellsInSuperCell)
-                    (counterBuffer.getDeviceBuffer().getDataBox(),
-                     speciesTmp.getDeviceParticlesBox(), deviceFrame,
-                     patchNumParticles,
-                     subGrid.getLocalDomain().offset, /*relative to data domain (not to physical domain)*/
-                     cellDescription
-                     );
-                speciesTmp.fillAllGaps();
-                leftOverParticles -= currentChunkSize;
-            }
-
-            counterBuffer.deviceToHost();
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  wait for last processed chunk: %1%") % Hdf5FrameType::getName();
-            __getTransactionEvent().waitForFinished();
-
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5: used frames to load particles: %1%") % counterBuffer.getHostBuffer().getDataBox()[2];
-
-            if (counterBuffer.getHostBuffer().getDataBox()[1] != patchNumParticles)
-            {
-                PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  error load species | counter is %1% but should %2%")
-                        % counterBuffer.getHostBuffer().getDataBox()[1] % patchNumParticles;
-            }
-            assert(counterBuffer.getHostBuffer().getDataBox()[1] == patchNumParticles);
+            PMacc::particles::operations::splitIntoListOfFrames(speciesTmp, deviceFrame,
+                    patchNumParticles, restartChunkSize, cellsInSuperCell,
+                    subGrid.getLocalDomain().offset, cellDescription, XRTLogLvl::IN_OUT());
 
             /*free host memory*/
             ForEach<typename Hdf5FrameType::ValueTypeSeq, FreeMemory<bmpl::_1, MappedMemAllocator> > freeMem;
             freeMem(PMacc::forward(hostFrame));
+
+            dc.releaseData(FrameType::getName());
         }
         PMacc::log<XRTLogLvl::IN_OUT>("HDF5: ( end ) read species: %1%") % FrameType::getName();
     }
