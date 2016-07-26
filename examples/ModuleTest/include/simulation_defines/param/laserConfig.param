@@ -30,7 +30,7 @@ namespace laserConfig {
             DINLINE void
             init(Space totalCellIdx)
             {
-                if(totalCellIdx.y() == 31 && totalCellIdx.z() == 31)
+                if(totalCellIdx.y() == PARAM_CUBE_Y && totalCellIdx.z() == PARAM_CUBE_Z)
                     numParts = 150;
                 else
                     numParts = 0;
