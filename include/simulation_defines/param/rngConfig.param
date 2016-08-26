@@ -2,8 +2,63 @@
 
 #include <random/RNGProvider.hpp>
 
+
+#ifndef XRT_USE_SLOW_RNG
+#   define XRT_USE_SLOW_RNG 0
+#endif
+
+#if XRT_USE_SLOW_RNG
+#   include "nvidia/rng/RNG.hpp"
+#   include "nvidia/rng/methods/Xor.hpp"
+#   include "nvidia/rng/distributions/Uniform_float.hpp"
+#   include "mpi/SeedPerRank.hpp"
+#endif
+
 namespace xrt {
 
     using RNGProvider = PMacc::random::RNGProvider<simDim>;
+
+#if XRT_USE_SLOW_RNG
+    namespace nvrng = PMacc::nvidia::rng;
+    namespace rngMethods = nvrng::methods;
+    namespace rngDistributions = nvrng::distributions;
+
+    struct SlowRNGFunctor
+    {
+
+        HINLINE SlowRNGFunctor()
+        {
+            seeds::Global globalSeed;
+            PMacc::mpi::SeedPerRank<simDim> seedPerRank;
+            seed = globalSeed() ^ seeds::xorRNG;
+            /* makes the seed unique for each MPI rank (GPU)
+             * and each time step
+             */
+            seed = seedPerRank(seed) ^ Environment::get().SimulationDescription().getCurrentStep();
+
+            /* size of the local domain on the designated GPU in units of cells */
+            localCells = Environment::get().SubGrid().getLocalDomain().size;
+        }
+
+        DINLINE void init(const Space& localCellIdx)
+        {
+            const uint32_t linearLocalCellIdx = PMacc::DataSpaceOperations<simDim>::map(localCells, localCellIdx);
+            rng = nvrng::create(rngMethods::Xor(seed, linearLocalCellIdx), rngDistributions::Uniform_float());
+        }
+
+        DINLINE float_X operator()()
+        {
+            return rng();
+        }
+
+        private:
+            typedef nvrng::RNG<rngMethods::Xor, rngDistributions::Uniform_float> RngType;
+
+            PMACC_ALIGN(rng, RngType);
+            PMACC_ALIGN(seed, uint32_t);
+            PMACC_ALIGN(localCells, Space);
+    };
+
+#endif
 
 }  // namespace xrt

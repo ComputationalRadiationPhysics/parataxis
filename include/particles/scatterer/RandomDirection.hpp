@@ -18,11 +18,18 @@ namespace scatterer {
     struct RandomDirection
     {
         using Config = T_Config;
+#if XRT_USE_SLOW_RNG
+        using Random = SlowRNGFunctor;
+#else
         using Distribution = PMacc::random::distributions::Uniform<float>;
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
+#endif
 
         HINLINE explicit
-        RandomDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
+        RandomDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset)
+#if !XRT_USE_SLOW_RNG
+                ,rand(RNGProvider::createRandom<Distribution>())
+#endif
         {
             static bool angleChecked = false;
             if(!angleChecked)
@@ -93,7 +100,7 @@ namespace scatterer {
                 dir.z() = -cosAzimuth * sinPolar;
             }else
             {
-                dir.x() = x * cosPolar -          z            * cosAzimuth * sinPolar -          y            * sinAzimuth * cosPolar;
+                dir.x() = x * cosPolar -          z            * cosAzimuth * sinPolar -          y            * sinAzimuth * sinPolar;
                 dir.y() = y * cosPolar -      y * z / (1 + x)  * cosAzimuth * sinPolar + (x + z * z / (1 + x)) * sinAzimuth * sinPolar;
                 dir.z() = z * cosPolar + (x + y * y / (1 + x)) * cosAzimuth * sinPolar -      y * z / (1 + x)  * sinAzimuth * sinPolar;
             }

@@ -55,7 +55,9 @@ namespace xrt {
 
         std::unique_ptr<fields::DensityField> densityField;
         std::unique_ptr<Detector> detector_;
+#if !XRT_USE_SLOW_RNG
         std::unique_ptr<RNGProvider> rngProvider_;
+#endif
         // Created with the Simulation class
         std::unique_ptr<fields::IFieldManipulator> fieldManipulator_;
 
@@ -101,7 +103,9 @@ namespace xrt {
             PMacc::log<XRTLogLvl::SIM_STATE>("Creating buffers");
             densityField.reset(new fields::DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
+#if !XRT_USE_SLOW_RNG
             rngProvider_.reset(new RNGProvider(Environment::get().SubGrid().getLocalDomain().size));
+#endif
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
@@ -171,12 +175,14 @@ namespace xrt {
                 PMacc::IdProvider<simDim>::init();
                 TimeIntervallExt timer;
 
+#if !XRT_USE_SLOW_RNG
                 PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
                 PMacc::mpi::SeedPerRank<simDim> seedPerRank;
                 uint32_t seed = seeds::xorRNG ^ seeds::Global()();
                 seed = seedPerRank(seed);
                 rngProvider_->init(seed);
                 PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+#endif
 
                 PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
                 Resolve_t<initialDensity::Generator> generator;

@@ -10,10 +10,17 @@ namespace initPolicies {
     template<class T_Species>
     struct RandomPosition
     {
+#if XRT_USE_SLOW_RNG
+        using Random = SlowRNGFunctor;
+#else
         using Distribution = PMacc::random::distributions::Uniform<float>;
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
+#endif
 
-        HINLINE RandomPosition(): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
+        HINLINE RandomPosition(): offset(Environment::get().SubGrid().getLocalDomain().offset)
+#if !XRT_USE_SLOW_RNG
+                ,rand(RNGProvider::createRandom<Distribution>())
+#endif
         {}
 
         DINLINE void
