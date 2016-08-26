@@ -17,12 +17,11 @@ namespace scatterer {
     struct OnRandom
     {
         using Config = T_Config;
-        using Distribution = PMacc::random::distributions::Uniform<float>;
 #if XRT_USE_SLOW_RNG
         using Random = SlowRNGFunctor;
 #else
-        using RNGHandle = typename RNGProvider::Handle;
-        using Random = typename RNGHandle::GetRandomType<Distribution>::type;
+        using Distribution = PMacc::random::distributions::Uniform<float>;
+        using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 #endif
 
         HINLINE explicit
@@ -35,12 +34,7 @@ namespace scatterer {
         DINLINE void
         init(Space globalCellIdx)
         {
-#if XRT_USE_SLOW_RNG
             rand.init(globalCellIdx - offset);
-#else
-            randHandle.init(globalCellIdx - offset);
-            rand = randHandle.applyDistribution<Distribution>();
-#endif
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Direction>
@@ -53,9 +47,6 @@ namespace scatterer {
 
     private:
         PMACC_ALIGN8(offset, const Space);
-#if !XRT_USE_SLOW_RNG
-        PMACC_ALIGN8(randHandle, RNGHandle);
-#endif
         PMACC_ALIGN8(rand, Random);
     };
 
