@@ -104,15 +104,19 @@ namespace generators {
         using Config = T_Config;
         static constexpr uint32_t roomPos = Config::roomPos;
         static constexpr uint32_t roomWidth = Config::roomWidth;
-        static constexpr uint32_t offset = Config::offset;
-        static constexpr uint32_t width = Config::width;
-        static constexpr uint32_t spacing = Config::spacing;
-        static constexpr uint32_t offset2 = offset + width + spacing;
-        /** Value used */
-        static constexpr float_64 value = Config::value;
 
         static_assert(simDim == 2 || roomWidth > 0, "RoomWidth must be > 0");
         static_assert(simDim == 2 || simDim == 3, "Only for 2D and 3D defined");
+
+        // Offset is the middle between the slits, spacing is the distance between the slits centers and width is the size of each slit
+        static constexpr uint32_t topSlitStart = Config::offset - Config::spacing/2 - Config::width/2;
+        static constexpr uint32_t botSlitStart = topSlitStart + Config::spacing;
+
+        // Check for possible underflow
+        static_assert(topSlitStart < Config::offset, "Invalid config. offset to small or spacing and/or width to big");
+        /** Value used */
+        static constexpr float_64 value = Config::value;
+
 
         template<class T_Idx>
         HDINLINE T operator()(T_Idx&& idx) const
@@ -120,8 +124,8 @@ namespace generators {
             if(simDim == 3 && (idx[0] < roomPos || idx[0] >= roomPos + roomWidth))
                 return 0;
             auto idxY = idx[simDim - 2];
-            if((idxY >= offset  && idxY < offset  + width) ||
-               (idxY >= offset2 && idxY < offset2 + width))
+            if((idxY >= topSlitStart  && idxY < topSlitStart  + Config::width) ||
+               (idxY >= botSlitStart && idxY < botSlitStart + Config::width))
                 return value;
             else
                 return 0;
