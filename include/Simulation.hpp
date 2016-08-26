@@ -229,6 +229,8 @@ namespace xrt {
                 CUDA_CHECK(cudaProfilerStop());
             }
 #endif
+            if(currentStep % 128)
+                CUDA_CHECK(cudaPeekAtLastError());
             fieldManipulator_->update(currentStep);
             laserSource.update(currentStep);
             particleStorage->update(currentStep);
