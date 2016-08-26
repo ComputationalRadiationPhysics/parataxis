@@ -33,9 +33,7 @@ class Compilation:
         self.profileFile = profileFile
         self.cmakePreset = cmakePreset
         self.setParentBuildPath(parentBuildPath)
-        outputFolderName = example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
-        # Remove non-alphanumeric chars
-        self.outputFolderName = re.sub("\W", "", outputFolderName)
+        self.outputFolderName = example.getMetaData()['short'] + "_cmake" + str(cmakePreset)
         if self.cmakePreset >= len(self.example.getCMakeFlags()):
             raise Exception("Invalid cmakePreset: " + str(self.cmakePreset) + " of " + str(len(self.example.getCMakeFlags())) + " for " + str(self))
         

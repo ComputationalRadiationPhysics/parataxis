@@ -31,7 +31,7 @@ class RuntimeTest:
         self.name = testDocu['name']
         self.profileFile = profileFile
         # Check for non-alphanumeric chars
-        if re.match("\W", self.name) != None:
+        if re.match("[^A-Za-z0-9]", self.name) != None:
             raise Exception("Name for runtime test is invalid (only alphanumeric chars are allowed): " + self.name)
         
         self.description = testDocu.get('description')
@@ -169,8 +169,7 @@ class RuntimeTest:
         if(result != None and result.result != 0):
             return result.result
         
-        outputFolderName = self.example.getMetaData()["name"] + "_" + self.name
-        outputFolderName = re.sub("\W", "", outputFolderName)
+        outputFolderName = self.example.getMetaData()["short"] + "_" + self.name
         self.lastOutputPath = os.path.abspath(os.path.join(parentBuildPath, "output", outputFolderName))
                 
         preRunResult = self.__execCmds(True, compilation, dryRun, verbose)

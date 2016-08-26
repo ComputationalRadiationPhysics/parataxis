@@ -136,8 +136,10 @@ class Example:
         # Default shortname used if not set
         if(not 'short' in self.metaData):
             shortName = self.metaData['name']
-            re.sub("\W", "", shortName)
-            self.metaData['short'] = shortName
+        else:
+            shortName = self.metaData["short"]
+        re.sub("[^a-zA-Z0-9]", "", shortName)
+        self.metaData['short'] = shortName
         self.cmakeFlags = self.__queryCMakeFlags(addCMakeFlags)
         self.compilations = self.__createCompilations(docu)
         self.runtimeTests = self.__createRuntimeTests(docu)
