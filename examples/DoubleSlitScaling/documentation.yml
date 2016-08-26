@@ -40,3 +40,32 @@ tests:
     cfgFile:     64gpu.cfg
     post-run: *copyTime
 
+  - name: 1GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     1gpuStrong.cfg
+    post-run: *copyTime
+  - name: 2GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     2gpuStrong.cfg
+    post-run: *copyTime
+  - name: 4GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     4gpuStrong.cfg
+    post-run: *copyTime
+  - name: 8GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     8gpuStrong.cfg
+    post-run: *copyTime
+  - name: 16GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     16gpuStrong.cfg
+    post-run: *copyTime
+  - name: 32GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     32gpuStrong.cfg
+    post-run: *copyTime
+  - name: 64GPU_Strong
+    cmakeFlag:   0
+    cfgFile:     64gpuStrong.cfg
+    post-run: *copyTime
+
