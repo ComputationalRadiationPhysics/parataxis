@@ -193,19 +193,36 @@ class ParamParser:
                 if line.startswith("#if"):
                     self.log("Found #if in ignored block")
                     ifStack.append(True)
+                elif line == "#else":
+                    ignoreLines = ifStack[-1]
+                    self.log("Found #else -> Ignoring = " + str(ignoreLines))
+                    ignoreLines = False
                 else:
                     self.log("Ignored...")
+                continue
+            if line == "#else":
+                self.log("Found #else")
+                ignoreLines = True
                 continue
             if line == "};" or line == "}":
                 self.log("End of scope", level)
                 return
-            ifndef = re.match("#ifndef (\w+)$", line)
+            ifndef = re.match(r"#ifndef (\w+)$", line)
             if ifndef:
                 name = ifndef.group(1)
                 self.log("Found #ifndef: " + name, level)
                 ifStack.append(False)
                 ignoreLines = name in self.defines
                 continue
+            
+            ppIf = re.match(r"#if (!)? *(\w+)$", line)
+            if ppIf:
+                name = ppIf.group(2)
+                self.log("Found #if: " + name, level)
+                ifStack.append(False)
+                ignoreLines = not name in self.defines or ((self.defines[name] == "1") == (ppIf.group(1) != "!"))
+                continue
+            
             define = re.match(r"#define (\w+) (.*[^\\])$", line)
             if define:
                 name = define.group(1)
