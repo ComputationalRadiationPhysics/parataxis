@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+################################################################################
+# add presets here
+#   - default: index 0
+#   - start with zero index
+#   - increase by 1, no gaps
+
+flags[0]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=128;-DPARAM_SLIT_SPACING=8;-DPARAM_SLIT_WIDTH=3;-DPARAM_START_POSITIONS=Const;-DPARAM_PRECISION=precision64Bit"
+flags[1]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=128;-DPARAM_SLIT_SPACING=8;-DPARAM_SLIT_WIDTH=3;-DPARAM_START_POSITIONS=Random;-DPARAM_PRECISION=precision64Bit"
+flags[2]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=128;-DPARAM_SLIT_SPACING=8;-DPARAM_SLIT_WIDTH=3;-DPARAM_START_POSITIONS=Random;-DPARAM_PRECISION=precision32Bit"
+flags[3]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=128;-DPARAM_SLIT_SPACING=8;-DPARAM_SLIT_WIDTH=3;-DPARAM_START_POSITIONS=Random;-DPARAM_PRECISION=precision64Bit;-DXRT_USE_SLOW_RNG=1"
+
+
+################################################################################
+# execution
+
+case "$1" in
+    -l)  echo ${#flags[@]}
+         ;;
+    -ll) for f in "${flags[@]}"; do echo $f; done
+         ;;
+    *)   echo -n ${flags[$1]}
+         ;;
+esac

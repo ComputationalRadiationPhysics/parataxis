@@ -1,0 +1,53 @@
+# Description
+example:
+  name:        Simulationen fuer Diplomarbeit
+  short:       DiplomarbeitSim
+  author:      Alexander Grund
+
+  description: Collection of simulations used in for evaluations in the Diplomarbeit
+
+compile:
+  - cmakeFlags:
+        - 0-3
+
+# Run-Time Tests
+tests:
+  - name: DoubleSlitConstPos
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed in the middle of the cells
+    cmakeFlag:   0
+    cfgFile:     0016gpus128.cfg
+    post-run: &copyOutput
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_130000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        
+  - name: DoubleSlitRandPos
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+    cmakeFlag:   1
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+    
+  - name: DoubleSlitRandPosSingle
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Single Precision
+    cmakeFlag:   2
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: RNGSlow
+    description: Run using the old(slow) RNG
+    cmakeFlag: 3
+    cfgFile: 0001gpus.cfg
+    post-run: &writeSimTime
+        - grep "simulation time" "${TEST_SIMOUTPUT_PATH}/output" > "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_time.txt"
+        
+  - name: RNGFast
+    description: Run using the new(fast) RNG
+    cmakeFlag: 1
+    cfgFile: 0001gpus.cfg
+    post-run: *writeSimTime
+
