@@ -1,6 +1,7 @@
 #pragma once
 
 #include <random/RNGProvider.hpp>
+#include <random/methods/XorMin.hpp>
 
 
 #ifndef XRT_USE_SLOW_RNG
@@ -16,7 +17,7 @@
 
 namespace xrt {
 
-    using RNGProvider = PMacc::random::RNGProvider<simDim>;
+    using RNGProvider = PMacc::random::RNGProvider<simDim, PMacc::random::methods::XorMin>;
 
 #if XRT_USE_SLOW_RNG
     namespace nvrng = PMacc::nvidia::rng;
