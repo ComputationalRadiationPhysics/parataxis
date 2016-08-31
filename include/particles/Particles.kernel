@@ -242,7 +242,7 @@ namespace kernel {
         typedef T_ParticleBox ParticleBox;
         using FramePtr = typename PMacc::traits::GetEmptyDefaultConstructibleType<typename T_ParticleBox::FramePtr>::type;
 
-        Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
+        const Space superCellIdx = mapper.getSuperCellIndex(Space(blockIdx));
         const Space superCellPosition = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
                                          localOffset;
         const int linearThreadIdx = threadIdx.x;
@@ -259,7 +259,7 @@ namespace kernel {
         while (frame.isValid())
         {
 
-            PMACC_AUTO(particle, ((*frame)[linearThreadIdx]));
+            PMACC_AUTO(particle, frame[linearThreadIdx]);
             if(particle[PMacc::multiMask_])
             {
                 detectParticle(particle, superCellPosition, detector);
