@@ -19,7 +19,7 @@ namespace xrt {
 
     /** specialization for the relative in-cell position.
      *  64 bit required to get enough accuracy after ~150 (in praxis ~600-800) timesteps */
-    value_identifier(floatD_64, position_pic, floatD_64::create(0.));
+    value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** direction in which the photon is moving */
     value_identifier(float3_X, direction, float3_X::create(0.));
     /** global unique Id of a particle */

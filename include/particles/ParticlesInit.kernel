@@ -178,7 +178,7 @@ namespace kernel{
                     particle[position_]     = particleFillInfo.getPosition(numParsToCreate);
                     particle[startPhase_]   = particleFillInfo.getPhase(timeStep);
                     particle[direction_]    = particleFillInfo.getDirection(timeStep);
-                    particle[creationTime_] = timeStep;
+                    //particle[creationTime_] = timeStep;
 
                     if (numParsToCreate > 0)
                         PMacc::nvidia::atomicAllExch(&blockCreatesParticles, 1); //one or more cell has particles to create
