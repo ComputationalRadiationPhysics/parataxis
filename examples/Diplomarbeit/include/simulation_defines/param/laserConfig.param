@@ -2,6 +2,10 @@
 
 #include <math/vector/Float.hpp>
 
+#ifndef PARAM_NUM_PARTS
+#   define PARAM_NUM_PARTS 10
+#endif
+
 namespace xrt {
 namespace laserConfig {
 
@@ -13,7 +17,7 @@ namespace laserConfig {
         /** Same number of particles at all points */
         struct Const{
             /** Value to return */
-            static constexpr int32_t numParts = 10;
+            static constexpr int32_t numParts = PARAM_NUM_PARTS;
         };
 
         /** Value used in the simulation */
@@ -78,3 +82,4 @@ namespace laserConfig {
 
 }  // namespace laserConfig
 }  // namespace xrt
+

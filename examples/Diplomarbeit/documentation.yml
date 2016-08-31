@@ -19,7 +19,7 @@ tests:
     cmakeFlag:   0
     cfgFile:     0016gpus128.cfg
     post-run: &copyOutput
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_130000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_200000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         
   - name: DoubleSlitRandPos
     description: |
@@ -50,4 +50,44 @@ tests:
     cmakeFlag: 1
     cfgFile: 0001gpus.cfg
     post-run: *writeSimTime
+
+  - name: DoubleSlitRandPos1Part
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Check Convergence: 1 Particle/cell
+    cmakeFlag:   4
+    cfgFile:     0016gpus128.cfg
+    
+  - name: DoubleSlitRandPos2Part
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Check Convergence: 2 Particle/cell
+    cmakeFlag:   5
+    cfgFile:     0016gpus128.cfg
+    
+  - name: DoubleSlitRandPos5Part
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Check Convergence: 5 Particle/cell
+    cmakeFlag:   6
+    cfgFile:     0016gpus128.cfg
+    
+  - name: DoubleSlitRandPos15Part
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Check Convergence: 15 Particle/cell
+    cmakeFlag:   7
+    
+  - name: DoubleSlitRandPos20Part
+    description: |
+               Double slit is in the middle of 256x128x128 volume at x=1
+               Particles are placed randomly in the cells
+               Check Convergence: 20 Particle/cell
+    cmakeFlag:   8
+    cfgFile:     0016gpus128.cfg
+    
 
