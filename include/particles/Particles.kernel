@@ -87,6 +87,33 @@ namespace kernel {
         }
     }
 
+    namespace detail{
+        template<class T_Particle, bool T_hasScatteredFlag = PMacc::traits::HasIdentifier<T_Particle, wasScattered>::value>
+        struct ScatterSwitch
+        {
+            static HDINLINE bool
+            isEnabled(const T_Particle&)
+            {
+                return true;
+            }
+            static HDINLINE void setScattered(T_Particle&){}
+        };
+        template<class T_Particle>
+        struct ScatterSwitch<T_Particle, true>
+        {
+            static HDINLINE bool
+            isEnabled(const T_Particle& particle)
+            {
+                return !particle[wasScattered_];
+            }
+            static HDINLINE void
+            setScattered(T_Particle& particle)
+            {
+                particle[wasScattered_] = true;
+            }
+        };
+    }
+
     /**
      * Functor that can be used as a frame solver
      * \tparam T_ScatterAlgo Functor which is used for scattering, that is changing the direction of the particle
@@ -115,7 +142,8 @@ namespace kernel {
         template<class T_Frame, class T_DensityBox >
         DINLINE void operator()(T_Frame& frame, uint32_t particleIdx, const T_DensityBox& densityBox, int32_t& mustShift)
         {
-            auto particle = frame[particleIdx];
+            using Particle = typename T_Frame::ParticleType;
+            Particle particle = frame[particleIdx];
 
             auto pos = particle[position_];
             float3_X particleMoveDir = particle[direction_];
@@ -124,7 +152,8 @@ namespace kernel {
 
             auto curDensityBox = densityBox.shift(localCell);
 
-            scatter_(curDensityBox, pos, particleMoveDir);
+            if(detail::ScatterSwitch<Particle>::isEnabled(particle) && scatter_(curDensityBox, pos, particleMoveDir))
+                detail::ScatterSwitch<Particle>::setScattered(particle);
             push_(curDensityBox, pos, particleMoveDir);
             particle[direction_] = particleMoveDir;
 

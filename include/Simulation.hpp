@@ -192,7 +192,7 @@ namespace xrt {
 
             PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation filled.");
 
-#ifdef XRT_CHECK_PHOTON_CT
+#if XRT_CHECK_PHOTON_CT
             laserSource.checkPhotonCt(runSteps, this->cellDescription);
 #endif
             return step;

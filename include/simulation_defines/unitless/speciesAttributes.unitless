@@ -115,5 +115,21 @@ struct OpenPMDUnit<startPhase, T_Frame>
     }
 };
 
+template<typename T_Frame>
+struct OpenPMDUnit<wasScattered, T_Frame>
+{
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( 1, 1.0 );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        // unitless
+        return std::vector<float_64>( NUnitDimension, 0.0 );
+    }
+};
+
 } // namespace traits
 } // namespace xrt

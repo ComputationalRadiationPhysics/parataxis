@@ -12,6 +12,7 @@ namespace scatterer {
      *       the particles direction should be changed
      *     - If the direction should be changed, the direction functor is called
      *       which should then adjust the direction
+     *     - Returns true iff the particle was scattered
      * The interface of the functors is similar to this one:
      *     - ctor takes the currentStep
      *     - init(Space totalCellIdx) which is called before the first call to the functor
@@ -43,13 +44,15 @@ namespace scatterer {
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Direction>
-        HDINLINE void
+        HDINLINE bool
         operator()(const T_DensityBox& density, const T_Position& pos, T_Direction& dir)
         {
             if(condition(density, pos, const_cast<const T_Direction&>(dir)))
             {
                 changeDirection(density, pos, dir);
-            }
+                return true;
+            }else
+                return false;
         }
 
     private:

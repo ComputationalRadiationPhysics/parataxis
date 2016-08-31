@@ -17,6 +17,9 @@ namespace xrt {
             direction,
             //particleId,
             //creationTime,
+#if XRT_FORCE_SINGLE_SCATTERING
+            wasScattered,
+#endif
             startPhase
     >::type DefaultParticleAttributes;
 

@@ -29,6 +29,8 @@ namespace xrt {
     value_identifier(uint32_t, creationTime, 0);
     /** Phase of the particle at entering the volume */
     value_identifier(float_X, startPhase, 0);
+    /** Only used when single scattering is enforced. Set to true after particle was first scattered */
+    value_identifier(bool, wasScattered, false);
 
     /** alias for particle pusher */
     alias(particlePusher);
