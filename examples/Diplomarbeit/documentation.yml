@@ -81,6 +81,7 @@ tests:
                Particles are placed randomly in the cells
                Check Convergence: 15 Particle/cell
     cmakeFlag:   7
+    cfgFile:     0016gpus128.cfg
     
   - name: DoubleSlitRandPos20Part
     description: |
