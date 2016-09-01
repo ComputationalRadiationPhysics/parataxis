@@ -27,6 +27,9 @@ class RuntimeTest:
         Takes the example and the dictionary defining the test.
         Requires "name", "cmakeFlag", "cfgFile" and optionally "description", "post-run
         """
+        for key in ["name", "cmakeFlag", "cfgFile"]:
+            if not key in testDocu:
+                raise Exception("Did not found required key '" + key + "' for runtime test '" + testDocu.get('name', '<noName>') + "' (" + example.getMetaData()["name"] + ")")
         self.example = example
         self.name = testDocu['name']
         self.profileFile = profileFile
