@@ -12,15 +12,18 @@
 ## Section: Required Variables ##
 #################################
 
-TBG_wallTime="5:00:00"
+TBG_wallTime="6:00:00"
 
 TBG_gpu_x=1
 TBG_gpu_y=1
 TBG_gpu_z=1
 
-TBG_gridSize="-g 384 128 128"
+# Size: K20 is pretty full (can't handle 10 particles * 512*128*128, max particles is ~8 then)
+# -> Use a bit more then half the size
+TBG_gridSize="-g 320 128 128"
 # Time/step does not change much after >1000 steps
-TBG_steps="-s 2000"
+# Image is quite good visible after 5k Ts
+TBG_steps="-s 5000"
 
 TBG_program="@PROJECT_NAME@"
 
@@ -31,8 +34,8 @@ TBG_program="@PROJECT_NAME@"
 TBG_plugins="--p_position.period 99999                    \
              --DensityField_printSlice.period 99999       \
              --DensityField_printSlice.axis 0             \
-             --DensityField_printSlice.slicePoint 1      \
-             --PhotonDetector_print.period 2000           \
+             --DensityField_printSlice.slicePoint 1       \
+             --PhotonDetector_print.period 5000           \
              "
 
 #################################

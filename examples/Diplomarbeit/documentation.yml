@@ -95,10 +95,13 @@ tests:
     description: Run Double slit experiment in double precision
     cmakeFlag: 1
     cfgFile: 0001gpusSpeedTest.cfg
-    post-run: *writeSimTime    
+    post-run: &writeSimTimeAndOutput
+        - *writeSimTime
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_005000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
     
   - name: SpeedTestSingle
     description: Run Double slit experiment in single precision
     cmakeFlag: 2
     cfgFile: 0001gpusSpeedTest.cfg
-    post-run: *writeSimTime
+    post-run: *writeSimTimeAndOutput
+
