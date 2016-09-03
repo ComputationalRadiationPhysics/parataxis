@@ -91,4 +91,14 @@ tests:
     cmakeFlag:   8
     cfgFile:     0016gpus128.cfg
     
-
+  - name: SpeedTestDouble
+    description: Run Double slit experiment in double precision
+    cmakeFlag: 1
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTime    
+    
+  - name: SpeedTestSingle
+    description: Run Double slit experiment in single precision
+    cmakeFlag: 2
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTime
