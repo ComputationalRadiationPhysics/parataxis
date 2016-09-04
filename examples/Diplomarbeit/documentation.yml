@@ -38,6 +38,23 @@ tests:
     cfgFile:     0016gpus128.cfg
     post-run: *copyOutput
 
+  - name: DoubleSlitLong
+    description: |
+               Long simulation (40micrometer)
+               Double Precision
+    cmakeFlag:   6
+    cfgFile:     longTarget.cfg
+    post-run: *copyOutput
+
+  - name: DoubleSlitLongSingle
+    description: |
+               Long simulation (40micrometer)
+               Should show propagation precision error
+               Single Precision
+    cmakeFlag:   9
+    cfgFile:     longTarget.cfg
+    post-run: *copyOutput
+
   - name: RNGSlow
     description: Run using the old(slow) RNG
     cmakeFlag: 3
