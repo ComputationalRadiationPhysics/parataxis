@@ -19,7 +19,7 @@ namespace xrt {
     /** size of a superCell
      * volume of a superCell must be <= 1024
      */
-    using SuperCellSize = typename PMacc::math::CT::shrinkTo<mCT::Int<4, 8, 8>, simDim>::type;
+    using SuperCellSize = typename mCT::shrinkTo<mCT::Int<4, 8, 8>, simDim>::type;
     using MappingDesc = PMacc::MappingDescription<simDim, SuperCellSize>;
 
     //! how many bytes for buffer is reserved to communication in one direction
