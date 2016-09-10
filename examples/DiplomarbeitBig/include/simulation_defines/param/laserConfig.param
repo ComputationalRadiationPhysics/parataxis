@@ -1,0 +1,85 @@
+#pragma once
+
+#include <math/vector/Float.hpp>
+
+#ifndef PARAM_NUM_PARTS
+#   define PARAM_NUM_PARTS 10
+#endif
+
+namespace xrt {
+namespace laserConfig {
+
+    /* Initialization for the 'laser' */
+
+    /** Specifies the distribution (number of particles at a given position and time) */
+    namespace distribution {
+        /* Possible values: */
+        /** Same number of particles at all points */
+        struct Const{
+            /** Value to return */
+            static constexpr int32_t numParts = PARAM_NUM_PARTS;
+        };
+
+        /** Value used in the simulation */
+        using UsedValue = Const;
+
+    }  // namespace distribution
+
+    /** Specifies the in-cell position of the particles */
+    namespace position {
+
+        /* Possible values: */
+        /** Same position at all points */
+        struct Const{
+            /** In-Cell position [0,1) in x-direction */
+            static constexpr float_X X = 0.001;
+            /** In-Cell position [0,1) in y-direction */
+            static constexpr float_X Y = 0.5;
+            /** In-Cell position [0,1) in z-direction */
+            static constexpr float_X Z = 0.5;
+        };
+        /** Positions the particles evenly in the whole (possible) cell area) */
+        struct EvenDistance;
+        /** Positions the particles randomly */
+        struct Random;
+
+        /** Value used in the simulation */
+        using UsedValue = PARAM_START_POSITIONS;
+
+    }  // namespace position
+
+    namespace phase {
+        /* Possible values: */
+        /** Wave front perpendicular to propagation, place-invariant phase */
+        struct PlaneWave;
+
+        /** Value used in the simulation */
+        using UsedValue = PlaneWave;
+    }  // namespace phase
+
+    namespace direction {
+        /* Possible values: */
+        /** Same direction at all points */
+        struct Const{
+            /** direction in x-direction */
+            static constexpr float_X X = 1;
+            /** direction in y-direction */
+            static constexpr float_X Y = 0;
+            /** direction in z-direction */
+            static constexpr float_X Z = 0;
+        };
+
+        /** Value used in the simulation */
+        using UsedValue = Const;
+    }  // namespace direction
+
+
+    /** Laser pulse length in s */
+    constexpr float_X PULSE_LENGTH = 1e-9;
+    /** Entry-Direction of the laser pulse: 0=Left->Right, 1=Top->Bottom, 2=Front->Back
+     *  Ignored for 2D, there it is always Left->Right */
+    constexpr int32_t DIRECTION = 0;
+
+}  // namespace laserConfig
+}  // namespace xrt
+
