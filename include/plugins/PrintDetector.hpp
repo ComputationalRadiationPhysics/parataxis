@@ -42,7 +42,7 @@ namespace plugins {
 
         uint32_t notifyPeriod;
         std::string fileName;
-        bool noBeamstop;
+        bool noBeamstop, noTiff, noHDF5;
 
         PMacc::mpi::MPIReduce reduce_;
         using ReduceMethod = PMacc::mpi::reduceMethods::Reduce;
@@ -66,6 +66,8 @@ namespace plugins {
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyPeriod), "enable analyzer [for each n-th step]")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&fileName)->default_value("detector"), "base file name (_step.tif will be appended)")
                 ((prefix + ".noBeamstop").c_str(), po::bool_switch(&noBeamstop)->default_value(false), "Do not delete 'shadow' of target")
+                ((prefix + ".noTiff").c_str(), po::bool_switch(&noTiff)->default_value(false), "Do not output TIFF images")
+                ((prefix + ".noHDF5").c_str(), po::bool_switch(&noHDF5)->default_value(false), "Do not output HDF5")
                 ;
             hdf5::BasePlugin::pluginRegisterHelp(desc);
         }
@@ -93,21 +95,25 @@ namespace plugins {
                    ReduceMethod()
                    );
 
-            if (isMaster){
+            if (isMaster)
+            {
                 if(!noBeamstop)
                     doBeamstop(masterBuffer_->getDataBox(), size);
-                std::stringstream fileName;
-                fileName << this->fileName
-                         << "_" << std::setw(6) << std::setfill('0') << currentStep
-                         << ".tif";
-
                 auto transformedBox = makeTransformBox(masterBuffer_->getDataBox(), typename Detector::OutputTransformer());
 #if (XRT_ENABLE_TIFF==1)
-                imaging::TiffCreator tiff;
-                tiff(fileName.str(), transformedBox, size);
+                if(!noTiff)
+                {
+                    std::stringstream fileName;
+                    fileName << this->fileName
+                             << "_" << std::setw(6) << std::setfill('0') << currentStep
+                             << ".tif";
+                    imaging::TiffCreator tiff;
+                    tiff(fileName.str(), transformedBox, size);
+                }
 #endif
 #if (XRT_ENABLE_HDF5==1)
-                writeHDF5(transformedBox, size, currentStep);
+                if(!noHDF5)
+                    writeHDF5(transformedBox, size, currentStep);
 #endif
                 }
 
