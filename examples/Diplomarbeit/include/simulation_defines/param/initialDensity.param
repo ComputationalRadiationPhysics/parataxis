@@ -2,6 +2,20 @@
 
 #include "math/vector/compile-time/UInt32.hpp"
 
+#ifndef PARAM_GENERATOR
+#   define PARAM_GENERATOR DoubleSlit
+#endif
+
+#ifndef PARAM_SLIT_OFFSET2
+#   define PARAM_SLIT_OFFSET2 PARAM_SLIT_OFFSET
+#endif
+#ifndef PARAM_SLIT_WIDTH2
+#   define PARAM_SLIT_WIDTH2 PARAM_SLIT_WIDTH
+#endif
+#ifndef PARAM_SLIT_SPACING2
+#   define PARAM_SLIT_SPACING2 PARAM_SLIT_SPACING
+#endif
+
 namespace xrt {
 namespace initialDensity {
 
@@ -18,7 +32,7 @@ namespace initialDensity {
             /** If true, the slit is rotated by 90 degrees. Default dir of infinite extent is Z (in 3D) */
             static constexpr bool rotated = false;
             /** Offset in cells of the slits */
-            static constexpr uint32_t offset = (PARAM_NUM_CELLS - PARAM_SLIT_SPACING) / 2;
+            static constexpr uint32_t offset = PARAM_SLIT_OFFSET;
             /** Width in cells of the slits */
             static constexpr uint32_t width = PARAM_SLIT_WIDTH;
             /** Spacing in cells between the slits */
@@ -26,11 +40,25 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = 1;
         };
-    };
+        
+        struct CombinedDoubleSlit{
+            using Cfg1 = DoubleSlit;
+            struct Cfg2: public DoubleSlit{
+                static constexpr uint32_t roomPos = 1;
+                static constexpr uint32_t roomWidth = 1;
+                static constexpr bool rotated = true;
+                static constexpr uint32_t offset = PARAM_SLIT_OFFSET2;
+                static constexpr uint32_t width = PARAM_SLIT_WIDTH2;
+                static constexpr uint32_t spacing = PARAM_SLIT_SPACING2;
+                static constexpr float_64 value = 1;
+            };
+            static constexpr bool useMax = true;
+        };
+    }
 
     using Generator =
             /** Generator used */
-            AvailableGenerators::DoubleSlit;
+            AvailableGenerators::PARAM_GENERATOR;
 
 }  // namespace initialDensity
 }  // namespace xrt
