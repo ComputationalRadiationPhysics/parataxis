@@ -15,6 +15,8 @@ namespace initialDensity {
             static constexpr uint32_t roomPos = 10;
             /** (3D only) width in cells of the volume containing the slit (size in X) */
             static constexpr uint32_t roomWidth = 1;
+            /** If true, the slit is rotated by 90 degrees. Default dir of infinite extent is Z (in 3D) */
+            static constexpr bool rotated = false;
             /** Offset in cells of the slits */
             static constexpr uint32_t offset = (PARAM_NUM_CELLS - PARAM_SLIT_SPACING) / 2;
             /** Width in cells of the slits */

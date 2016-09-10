@@ -12,6 +12,7 @@ namespace AvailableGenerators {
     struct Cylinder;
     struct DoubleSlit;
     struct RaisingLine;
+    struct CombinedDoubleSlit;
 
 }  // namespace AvailableGenerators
 }  // namespace initialDensity
@@ -53,6 +54,12 @@ namespace PMacc { namespace traits {
     struct Resolve<xrt::initialDensity::AvailableGenerators::RaisingLine>
     {
         using type  = xrt::generators::RaisingLine<xrt::float_X, xrt::initialDensity::AvailableGenerators::RaisingLine>;
+    };
+
+    template<>
+    struct Resolve<xrt::initialDensity::AvailableGenerators::CombinedDoubleSlit>
+    {
+        using type  = xrt::generators::CombinedDoubleSlit<xrt::float_X, xrt::initialDensity::AvailableGenerators::CombinedDoubleSlit>;
     };
 
 }}

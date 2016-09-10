@@ -123,7 +123,8 @@ namespace generators {
         {
             if(simDim == 3 && (idx[0] < roomPos || idx[0] >= roomPos + roomWidth))
                 return 0;
-            auto idxY = idx[simDim - 2];
+            // Note: Default (not rotated) this is y in 3D
+            auto idxY = idx[Config::rotated ? simDim - 1: simDim - 2];
             if((idxY >= topSlitStart  && idxY < topSlitStart  + Config::width) ||
                (idxY >= botSlitStart && idxY < botSlitStart + Config::width))
                 return value;
@@ -137,7 +138,8 @@ namespace generators {
      * (Mainly for testing purposes)
      */
     template<typename T, class T_Config>
-    struct RaisingLine{
+    struct RaisingLine
+    {
         using Config = T_Config;
         /** Dimension in which the line extents */
         static constexpr uint32_t nDim  = Config::nDim;
@@ -154,6 +156,24 @@ namespace generators {
             if(idx[nDim == 1 ? 2 : 1] != offsetOther)
                 return 0;
             return idx[nDim == 1 ? 1 : 2] + 1;
+        }
+    };
+
+    template<typename T, class T_Config>
+    struct CombinedDoubleSlit
+    {
+        DoubleSlit<T, typename T_Config::Cfg1> gen1;
+        DoubleSlit<T, typename T_Config::Cfg2> gen2;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            const T val1 = gen1(idx);
+            const T val2 = gen2(idx);
+            if(T_Config::useMax)
+                return PMaccMath::max(val1, val2);
+            else
+                return PMaccMath::min(val1, val2);
         }
     };
 
