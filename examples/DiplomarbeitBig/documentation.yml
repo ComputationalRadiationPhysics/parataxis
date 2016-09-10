@@ -17,7 +17,7 @@ tests:
                Double slit roughly in the middle at the beginning of the volume
                Double precision
     cmakeFlag:   0
-    cfgFile:     0016gpus128.cfg
+    cfgFile:     longTarget.cfg
     post-run: &copyOutput
         - cp "${TEST_SIMOUTPUT_PATH}/detector_200000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
         
@@ -26,7 +26,7 @@ tests:
                Double slit roughly in the middle at the beginning of the volume
                Single precision
     cmakeFlag:   1
-    cfgFile:     0016gpus128.cfg
+    cfgFile:     longTarget.cfg
     post-run: *copyOutput
     
   - name: Cross
@@ -34,7 +34,7 @@ tests:
                2 Double slits forming a cross roughly in the middle at the beginning of the volume
                Double precision
     cmakeFlag:   2
-    cfgFile:     0016gpus128.cfg
+    cfgFile:     longTarget.cfg
     post-run: *copyOutput
         
   - name: CrossSingle
@@ -42,6 +42,6 @@ tests:
                2 Double slits forming a cross roughly in the middle at the beginning of the volume
                Single precision
     cmakeFlag:   3
-    cfgFile:     0016gpus128.cfg
+    cfgFile:     longTarget.cfg
     post-run: *copyOutput
     

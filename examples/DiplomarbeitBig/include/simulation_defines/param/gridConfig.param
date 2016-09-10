@@ -12,7 +12,7 @@ namespace SI {
     constexpr float_64 CELL_WIDTH = 0.4430e-7;
     /** equals Y - Increases to bottom
      *  unit: meter */
-    constexpr float_64 CELL_HEIGHT = 0.1772e-6;
+    constexpr float_64 CELL_HEIGHT = CELL_WIDTH;
     /** equals Z - Increases to back
      *  unit: meter */
     constexpr float_64 CELL_DEPTH = CELL_HEIGHT;
