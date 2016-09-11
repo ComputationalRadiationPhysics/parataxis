@@ -37,8 +37,8 @@ namespace detector {
          * Width and height of each detector cell
          * Unit: meter
          */
-        static constexpr float_64 cellWidth = 20e-6;
-        static constexpr float_64 cellHeight = 20e-6;
+        static constexpr float_64 cellWidth = 30e-6;
+        static constexpr float_64 cellHeight = 30e-6;
 
         /* Following values are used for constraint checking but do not influence the simulation */
         /** Minimum number of interference patterns (sequences of minima+maxima) that should be observable
