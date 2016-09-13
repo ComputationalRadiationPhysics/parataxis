@@ -78,7 +78,7 @@ cd simOutput
 sleep 1
 
 if [ $? -eq 0 ] ; then
-  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks nvprof --profile-from-start off -o profile.%q{OMPI_COMM_WORLD_RANK}.nvprof --analysis-metrics !TBG_dstPath/bin/!TBG_program !TBG_author !TBG_programParams
+  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks nvprof --profile-from-start off -o profile.%q{OMPI_COMM_WORLD_RANK}.nvprof !TBG_dstPath/bin/!TBG_program !TBG_author !TBG_programParams
 fi
 
 #mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -npernode !TBG_gpusPerNode -n !TBG_tasks killall -9 !TBG_program

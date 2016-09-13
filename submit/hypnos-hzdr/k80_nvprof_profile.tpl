@@ -28,7 +28,7 @@ TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
 # 8 gpus per node if we need more than 8 gpus else same count as TBG_tasks
 TBG_gpusPerNode=`if [ $TBG_tasks -gt 8 ] ; then echo 8; else echo $TBG_tasks; fi`
 
-#number of cores per parallel node / default is 2 cores per gpu on k20 queue
+#number of cores per parallel node / default is 2 cores per gpu on k80 queue
 TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
 
 # use ceil to caculate nodes
@@ -78,7 +78,7 @@ cd simOutput
 sleep 1
 
 if [ $? -eq 0 ] ; then
-  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks nvprof --profile-from-start off -o profile.%q{OMPI_COMM_WORLD_RANK}.nvprof --analysis-metrics !TBG_dstPath/bin/!TBG_program !TBG_author !TBG_programParams
+  mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -tag-output --display-map -am !TBG_dstPath/tbg/openib.conf --mca mpi_leave_pinned 0 -npernode !TBG_gpusPerNode -n !TBG_tasks nvprof --profile-from-start off -o profile.%q{OMPI_COMM_WORLD_RANK}.nvprof !TBG_dstPath/bin/!TBG_program !TBG_author !TBG_programParams
 fi
 
 #mpiexec --prefix $MPIHOME -x LIBRARY_PATH -x LD_LIBRARY_PATH -npernode !TBG_gpusPerNode -n !TBG_tasks killall -9 !TBG_program
