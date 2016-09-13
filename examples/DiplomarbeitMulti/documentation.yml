@@ -1,0 +1,106 @@
+# Description
+example:
+  name:        Simulationen fuer Diplomarbeit (Multi Scattering)
+  short:       DiplomarbeitMulti
+  author:      Alexander Grund
+
+  description: Collection of simulations used in for evaluations in the Diplomarbeit
+
+# Run-Time Tests
+tests:
+  - name: DoubleSlit
+    description: |
+               Double slit is in the middle the volume at x=1
+               1 cell size
+    cmakeFlag:   0
+    cfgFile:     0016gpus128.cfg
+    post-run: &copyOutput
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_300000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+
+  - name: ThickDoubleSlit
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+    cmakeFlag:   1
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickDoubleSlitMulti
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Multi-Scattering
+    cmakeFlag:   2
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: Edge
+    description: |
+               edge density at x=1
+    cmakeFlag:   3
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickEdge
+    description: |
+               edge density at x=1
+               Going through whole sim
+    cmakeFlag:   4
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickEdgeMulti
+    description: |
+               edge density at x=1
+               Going through whole sim
+               Multi-Scattering
+    cmakeFlag:   5
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickDoubleSlitSingle
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Single Precision
+    cmakeFlag:   6
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickDoubleSlitMultiSingle
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Multi-Scattering
+               Single Precision
+    cmakeFlag:   7
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: EdgeSingle
+    description: |
+               edge density at x=1
+               Single Precision
+    cmakeFlag:   8
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickEdgeSingle
+    description: |
+               edge density at x=1
+               Going through whole sim
+               Single Precision
+    cmakeFlag:   9
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+
+  - name: ThickEdgeMultiSingle
+    description: |
+               edge density at x=1
+               Going through whole sim
+               Multi-Scattering
+               Single Precision
+    cmakeFlag:   10
+    cfgFile:     0016gpus128.cfg
+    post-run: *copyOutput
+

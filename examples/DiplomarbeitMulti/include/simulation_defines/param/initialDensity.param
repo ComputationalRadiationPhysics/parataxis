@@ -1,0 +1,54 @@
+#pragma once
+
+#include "math/vector/compile-time/UInt32.hpp"
+
+#define PARAM_INITIAL_DENSITY 0.001
+
+namespace xrt {
+namespace initialDensity {
+
+    namespace AvailableGenerators{
+        /* List of possible generators: */
+
+        /** 2 slits of the same width and infinite height,
+         *  extending perpendicular to x-axis in 3D */
+        struct DoubleSlit{
+            /** (3D only) offset in cells into the room (X-direction) */
+            static constexpr uint32_t roomPos = 1;
+            /** (3D only) width in cells of the volume containing the slit (size in X) */
+            static constexpr uint32_t roomWidth = PARAM_ROOM_WIDTH;
+            /** If true, the slit is rotated by 90 degrees. Default dir of infinite extent is Z (in 3D) */
+            static constexpr bool rotated = false;
+            /** Offset in cells of the slits */
+            static constexpr uint32_t offset = 70;
+            /** Width in cells of the slits */
+            static constexpr uint32_t width = 3;
+            /** Spacing in cells between the slits */
+            static constexpr uint32_t spacing = 8;
+            /** Value used */
+            static constexpr float_64 value = PARAM_INITIAL_DENSITY;
+        };
+
+        /**
+         * Create an "edge", that is everything below a linear function (m*x+n) is filled
+         */
+        struct Edge
+        {
+            /** offset in cells into the room (X-direction) */
+            static constexpr uint32_t roomPos = 1;
+            /** (width in cells of the volume containing the slit (size in X) */
+            static constexpr uint32_t roomWidth = PARAM_ROOM_WIDTH;
+
+            static constexpr float_32 m = 1;
+            static constexpr float_32 n = 0;
+            /** Value used */
+            static constexpr float_64 value = PARAM_INITIAL_DENSITY;
+        };
+    }
+
+    using Generator =
+            /** Generator used */
+            AvailableGenerators::PARAM_GENERATOR;
+
+}  // namespace initialDensity
+}  // namespace xrt
