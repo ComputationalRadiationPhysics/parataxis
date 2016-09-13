@@ -32,6 +32,23 @@ namespace laserConfig {
 #include <traits/Resolve.hpp>
 #include <math/ConstVector.hpp>
 
+namespace xrt {
+namespace laserConfig {
+namespace distribution {
+
+    struct Const;
+
+}  // namespace distribution
+namespace position {
+
+    struct Const;
+    struct EvenDistance;
+    struct Random;
+
+}  // namespace position
+}  // namespace laserConfig
+}  // namespace xrt
+
 namespace PMacc {
 namespace traits {
 
