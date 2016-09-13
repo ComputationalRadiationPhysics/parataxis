@@ -109,7 +109,16 @@ class Compilation:
         if dryRun:
             return None
         else:
-            return execCmd(setupCmd + cmd, silent)
+            result = execCmd(setupCmd + cmd, silent)
+            if result != None and result.result == 0:
+                # Write used cmake flags to file
+                with open(os.path.join(self.getInstallPath(), "cmakeFlags.txt"), 'w') as f:
+                    flags = self.example.getCMakeFlags()[self.cmakePreset]
+                    flags = flags.replace(";", "\n")
+                    flags = flags.replace(" ", "\n")
+                    f.write(flags)
+            return result
+            
         
     def configAndCompile(self, pathToCMakeLists, dryRun, verbose, silent):
         """Compile and configure the example (execute both of them)
