@@ -96,6 +96,35 @@ namespace generators {
     };
 
     /**
+     * Create an "edge", that is everything below a linear function (m*x+n) is filled
+     */
+    template<typename T, class T_Config>
+    struct Edge
+    {
+        using Config = T_Config;
+        static constexpr uint32_t roomPos = Config::roomPos;
+        static constexpr uint32_t roomWidth = Config::roomWidth;
+
+        static_assert(roomWidth > 0, "RoomWidth must be > 0");
+        static_assert(simDim == 3, "Only for 3D defined");
+        static constexpr float_32 m = Config::m;
+        static constexpr float_32 n = Config::n;
+        /** Value used */
+        static constexpr float_64 value = Config::value;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            if(idx.x() < roomPos || idx.x() >= roomPos + roomWidth)
+                return 0;
+            if(idx.y() < m * idx.z() + n)
+                return value;
+            else
+                return 0;
+        }
+    };
+
+    /**
      * Creates a double slit
      */
     template<typename T, class T_Config>
@@ -121,7 +150,7 @@ namespace generators {
         template<class T_Idx>
         HDINLINE T operator()(T_Idx&& idx) const
         {
-            if(simDim == 3 && (idx[0] < roomPos || idx[0] >= roomPos + roomWidth))
+            if(simDim == 3 && (idx.x() < roomPos || idx.x() >= roomPos + roomWidth))
                 return 0;
             // Note: Default (not rotated) this is y in 3D
             auto idxY = idx[Config::rotated ? simDim - 1: simDim - 2];
