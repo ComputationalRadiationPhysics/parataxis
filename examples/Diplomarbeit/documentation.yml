@@ -58,14 +58,26 @@ tests:
   - name: RNGSlow
     description: Run using the old(slow) RNG
     cmakeFlag: 3
-    cfgFile: 0001gpus.cfg
+    cfgFile: 1gpuRandSmall.cfg
     post-run: &writeSimTime
         - grep "simulation time" "${TEST_SIMOUTPUT_PATH}/output" > "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_time.txt"
         
   - name: RNGFast
     description: Run using the new(fast) RNG
     cmakeFlag: 1
-    cfgFile: 0001gpus.cfg
+    cfgFile: 1gpuRandSmall.cfg
+    post-run: *writeSimTime
+
+  - name: RNGSlowBig
+    description: Run using the old(slow) RNG
+    cmakeFlag: 3
+    cfgFile: 1gpuRandBig.cfg
+    post-run: *writeSimTime
+
+  - name: RNGFastBig
+    description: Run using the new(fast) RNG
+    cmakeFlag: 1
+    cfgFile: 1gpuRandBig.cfg
     post-run: *writeSimTime
 
   - name: DoubleSlitRandPos1Part
@@ -119,6 +131,18 @@ tests:
   - name: SpeedTestSingle
     description: Run Double slit experiment in single precision
     cmakeFlag: 2
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTimeAndOutput
+
+  - name: SpeedTestDouble5Part
+    description: Run Double slit experiment in double precision
+    cmakeFlag: 6
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTimeAndOutput
+
+  - name: SpeedTestSingle5Part
+    description: Run Double slit experiment in single precision
+    cmakeFlag: 9
     cfgFile: 0001gpusSpeedTest.cfg
     post-run: *writeSimTimeAndOutput
 

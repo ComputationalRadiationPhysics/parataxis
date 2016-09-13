@@ -12,14 +12,14 @@
 ## Section: Required Variables ##
 #################################
 
-TBG_wallTime="3:00:00"
+TBG_wallTime="13:00:00"
 
 TBG_gpu_x=1
 TBG_gpu_y=1
 TBG_gpu_z=1
 
-TBG_gridSize="-g 16 128 256"
-TBG_steps="-s 1000"
+TBG_gridSize="-g 64 128 256"
+TBG_steps="-s 2000"
 
 TBG_program="@PROJECT_NAME@"
 
