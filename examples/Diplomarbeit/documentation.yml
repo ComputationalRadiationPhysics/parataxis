@@ -146,3 +146,15 @@ tests:
     cfgFile: 0001gpusSpeedTest.cfg
     post-run: *writeSimTimeAndOutput
 
+  - name: SpeedTestProfilingDouble
+    description: Run Double slit experiment in double precision, same size as profiling
+    cmakeFlag: 1
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTimeAndOutput
+
+  - name: SpeedTestProfilingSingle
+    description: Run Double slit experiment in single precision, same size as profiling
+    cmakeFlag: 2
+    cfgFile: 0001gpusSpeedTest.cfg
+    post-run: *writeSimTimeAndOutput
+
