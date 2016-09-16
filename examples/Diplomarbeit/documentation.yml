@@ -149,12 +149,24 @@ tests:
   - name: SpeedTestProfilingDouble
     description: Run Double slit experiment in double precision, same size as profiling
     cmakeFlag: 1
-    cfgFile: 0001gpusSpeedTest.cfg
+    cfgFile: 1gpuProfiling.cfg
     post-run: *writeSimTimeAndOutput
 
   - name: SpeedTestProfilingSingle
     description: Run Double slit experiment in single precision, same size as profiling
     cmakeFlag: 2
-    cfgFile: 0001gpusSpeedTest.cfg
+    cfgFile: 1gpuProfiling.cfg
+    post-run: *writeSimTimeAndOutput
+
+  - name: SpeedTestProfilingDouble8
+    description: Run Double slit experiment in double precision, same size as profiling
+    cmakeFlag: 1
+    cfgFile: 8gpuProfiling.cfg
+    post-run: *writeSimTimeAndOutput
+
+  - name: SpeedTestProfilingSingle8
+    description: Run Double slit experiment in single precision, same size as profiling
+    cmakeFlag: 2
+    cfgFile: 8gpuProfiling.cfg
     post-run: *writeSimTimeAndOutput
 
