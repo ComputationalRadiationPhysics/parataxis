@@ -12,14 +12,14 @@
 ## Section: Required Variables ##
 #################################
 
-TBG_wallTime="16:00:00"
+TBG_wallTime="20:00:00"
 
 TBG_gpu_x=4
 TBG_gpu_y=2
 TBG_gpu_z=2
 
 TBG_gridSize="-g 512 128 128"
-TBG_steps="-s 300000"
+TBG_steps="-s 400000"
 
 TBG_program="@PROJECT_NAME@"
 
@@ -31,7 +31,8 @@ TBG_plugins="--p_position.period 999999                   \
              --DensityField_printSlice.period 999999      \
              --DensityField_printSlice.axis 0             \
              --DensityField_printSlice.slicePoint 1       \
-             --PhotonDetector_print.period 2000           \
+             --DensityField_printSlice.format tif         \
+             --PhotonDetector_print.period 5000           \
              --PhotonDetector_print.noHDF5                \
              "
 

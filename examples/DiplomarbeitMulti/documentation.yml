@@ -15,7 +15,7 @@ tests:
     cmakeFlag:   0
     cfgFile:     0016gpus128.cfg
     post-run: &copyOutput
-        - cp "${TEST_SIMOUTPUT_PATH}/detector_300000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
+        - cp "${TEST_SIMOUTPUT_PATH}/detector_400000.tif" "${TEST_BASE_BUILD_PATH}/${TEST_NAME}_detector.tif"
 
   - name: ThickDoubleSlit
     description: |

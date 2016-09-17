@@ -37,8 +37,8 @@ namespace detector {
          * Width and height of each detector cell
          * Unit: meter
          */
-        static constexpr float_64 cellWidth = 350e-6;
-        static constexpr float_64 cellHeight = 350e-6;
+        static constexpr float_64 cellWidth = 170e-6;
+        static constexpr float_64 cellHeight = 170e-6;
 
         /* Following values are used for constraint checking but do not influence the simulation */
         /** Minimum number of interference patterns (sequences of minima+maxima) that should be observable
@@ -51,7 +51,7 @@ namespace detector {
         static constexpr float_64 maxStructureSize = 8*4e-9;
         /** Set to true to abort the simulation when the constraints are violated
          *  False still shows warnings*/
-        static constexpr bool abortOnConstraintError = true;
+        static constexpr bool abortOnConstraintError = false;
     };
 
 }  // namespace detector
