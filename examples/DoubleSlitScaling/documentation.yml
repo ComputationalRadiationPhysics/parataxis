@@ -69,3 +69,40 @@ tests:
     cfgFile:     64gpuStrong.cfg
     post-run: *copyTime
 
+  - name: ScaleSize1
+    cmakeFlag:   0
+    cfgFile:     problemSize1.cfg
+    post-run: *copyTime
+  - name: ScaleSize2
+    cmakeFlag:   0
+    cfgFile:     problemSize2.cfg
+    post-run: *copyTime
+  - name: ScaleSize3
+    cmakeFlag:   0
+    cfgFile:     problemSize3.cfg
+    post-run: *copyTime
+  - name: ScaleSize4
+    cmakeFlag:   0
+    cfgFile:     problemSize4.cfg
+    post-run: *copyTime
+  - name: ScaleSize5
+    cmakeFlag:   0
+    cfgFile:     problemSize5.cfg
+    post-run: *copyTime
+  - name: ScaleSize6
+    cmakeFlag:   0
+    cfgFile:     problemSize6.cfg
+    post-run: *copyTime
+  - name: ScaleSize7
+    cmakeFlag:   0
+    cfgFile:     problemSize7.cfg
+    post-run: *copyTime
+  - name: ScaleSize8
+    cmakeFlag:   0
+    cfgFile:     problemSize8.cfg
+    post-run: *copyTime
+  - name: ScaleSize9
+    cmakeFlag:   0
+    cfgFile:     problemSize9.cfg
+    post-run: *copyTime
+
