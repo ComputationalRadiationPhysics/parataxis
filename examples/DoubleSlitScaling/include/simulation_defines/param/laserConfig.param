@@ -13,7 +13,7 @@ namespace laserConfig {
         /** Same number of particles at all points */
         struct Const{
             /** Value to return */
-            static constexpr int32_t numParts = 8;
+            static constexpr int32_t numParts = 10;
         };
 
         /** Value used in the simulation */
