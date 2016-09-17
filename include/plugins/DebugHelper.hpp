@@ -54,7 +54,7 @@ namespace plugins {
             uint32_t slotsAv = mallocMC::getAvailableSlots(frameSize);
             uint64_t numParts = slotsAv * SuperCellSize::toRT().productOfComponents();
             std::cout <<
-                    boost::format("Debug info at timestep %1%: There are %2% slots available (%3 Byte each) that can fit up to %4% particles")
+                    boost::format("Debug info at timestep %1%: There are %2% slots available (%3% Byte each) that can fit up to %4% particles")
                     % currentStep % slotsAv % frameSize % numParts;
         }
 
