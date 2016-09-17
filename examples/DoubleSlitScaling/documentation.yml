@@ -105,4 +105,36 @@ tests:
     cmakeFlag:   0
     cfgFile:     problemSize9.cfg
     post-run: *copyTime
+  - name: ScaleSize10
+    cmakeFlag:   0
+    cfgFile:     problemSize10.cfg
+    post-run: *copyTime
+  - name: ScaleSize11
+    cmakeFlag:   0
+    cfgFile:     problemSize11.cfg
+    post-run: *copyTime
+  - name: ScaleSize12
+    cmakeFlag:   0
+    cfgFile:     problemSize12.cfg
+    post-run: *copyTime
+  - name: ScaleSize13
+    cmakeFlag:   0
+    cfgFile:     problemSize13.cfg
+    post-run: *copyTime
+  - name: ScaleSize14
+    cmakeFlag:   0
+    cfgFile:     problemSize14.cfg
+    post-run: *copyTime
+  - name: ScaleSize15
+    cmakeFlag:   0
+    cfgFile:     problemSize15.cfg
+    post-run: *copyTime
+  - name: ScaleSize16
+    cmakeFlag:   0
+    cfgFile:     problemSize16.cfg
+    post-run: *copyTime
+  - name: ScaleSize17
+    cmakeFlag:   0
+    cfgFile:     problemSize17.cfg
+    post-run: *copyTime
 

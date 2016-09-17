@@ -12,7 +12,7 @@
 ## Section: Required Variables ##
 #################################
 
-TBG_wallTime="15:00:00"
+TBG_wallTime="10:00:00"
 
 TBG_gpu_x=1
 TBG_gpu_y=1
