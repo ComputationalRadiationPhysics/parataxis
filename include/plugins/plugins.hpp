@@ -2,6 +2,7 @@
 
 #include "simulation_defines.hpp"
 #include "plugins/PrintParticles.hpp"
+#include "plugins/DebugHelper.hpp"
 #if (XRT_ENABLE_PNG == 1)
 #   include "plugins/PrintField.hpp"
 #endif
@@ -35,8 +36,9 @@ namespace xrt {
     /* species plugins (with placeholder replaced by species) */
     typedef bmpl::vector<
 #if ENABLE_PRINT_PARTICLES
-            plugins::PrintParticles<bmpl::_1>
+            plugins::PrintParticles<bmpl::_1>,
 #endif
+            plugins::DebugHelper<bmpl::_1>
     > SpeciesPlugins;
 
     /* field plugins (with placeholder replaced by field) */
