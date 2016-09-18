@@ -125,16 +125,4 @@ tests:
     cmakeFlag:   0
     cfgFile:     problemSize14.cfg
     post-run: *copyTime
-  - name: ScaleSize15
-    cmakeFlag:   0
-    cfgFile:     problemSize15.cfg
-    post-run: *copyTime
-  - name: ScaleSize16
-    cmakeFlag:   0
-    cfgFile:     problemSize16.cfg
-    post-run: *copyTime
-  - name: ScaleSize17
-    cmakeFlag:   0
-    cfgFile:     problemSize17.cfg
-    post-run: *copyTime
 
