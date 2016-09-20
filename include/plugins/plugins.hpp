@@ -3,7 +3,7 @@
 #include "simulation_defines.hpp"
 #include "plugins/PrintParticles.hpp"
 #include "plugins/DebugHelper.hpp"
-#if (XRT_ENABLE_PNG == 1)
+#if (XRT_ENABLE_PNG == 1 || XRT_ENABLE_TIFF == 1)
 #   include "plugins/PrintField.hpp"
 #endif
 #if (XRT_ENABLE_TIFF == 1)
