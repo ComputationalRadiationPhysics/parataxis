@@ -65,8 +65,10 @@ class SBatchMonitor(BaseMonitor):
                 if(len(res.stdout) != 2):
                     if len(res.stdout) == 1 and res.stdout[0] == "Jobstate=STATE":
                         self.isWaiting = False
-                        self.isFinished = True                        
-                    raise Exception("Unexpected output from squeue: " + str(res.stdout))
+                        self.isFinished = True   
+                    else:                     
+                        raise Exception("Unexpected output from squeue: " + str(res.stdout))
+                    return
                 jobStatRegExp = "JobState=(\w+)"
                 jobState = re.match(jobStatRegExp, res.stdout[-1])
                 if not jobState:
