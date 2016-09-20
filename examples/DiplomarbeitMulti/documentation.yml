@@ -104,3 +104,35 @@ tests:
     cfgFile:     0016gpus128.cfg
     post-run: *copyOutput
 
+#Longer Runs
+
+  - name: ThickDoubleSlitLongSingle
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Single Precision
+    cmakeFlag:   6
+    cfgFile:     0064gpus.cfg
+    post-run: *copyOutput
+
+  - name: ThickDoubleSlitLongMultiSingle
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Multi-Scattering
+               Single Precision
+    cmakeFlag:   7
+    cfgFile:     0064gpus.cfg
+    post-run: *copyOutput
+
+  - name: ThickDoubleSlitLongMulti
+    description: |
+               Double slit is in the middle the volume at x=1
+               Going through whole sim
+               Multi-Scattering
+               Single Precision
+    cmakeFlag:   2
+    cfgFile:     0064gpus.cfg
+    post-run: *copyOutput
+
+
