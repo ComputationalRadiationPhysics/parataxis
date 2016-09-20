@@ -205,7 +205,7 @@ def main(argv):
     # If we will run also runtime tests, then add those compilations here
     if not options.test and not options.compile_only:
         compilations = mergeCompilations(compilations, Example.getCompilations(examples, options.output, "*"))
-    if not options.no_clean:
+    if not options.no_clean and not options.dry_run:
         cprint("Cleaning install directories", "yellow")
         for c in compilations:
             print("\t" + c.getInstallPath())
@@ -228,8 +228,8 @@ def main(argv):
         return 0
     # Run
     ############################################################################
-    cprint("Running examples...", "yellow")
     runtimeTests = Example.getRuntimeTests(examples, options.test)
+    cprint("Running %d examples..." % len(runtimeTests), "yellow")
     errorTests = []
     if options.k:
         startedTests = []

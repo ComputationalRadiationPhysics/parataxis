@@ -231,17 +231,21 @@ class RuntimeTest:
     def getSimOutputPath(self):        
         return self.getOutputPath() + "/simOutput"
         
-    def getSetupCmd(self, compilation):
+    def getSetupCmd(self, compilation, dryRun):
         """Return command required to setup environment. Includes terminating newline if non-empty"""
         assert os.path.isabs(self.getOutputPath()), "Need absolute path"
-        with open(os.path.join(compilation.getInstallPath(), "submit", self.cfgFile), 'r') as cfgFile:
-            content = cfgFile.read()
-            gridSize = re.search("TBG_gridSize=\"-g (\\d+( \\d+)*)\"", content)
-            assert gridSize != None, "Gridsize not found. Please define it in your cfg file using TBG_gridSize"
-            gridSize = gridSize.group(1)
-            numTimesteps = re.search("TBG_steps=\"-s (\\d+)\"", content)
-            assert numTimesteps != None, "Timesteps not found. Please define it in your cfg file using TBG_step"
-            numTimesteps = numTimesteps.group(1)
+        cfgFilePath = os.path.join(compilation.getInstallPath(), "submit", self.cfgFile)
+        if dryRun and not os.path.isfile(cfgFilePath):
+            content = 'TBG_gridSize="-g 42 42 42"\nTBG_steps="-s 42"\n'
+        else:
+            with open(cfgFilePath, 'r') as cfgFile:
+                content = cfgFile.read()
+        gridSize = re.search("TBG_gridSize=\"-g (\\d+( \\d+)*)\"", content)
+        assert gridSize != None, "Gridsize not found. Please define it in your cfg file using TBG_gridSize"
+        gridSize = gridSize.group(1)
+        numTimesteps = re.search("TBG_steps=\"-s (\\d+)\"", content)
+        assert numTimesteps != None, "Timesteps not found. Please define it in your cfg file using TBG_step"
+        numTimesteps = numTimesteps.group(1)
         cmd = compilation.getSetupCmd()
         variables = [('NAME',           self.name),
                      ('OUTPUT_PATH',    self.getOutputPath()),
@@ -276,7 +280,7 @@ class RuntimeTest:
         if dryRun:
             self.monitor = None
         else:
-            res = execCmd(self.getSetupCmd(compilation) + tbgCmd)
+            res = execCmd(self.getSetupCmd(compilation, dryRun) + tbgCmd)
             if(res.result != 0):
                 cprint("Submit or execution failed!", "red")
                 return res.result
@@ -300,7 +304,7 @@ class RuntimeTest:
         if cmds:
             with(cd(runDir if not dryRun else ".")):
                 cprint("Executing " + descr + " commands for " + self.name+ "...", "yellow")
-                envSetupCmd = self.getSetupCmd(compilation)
+                envSetupCmd = self.getSetupCmd(compilation, dryRun)
                 if verbose:
                     print("Environment: " + envSetupCmd)
                 
