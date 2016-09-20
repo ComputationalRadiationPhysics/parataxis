@@ -43,9 +43,9 @@ tests:
     cmakeFlag:   0
     cfgFile:     128gpu.cfg
     post-run: *copyTime
-  - name: 256GPU
+  - name: 248GPU
     cmakeFlag:   0
-    cfgFile:     256gpu.cfg
+    cfgFile:     248gpu.cfg
     post-run: *copyTime
 
   - name: 1GPU_Strong
