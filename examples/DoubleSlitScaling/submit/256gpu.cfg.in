@@ -19,7 +19,7 @@ TBG_gpu_y=1
 TBG_gpu_z=256
 
 TBG_gridSize="-g 640 256 8192"
-TBG_steps="-s 5000"
+TBG_steps="-s 10000"
 
 TBG_program="@PROJECT_NAME@"
 
@@ -32,7 +32,7 @@ TBG_plugins="--p_position.period 999999                   \
              --DensityField_printSlice.period 999999      \
              --DensityField_printSlice.axis 0             \
              --DensityField_printSlice.slicePoint 10      \
-             --PhotonDetector_print.period 5000          \
+             --PhotonDetector_print.period 10000          \
              "
 
 #################################
