@@ -43,7 +43,7 @@ namespace xrt {
 
     /* field plugins (with placeholder replaced by field) */
     typedef bmpl::vector<
-#if ENABLE_PRINT_FIELDS && XRT_ENABLE_PNG == 1
+#if ENABLE_PRINT_FIELDS && (XRT_ENABLE_PNG == 1 || XRT_ENABLE_TIFF == 1)
             plugins::PrintField<bmpl::_1>
 #endif
     > FieldPlugins;
