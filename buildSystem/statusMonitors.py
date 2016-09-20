@@ -63,6 +63,9 @@ class SBatchMonitor(BaseMonitor):
             res = execCmd("squeue -o \"JobState=%T\" -j " + self.jobId, True)
             if(res.result == 0):
                 if(len(res.stdout) != 2):
+                    if len(res.stdout) == 1 and res.stdout[0] == "Jobstate=STATE":
+                        self.isWaiting = False
+                        self.isFinished = True                        
                     raise Exception("Unexpected output from squeue: " + str(res.stdout))
                 jobStatRegExp = "JobState=(\w+)"
                 jobState = re.match(jobStatRegExp, res.stdout[-1])
