@@ -37,9 +37,11 @@ namespace initialDensity {
             static constexpr float_64 value = 1;
         };
         
-        struct CombinedDoubleSlit{
+        struct CombinedGenerator{
+            using Gen1 = DoubleSlit;
+            using Gen2 = DoubleSlit;
             using Cfg1 = DoubleSlit;
-            struct Cfg2: public DoubleSlit{
+            struct Cfg2{
                 static constexpr uint32_t roomPos = 1;
                 static constexpr uint32_t roomWidth = 1;
                 static constexpr bool rotated = true;

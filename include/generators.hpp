@@ -189,17 +189,62 @@ namespace generators {
     };
 
     template<typename T, class T_Config>
-    struct CombinedDoubleSlit
+    struct Strips
     {
-        DoubleSlit<T, typename T_Config::Cfg1> gen1;
-        DoubleSlit<T, typename T_Config::Cfg2> gen2;
+        /** Offset till start of first line */
+        static constexpr uint32_t offset  = T_Config::offset;
+        /** Width of line */
+        static constexpr uint32_t size = T_Config::size;
+        /** Spacing between lines */
+        static constexpr uint32_t spacing = T_Config::spacing;
+
+        static constexpr uint32_t offsetX  = T_Config::offsetX;
+        static constexpr uint32_t sizeX = T_Config::sizeX;
+        /** Value used */
+        static constexpr float_64 value = T_Config::value;
+
+        template<class T_Idx>
+        HDINLINE T operator()(T_Idx&& idx) const
+        {
+            if(idx.x() < offsetX || idx.x() >= offsetX + sizeX)
+                return 0;
+            if(idx.y() < offset)
+                return 0;
+            if((idx.y() - offset) % (size + spacing) < size)
+                return value;
+            else
+                return 0;
+        }
+    };
+
+    namespace detail{
+
+        template<class T_Generator, class T_NewCfg>
+        struct ReplaceCfg;
+
+        template<template<typename, typename> class T_Generator, class T, class T_OldCfg, class T_NewCfg>
+        struct ReplaceCfg< T_Generator<T, T_OldCfg>, T_NewCfg >
+        {
+            using type = T_Generator<T, T_NewCfg>;
+        };
+
+    }  // namespace detail
+
+    template<typename T, class T_Cfg>
+    struct CombinedGenerator
+    {
+        using Generator1 = typename detail::ReplaceCfg<Resolve_t<typename T_Cfg::Gen1>, typename T_Cfg::Cfg1>::type;
+        using Generator2 = typename detail::ReplaceCfg<Resolve_t<typename T_Cfg::Gen2>, typename T_Cfg::Cfg2>::type;
+
+        Generator1 gen1;
+        Generator2 gen2;
 
         template<class T_Idx>
         HDINLINE T operator()(T_Idx&& idx) const
         {
             const T val1 = gen1(idx);
             const T val2 = gen2(idx);
-            if(T_Config::useMax)
+            if(T_Cfg::useMax)
                 return PMaccMath::max(val1, val2);
             else
                 return PMaccMath::min(val1, val2);

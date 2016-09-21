@@ -13,7 +13,8 @@ namespace AvailableGenerators {
     struct DoubleSlit;
     struct RaisingLine;
     struct Edge;
-    struct CombinedDoubleSlit;
+    struct Strips;
+    struct CombinedGenerator;
 
 }  // namespace AvailableGenerators
 }  // namespace initialDensity
@@ -64,9 +65,16 @@ namespace PMacc { namespace traits {
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::CombinedDoubleSlit>
+    struct Resolve<xrt::initialDensity::AvailableGenerators::Strips>
     {
-        using type  = xrt::generators::CombinedDoubleSlit<xrt::float_X, xrt::initialDensity::AvailableGenerators::CombinedDoubleSlit>;
+        using type  = xrt::generators::Strips<xrt::float_X, xrt::initialDensity::AvailableGenerators::Strips>;
+    };
+
+    template<>
+    struct Resolve<xrt::initialDensity::AvailableGenerators::CombinedGenerator>
+    {
+        using Cfg = xrt::initialDensity::AvailableGenerators::CombinedGenerator;
+        using type  = xrt::generators::CombinedGenerator<xrt::float_X, Cfg>;
     };
 
 }}
