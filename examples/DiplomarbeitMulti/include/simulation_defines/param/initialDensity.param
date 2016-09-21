@@ -44,6 +44,42 @@ namespace initialDensity {
             /** Value used */
             static constexpr float_64 value = PARAM_INITIAL_DENSITY;
         };
+        
+        struct Strips;
+        struct CombinedGenerator
+        {
+            using Gen1 = Strips;
+            using Gen2 = Strips;
+            
+            struct Cfg1
+            {
+                static constexpr uint32_t offset  = 0;
+                /** Width of line */
+                static constexpr uint32_t size = 2;
+                /** Spacing between lines */
+                static constexpr uint32_t spacing = 2;
+
+                static constexpr uint32_t offsetX  = 0;
+                static constexpr uint32_t sizeX = PARAM_ROOM_WIDTH / 2;
+                /** Value used */
+                static constexpr float_64 value = PARAM_INITIAL_DENSITY;
+            };
+            struct Cfg2
+            {
+                static constexpr uint32_t offset  = 2;
+                /** Width of line */
+                static constexpr uint32_t size = 2;
+                /** Spacing between lines */
+                static constexpr uint32_t spacing = 2;
+
+                static constexpr uint32_t offsetX  = PARAM_ROOM_WIDTH / 2;
+                static constexpr uint32_t sizeX = (PARAM_ROOM_WIDTH + 1) / 2;
+                /** Value used */
+                static constexpr float_64 value = PARAM_INITIAL_DENSITY;
+            };
+            
+            static constexpr bool useMax = true;
+        };
     }
 
     using Generator =

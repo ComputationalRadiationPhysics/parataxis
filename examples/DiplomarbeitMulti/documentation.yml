@@ -135,4 +135,19 @@ tests:
     cfgFile:     0064gpus.cfg
     post-run: *copyOutput
 
+# Grid
+  - name: Grid
+    description: |
+               Grid through volume
+               Single-Scattering
+               Double Precision
+    cmakeFlag:   11
+    cfgFile:     0032gpus.cfg
+  - name: GridMulti
+    description: |
+               Grid through volume
+               Multi-Scattering
+               Double Precision
+    cmakeFlag:   12
+    cfgFile:     0032gpus.cfg
 
