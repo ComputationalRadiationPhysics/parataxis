@@ -128,7 +128,7 @@ namespace plugins {
             {
                 if(*it >= Environment::get().SubGrid().getGlobalDomain().size[nAxis_])
                 {
-                    std::cerr << "In " << name << " the slicePoints " << *it << "is bigger than the simulation size. Ignored!" << std::endl;
+                    std::cerr << "In " << name << " the slicePoint " << *it << " is bigger than the simulation size. Ignored!" << std::endl;
                     it = slicePoints.erase(it);
                 }else
                     ++it;

@@ -30,8 +30,7 @@ TBG_program="@PROJECT_NAME@"
 TBG_plugins="--p_position.period 999999                   \
              --DensityField_printSlice.period 999999      \
              --DensityField_printSlice.axis 0             \
-             --DensityField_printSlice.slicePoint 1       \
-             --DensityField_printSlice.slicePoint 513     \
+             --DensityField_printSlice.slicePoint 0 255 256 511   \
              --DensityField_printSlice.format tif         \
              --PhotonDetector_print.period 10000          \
              --PhotonDetector_print.noHDF5                \
