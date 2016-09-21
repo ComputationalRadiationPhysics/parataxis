@@ -27,7 +27,7 @@ namespace plugins {
 
         typedef MappingDesc::SuperCellSize SuperCellSize;
         using UsedGatherSlice = GatherSlice<Field, simDim>;
-        std::unique_ptr<UsedGatherSlice> gather_;
+        std::vector<UsedGatherSlice*> gather_;
 
         bool isMaster;
         std::string name;
@@ -36,7 +36,7 @@ namespace plugins {
         uint32_t notifyFrequency;
         std::string format;
         std::string fileName;
-        uint32_t slicePoint;
+        std::vector<uint32_t> slicePoints;
         uint32_t nAxis_;
 
     public:
@@ -45,7 +45,6 @@ namespace plugins {
             name("PrintField: Outputs a slice of a field to a PNG or TIFF"),
             prefix(Field::getName() + std::string("_printSlice")),
             notifyFrequency(0),
-            slicePoint(0),
             nAxis_(0)
         {
             Environment::get().PluginConnector().registerPlugin(this);
@@ -60,7 +59,7 @@ namespace plugins {
                 ((prefix + ".period").c_str(), po::value<uint32_t>(&notifyFrequency), "enable analyzer [for each n-th step]")
                 ((prefix + ".format").c_str(), po::value<std::string>(&this->format), "file format (png or tiff)")
                 ((prefix + ".fileName").c_str(), po::value<std::string>(&this->fileName)->default_value("field"), "base file name to store slices in (_step.png will be appended)")
-                ((prefix + ".slicePoint").c_str(), po::value<uint32_t>(&this->slicePoint)->default_value(40), "slice point 0 <= x < simSize[axis]")
+                ((prefix + ".slicePoint").c_str(), po::value<std::vector<uint32_t>>(&this->slicePoints)->multitoken(), "slice point 0 <= x < simSize[axis]")
                 ((prefix + ".axis").c_str(), po::value<uint32_t>(&this->nAxis_)->default_value(0), "Axis index to slice through (0=>x, 1=>y, 2=>z)")
                 ;
         }
@@ -77,35 +76,38 @@ namespace plugins {
             auto &dc = Environment::get().DataConnector();
 
             Field& field = dc.getData<Field>(Field::getName());
-            (*gather_)(field);
-            if (gather_->hasData()){
-                std::stringstream fileName;
-                fileName << this->fileName
-                         << "_" << std::setw(6) << std::setfill('0') << currentStep
-                         << "." << format;
+            for(UsedGatherSlice* gather: gather_)
+            {
+                (*gather)(field);
+                if (gather->hasData()){
+                    std::stringstream fileName;
+                    fileName << this->fileName
+                             << "_" << std::setw(6) << std::setfill('0') << gather->slicePoint
+                             << "_" << std::setw(6) << std::setfill('0') << currentStep
+                             << "." << format;
 
-                using Box = PMacc::PitchedBox<typename Field::Type, 2>;
-                PMacc::DataBox<Box> data(Box(
-                        gather_->getData().getDataPointer(),
-                        Space2D(),
-                        Space2D(gather_->getData().size()),
-                        gather_->getData().size().x() * sizeof(typename Field::Type)
-                        ));
-                if(format == "png")
-                {
+                    using Box = PMacc::PitchedBox<typename Field::Type, 2>;
+                    PMacc::DataBox<Box> data(Box(
+                            gather->getData().getDataPointer(),
+                            Space2D(),
+                            Space2D(gather->getData().size()),
+                            gather->getData().size().x() * sizeof(typename Field::Type)
+                            ));
+                    if(format == "png")
+                    {
 #if XRT_ENABLE_PNG
-                    imaging::PngCreator img;
-                    img(fileName.str(), data, gather_->getData().size());
+                        imaging::PngCreator img;
+                        img(fileName.str(), data, gather->getData().size());
 #endif
-                }else
-                {
+                    }else
+                    {
 #if XRT_ENABLE_TIFF
-                    imaging::TiffCreator img;
-                    img(fileName.str(), data, gather_->getData().size());
+                        imaging::TiffCreator img;
+                        img(fileName.str(), data, gather->getData().size());
 #endif
+                    }
                 }
             }
-
             dc.releaseData(Field::getName());
         }
 
@@ -122,11 +124,17 @@ namespace plugins {
                 std::cerr << "In " << name << " the axis is invalid. Ignored!" << std::endl;
                 return;
             }
-            if(slicePoint >= Environment::get().SubGrid().getGlobalDomain().size[nAxis_])
+            for(auto it = slicePoints.begin(); it != slicePoints.end();)
             {
-                std::cerr << "In " << name << " the slicePoint is bigger than the simulation size. Ignored!" << std::endl;
-                return;
+                if(*it >= Environment::get().SubGrid().getGlobalDomain().size[nAxis_])
+                {
+                    std::cerr << "In " << name << " the slicePoints " << *it << "is bigger than the simulation size. Ignored!" << std::endl;
+                    it = slicePoints.erase(it);
+                }else
+                    ++it;
             }
+            if(slicePoints.empty())
+                return;
             std::transform(format.begin(), format.end(), format.begin(), ::tolower);
             if(format != "tiff" && format != "tif")
                 format = "png";
@@ -137,7 +145,9 @@ namespace plugins {
 #endif
 #if XRT_ENABLE_PNG || XRT_ENABLE_TIFF
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
-            gather_.reset(new UsedGatherSlice(slicePoint, nAxis_));
+            // TODO: Ineffective. Improve!
+            for(uint32_t slicePoint: slicePoints)
+                gather_.push_back(new UsedGatherSlice(slicePoint, nAxis_));
 #else
             PMacc::log<XRTLogLvl::PLUGINS>("Did not found tiff or png library. %1% is disabled") % getName();
 #endif
@@ -145,7 +155,9 @@ namespace plugins {
 
         void pluginUnload() override
         {
-            gather_.reset();
+            for(UsedGatherSlice* gather: gather_)
+                delete gather;
+            gather_.clear();
         }
 
      };
