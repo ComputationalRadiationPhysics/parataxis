@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2013-2014 Axel Huebl, Rene Widera, Felix Schmitt
+# Copyright 2013-2016 Axel Huebl, Rene Widera, Felix Schmitt, Alexander Grund
 #
 # This file is part of PIConGPU.
 #
