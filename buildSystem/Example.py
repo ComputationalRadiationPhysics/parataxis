@@ -202,7 +202,7 @@ class Example:
         """Return a list of CMake flag strings as returned by the cmakeFlags shell script"""
         result = execCmd(self.folder + "/cmakeFlags -ll", True)
         if(result.result != 0):
-            raise Exception("Could not get cmakeFlags: " + result.stderr.join("\n"))
+            raise Exception("Could not get cmakeFlags: " + "\n".join(result.stderr))
         else:
             result = [x for x in result.stdout if x.startswith('-D')]
             if addCMakeFlags and len(addCMakeFlags) > 0:
