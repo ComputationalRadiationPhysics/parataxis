@@ -1,5 +1,6 @@
 /**
- * Copyright 2015-2016 Alexander Grund
+ * Copyright 2014-2016 Rene Widera, Marco Garten, Alexander Grund, Axel Huebl,
+ *                     Heiko Burau, Alexander Grund
  *
  * This file is part of ParaTAXIS.
  *
@@ -36,8 +37,7 @@ namespace xrt {
     /** Global cell index of a particle (calculated and used only in HDF5 dump) */
     value_identifier(Space, globalCellIdx_pic, Space());
 
-    /** specialization for the relative in-cell position.
-     *  64 bit required to get enough accuracy after ~150 (in praxis ~600-800) timesteps */
+    /** specialization for the relative in-cell position. */
     value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** direction in which the photon is moving */
     value_identifier(float3_X, direction, float3_X::create(0.));

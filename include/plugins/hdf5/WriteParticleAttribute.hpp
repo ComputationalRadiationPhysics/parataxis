@@ -1,5 +1,5 @@
 /**
- * Copyright 2015-2016 Alexander Grund
+ * Copyright 2013-2016 Axel Huebl, Felix Schmitt, Rene Widera, Alexander Grund
  *
  * This file is part of ParaTAXIS.
  *
