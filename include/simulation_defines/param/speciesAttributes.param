@@ -23,7 +23,7 @@ namespace xrt {
     /** direction in which the photon is moving */
     value_identifier(float3_X, direction, float3_X::create(0.));
     /** global unique Id of a particle */
-    value_identifier(uint32_t, particleId, PMacc::IdProvider<simDim>::getNewId());
+    value_identifier(uint64_t, particleId, PMacc::IdProvider<simDim>::getNewId());
 
     /** Timestep at which the particle was created/ entered in the volume */
     value_identifier(uint32_t, creationTime, 0);
