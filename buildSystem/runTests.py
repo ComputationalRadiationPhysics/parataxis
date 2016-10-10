@@ -246,19 +246,19 @@ def main(argv):
         # Wait for started tests to finish
         i = 0
         while i < len(startedTests):
-            test = startedTests[i]
-            if test.finishTest(options.dry_run, options.verbose) != 0:
+            startedTest = startedTests[i]
+            if startedTest.finishTest(options.dry_run, options.verbose) != 0:
                 numErrors += 1
             else:
                 # If the test finished successfully, we may start dependent tests
                 j = 0
                 while j < len(waitingTests):
-                    wTest = waitingTests[j]
-                    if wTest.getDependency() == test.name:
-                        if test.startTest(srcDir, options.output, options.dry_run, options.verbose) != 0:
+                    waitingTest = waitingTests[j]
+                    if waitingTest.getDependency() == startedTest.name:
+                        if waitingTest.startTest(srcDir, options.output, options.dry_run, options.verbose) != 0:
                             numErrors += 1
                         else:
-                            startedTests.append(test)
+                            startedTests.append(waitingTest)
                         del waitingTests[j]
                     else:
                         j += 1
