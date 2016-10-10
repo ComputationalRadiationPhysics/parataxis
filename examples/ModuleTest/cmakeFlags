@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/env bash
-
 ################################################################################
 # add presets here
 #   - default: index 0

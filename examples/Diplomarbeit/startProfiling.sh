@@ -17,8 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
 
-#!/usr/bin/env bash
-
 rm -rf ~/xrtTestsProfiling
 export TBG_TPLFILE=submit/hypnos-hzdr/k20_nvprof_profile.tpl
 export TBG_CFGFILE=submit/8gpuProfiling.cfg
