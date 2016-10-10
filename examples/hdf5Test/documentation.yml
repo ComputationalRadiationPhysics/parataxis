@@ -26,7 +26,7 @@ aliases:
 # Run-Time Tests
 tests:
   - name: Checkpoint
-    description: Test only that checkpointing works
+    description: Test that checkpointing works
     cmakeFlag: 0
     cfgFile:   0001gpus.cfg
     post-run: &cpPostRun
@@ -35,7 +35,7 @@ tests:
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateCheckpoint.py"
   - name: Restart
-    description: Restart from the last checkpoint of BaseCheckpoint
+    description: Restart from the last checkpoint of Checkpoint
     cmakeFlag: 0
     cfgFile:   0001gpusRestart.cfg
     dependency: Checkpoint
@@ -59,12 +59,41 @@ tests:
     description: Uses HDF5 files to interpolate the field between timesteps
     cmakeFlag: 2
     cfgFile:   0001gpusHDF5Field.cfg
-    pre-run:
+    pre-run: &createHDF5Field
         - mkdir "${TEST_INSTALL_PATH}/testData/$TEST_NAME"
         - python3 "${TEST_INSTALL_PATH}/testData/createHDF5Filesets.py" --folder "${TEST_INSTALL_PATH}/testData/$TEST_NAME" --size ${TEST_GRID_SIZE} --dt "2e-16" --time "1.5e-15"
-    post-run:
+    post-run: &validateHDF5Field
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateCheckpoint.py"
         - python3 "${TEST_INSTALL_PATH}/testData/validateFieldInterpolator.py"
 
+# Same but for 8 GPUs
+  - name: Checkpoint8
+    description: Test that checkpointing works for 8 GPUs
+    cmakeFlag: 0
+    cfgFile:   0008gpus.cfg
+    post-run: *cpPostRun
+  - name: Restart8
+    description: Restart from the last checkpoint of Checkpoint8
+    cmakeFlag: 0
+    cfgFile:   0008gpusRestart.cfg
+    dependency: Checkpoint
+    post-run: *restartPostRun
+  - name: CheckpointCt8
+    description: Test that checkpointing works for 8 GPUs (ParticleCounter)
+    cmakeFlag: 1
+    cfgFile:   0008gpus.cfg
+    post-run: *cpPostRun
+  - name: RestartCt8
+    description: Restart from the last checkpoint of CheckpointCt8 (ParticleCounter)
+    cmakeFlag: 1
+    cfgFile:   0008gpusRestart.cfg
+    dependency: CheckpointCt
+    post-run: *restartPostRun
+  - name: HDF5FieldInterpolator8
+    description: Uses HDF5 files to interpolate the field between timesteps on 8 GPUs
+    cmakeFlag: 2
+    cfgFile:   0008gpusHDF5Field.cfg
+    pre-run: *createHDF5Field
+    post-run: *validateHDF5Field
 
