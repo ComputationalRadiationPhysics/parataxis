@@ -77,7 +77,7 @@ tests:
     description: Restart from the last checkpoint of Checkpoint8
     cmakeFlag: 0
     cfgFile:   0008gpusRestart.cfg
-    dependency: Checkpoint
+    dependency: Checkpoint8
     post-run: *restartPostRun
   - name: CheckpointCt8
     description: Test that checkpointing works for 8 GPUs (ParticleCounter)
@@ -88,7 +88,7 @@ tests:
     description: Restart from the last checkpoint of CheckpointCt8 (ParticleCounter)
     cmakeFlag: 1
     cfgFile:   0008gpusRestart.cfg
-    dependency: CheckpointCt
+    dependency: CheckpointCt8
     post-run: *restartPostRun
   - name: HDF5FieldInterpolator8
     description: Uses HDF5 files to interpolate the field between timesteps on 8 GPUs
