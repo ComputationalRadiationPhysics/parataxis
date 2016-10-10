@@ -8,11 +8,7 @@ namespace xrt {
     constexpr uint32_t KiB = 1024;
     constexpr uint32_t MiB = 1024 * KiB;
 
-    /* We have to hold back 350MiB for GPU-internal operations:
-     *   - random number generator
-     *   - reduces
-     *   - ...
-     */
+    /* We have to hold back some memory for GPU-internal operations like reduces...  */
     constexpr size_t reservedGPUMemorySize = 350 * MiB;
 
     namespace mCT=PMacc::math::CT;
@@ -25,9 +21,9 @@ namespace xrt {
     //! how many bytes for buffer is reserved to communication in one direction
     namespace exchangeSize {
 
-        constexpr uint32_t X      = 1  * MiB;
-        constexpr uint32_t Y      = 3  * MiB;
-        constexpr uint32_t Z      = 1  * MiB;
+        constexpr uint32_t X      = 80 * MiB; // Prefer forward direction
+        constexpr uint32_t Y      = 10 * MiB;
+        constexpr uint32_t Z      = 10 * MiB;
         constexpr uint32_t Corner = 8  * KiB;
         constexpr uint32_t Edges  = 32 * KiB;
 
