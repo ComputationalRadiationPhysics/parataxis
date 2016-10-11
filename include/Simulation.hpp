@@ -118,6 +118,8 @@ namespace xrt {
             initMallocMC();
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
+            particleStorage->createParticleBuffer();
+
             size_t freeGpuMem(0);
             Environment::get().MemoryInfo().getMemoryInfo(&freeGpuMem);
             PMacc::log< XRTLogLvl::MEMORY > ("free mem after all mem is allocated %1% MiB") % (freeGpuMem / MiB);
