@@ -108,14 +108,14 @@ namespace xrt {
 #endif
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
+            PMacc::log<XRTLogLvl::SIM_STATE>("Creating particle buffers");;
+            /* create particle storage (does NOT use mallocMC) */
+            particleStorage = new PIC_Photons(cellDescription, PIC_Photons::FrameType::getName());
+            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+
             PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
-
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing Particles");;
-            /* ... and allocate the particles (which uses mallocMC) */
-            particleStorage = new PIC_Photons(cellDescription, PIC_Photons::FrameType::getName());
             PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             size_t freeGpuMem(0);
