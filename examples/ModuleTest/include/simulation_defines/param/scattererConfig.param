@@ -74,13 +74,13 @@ namespace scatterer {
             static constexpr float_64 angle = 0.01;
 
             HINLINE explicit
-            DoubleRandDirection(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset), rand(RNGProvider::createRandom<Distribution>())
+            DoubleRandDirection(uint32_t currentStep): rand(RNGProvider::createRandom<Distribution>())
             {}
 
             DINLINE void
-            init(Space globalCellIdx)
+            init(Space localCellIdx)
             {
-                rand.init(globalCellIdx - offset);
+                rand.init(localCellIdx);
             }
 
             template<class T_DensityBox, typename T_Position, typename T_Direction>
@@ -96,7 +96,6 @@ namespace scatterer {
             }
 
         private:
-            PMACC_ALIGN8(offset, const Space);
             PMACC_ALIGN8(rand, Random);
         };
     }  // namespace direction

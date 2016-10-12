@@ -93,7 +93,7 @@ namespace initPolicies {
     struct EvenDistPosition
     {
         DINLINE void
-        init(Space totalCellIdx) const
+        init(Space localCellIdx) const
         {}
 
         DINLINE void

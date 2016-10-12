@@ -33,10 +33,10 @@ namespace initPolicies {
     {
         static constexpr int32_t numParts = T_numParts;
 
-        ConstDistribution(Space totalSize){}
+        ConstDistribution(){}
 
         DINLINE void
-        init(Space totalCellIdx) const
+        init(Space localCellIdx) const
         {}
 
         DINLINE int32_t

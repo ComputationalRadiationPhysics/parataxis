@@ -43,7 +43,7 @@ namespace xrt {
             const Space totalCellIdx = localOffset + localCellIndex;
             if(simDim == 3 && totalCellIdx[laserConfig::DIRECTION] != 0)
                 return;
-            particleFillInfo.init(totalCellIdx);
+            particleFillInfo.init(localCellIndex);
             for(uint32_t timeStep = 0; timeStep < numTimesteps; timeStep++)
             {
                 const uint32_t numParts = particleFillInfo.getCount(timeStep);
@@ -150,9 +150,8 @@ namespace xrt {
         particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
         getInitFunctor(uint32_t timeStep) const
         {
-           const Space totalSize = Environment::get().SubGrid().getTotalDomain().size;
            return particles::getParticleFillInfo(
-                    Distribution(totalSize),
+                    Distribution(),
                     Position(),
                     Phase(phi_0, timeStep),
                     Direction()

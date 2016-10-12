@@ -34,7 +34,7 @@ namespace scatterer {
      *     - Returns true iff the particle was scattered
      * The interface of the functors is similar to this one:
      *     - ctor takes the currentStep
-     *     - init(Space totalCellIdx) which is called before the first call to the functor
+     *     - init(Space localCellIdx) which is called before the first call to the functor
      *     - functor taking densityBox centered at the particles cell, position and
      *       direction of the particle.
      *       The Condition functor should return a bool and gets only const-Refs as the arguments
@@ -56,10 +56,10 @@ namespace scatterer {
         {}
 
         HDINLINE void
-        init(Space totalCellIdx)
+        init(Space localCellIdx)
         {
-            condition.init(totalCellIdx);
-            changeDirection.init(totalCellIdx);
+            condition.init(localCellIdx);
+            changeDirection.init(localCellIdx);
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Direction>

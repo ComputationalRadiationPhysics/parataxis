@@ -28,18 +28,18 @@ namespace particles {
      * Collection of policies related to filling the grid with particles
      *
      * \tparam T_Count     Returns the number of particles for a given cell and time
-     *                     init(Space2D totalCellIdx)
+     *                     init(Space2D localCellIdx)
      *                     Functor: int32_t(int32_t timeStep)
      * \tparam T_Position  Returns the in-cell position for a given cell and particle number
-     *                     init(Space2D totalCellIdx)
+     *                     init(Space2D localCellIdx)
      *                     setCount(int32_t particleCount)
      *                     Functor: float_D(int32_t numParticle), gets called for all particles
      *                      with i in [0, particleCount)
      * \tparam T_Phase     Returns the phase of the particles in a given cell at a given time
-     *                     init(Space2D totalCellIdx)
+     *                     init(Space2D localCellIdx)
      *                     Functor: float_X(int32_t timeStep)
      * \tparam T_Direction Returns the initial direction of the particles for a given cell and time
-     *                     init(Space2D totalCellIdx)
+     *                     init(Space2D localCellIdx)
      *                     Functor: float_D(int32_t timeStep)
      *
      */
@@ -68,12 +68,12 @@ namespace particles {
         {}
 
         HDINLINE void
-        init(Space totalCellIdx)
+        init(Space localCellIdx)
         {
-            getCount_.init(totalCellIdx);
-            getPosition.init(totalCellIdx);
-            getPhase.init(totalCellIdx);
-            getDirection.init(totalCellIdx);
+            getCount_.init(localCellIdx);
+            getPosition.init(localCellIdx);
+            getPhase.init(localCellIdx);
+            getDirection.init(localCellIdx);
         }
 
         HDINLINE int32_t

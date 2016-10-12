@@ -44,16 +44,16 @@ namespace scatterer {
 #endif
 
         HINLINE explicit
-        OnRandom(uint32_t currentStep): offset(Environment::get().SubGrid().getLocalDomain().offset)
+        OnRandom(uint32_t currentStep)
 #if !XRT_USE_SLOW_RNG
-                ,rand(RNGProvider::createRandom<Distribution>())
+                :rand(RNGProvider::createRandom<Distribution>())
 #endif
         {}
 
         DINLINE void
-        init(Space globalCellIdx)
+        init(Space localCellIdx)
         {
-            rand.init(globalCellIdx - offset);
+            rand.init(localCellIdx);
         }
 
         template<class T_DensityBox, typename T_Position, typename T_Direction>
@@ -65,7 +65,6 @@ namespace scatterer {
         }
 
     private:
-        PMACC_ALIGN8(offset, const Space);
         PMACC_ALIGN8(rand, Random);
     };
 

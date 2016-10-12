@@ -44,12 +44,17 @@ namespace laserConfig {
         };
         
         struct PtOnly{
+            Space2D localOffset2D;
             int32_t numParts;
-            HINLINE PtOnly(Space){}
-            DINLINE void
-            init(Space totalCellIdx)
+            HINLINE PtOnly()
             {
-                if(totalCellIdx.y() == PARAM_CUBE_Y && totalCellIdx.z() == PARAM_CUBE_Z)
+                const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
+                localOffset2D = Space2D(localOffset.y(), localOffset.z());
+            }
+            DINLINE void
+            init(Space localCellIdx)
+            {
+                if(localCellIdx.y() + localOffset2D.x() == PARAM_CUBE_Y && localCellIdx.z() + localOffset2D.y() == PARAM_CUBE_Z)
                     numParts = 150;
                 else
                     numParts = 0;

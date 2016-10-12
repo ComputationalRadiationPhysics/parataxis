@@ -42,7 +42,7 @@ namespace initPolicies {
         }
 
         DINLINE void
-        init(Space totalCellIdx) const
+        init(Space localCellIdx) const
         {}
 
         DINLINE float_X

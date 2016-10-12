@@ -36,16 +36,16 @@ namespace initPolicies {
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 #endif
 
-        HINLINE RandomPosition(): offset(Environment::get().SubGrid().getLocalDomain().offset)
+        HINLINE RandomPosition()
 #if !XRT_USE_SLOW_RNG
-                ,rand(RNGProvider::createRandom<Distribution>())
+                :rand(RNGProvider::createRandom<Distribution>())
 #endif
         {}
 
         DINLINE void
-        init(Space globalCellIdx)
+        init(Space localCellIdx)
         {
-            rand.init(globalCellIdx - offset);
+            rand.init(localCellIdx);
         }
 
         HDINLINE void
@@ -62,7 +62,6 @@ namespace initPolicies {
             return result;
         }
     private:
-        PMACC_ALIGN8(offset, const Space);
         PMACC_ALIGN8(rand, Random);
     };
 

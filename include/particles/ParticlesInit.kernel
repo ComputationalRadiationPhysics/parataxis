@@ -39,7 +39,7 @@ namespace kernel{
      *
      * \tparam particleFillInfo Struct providing functions (or functors) for getting number of particles,
      *                          their position, phase and direction. Must provide an init(Space2D) function
-     *                          that is called first with the totalCellIdx of the plane where particles are
+     *                          that is called first with the localCellIdx of the plane where particles are
      *                          created. Must also provide int32_t getCount(timeStep),
      *                          float_D getPosition(numParticle), getPhase(timeStep), getDirection(timeStep)
      *                          E.g. \see ParticleFillInfo
@@ -76,7 +76,7 @@ namespace kernel{
         const Space totalCellIdx = localOffset + localCellIndex;
         if(simDim == 3 && totalCellIdx[laserConfig::DIRECTION] != 0)
             return;
-        particleFillInfo.init(totalCellIdx);
+        particleFillInfo.init(localCellIndex);
 
         __shared__ int32_t blockCreatesParticles;
         if (isMaster)

@@ -83,9 +83,9 @@ namespace kernel {
                   );
         __syncthreads();
 
-        const Space totalCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
-                                        Space(threadIdx) + localOffset;
-        frameSolver.init(totalCellIdx);
+        const Space localCellIdx = (superCellIdx - mapper.getGuardingSuperCells()) * SuperCellSize::toRT() +
+                                        Space(threadIdx);
+        frameSolver.init(localCellIdx);
 
         /*move over frames and call frame solver*/
         PMacc::lcellId_t particlesInSuperCell = particleBox.getSuperCell(superCellIdx).getSizeLastFrame();
@@ -154,9 +154,9 @@ namespace kernel {
         {}
 
         HDINLINE void
-        init(Space totalCellIdx)
+        init(Space localCellIdx)
         {
-            scatter_.init(totalCellIdx);
+            scatter_.init(localCellIdx);
         }
 
         template<class T_Frame, class T_DensityBox >

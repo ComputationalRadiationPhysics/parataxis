@@ -20,16 +20,9 @@
 #pragma once
 
 #include "xrtTypes.hpp"
-#include "particles/functors/IterateSpecies.hpp"
-#include "particles/functors/CopySpeciesToHost.hpp"
-#include "particles/filters/IndexFilter.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
-#include <particles/memory/buffers/MallocMCBuffer.hpp>
-#include <mappings/kernel/AreaMapping.hpp>
-#include <dataManagement/DataConnector.hpp>
-#include <traits/HasIdentifier.hpp>
 #include <debug/VerboseLog.hpp>
 #include <string>
 
