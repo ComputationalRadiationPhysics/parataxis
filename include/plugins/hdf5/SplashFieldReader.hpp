@@ -40,6 +40,8 @@ namespace hdf5 {
         /// @param localDomain  Offset and Size of the field on the current process (Size must match extents of data)
         template<typename T>
         void operator()(T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain);
+        /** Return the global size of the dataset */
+        splash::Dimensions getGlobalSize();
     private:
         template<typename T_In, typename T_Out>
         bool tryConvertedRead(T_Out* data, const splash::Domain& domain, const splash::CollectionType& colTypeData);
@@ -47,6 +49,19 @@ namespace hdf5 {
         const int32_t id_;
         std::string datasetName_;
     };
+
+    splash::Dimensions SplashFieldReader::getGlobalSize()
+    {
+        // sizeRead will be set
+        splash::Dimensions globalSizeOut;
+        std::unique_ptr<splash::CollectionType> colType(hdfFile_.readMeta(
+            id_,
+            datasetName_.c_str(),
+            splash::Dimensions(0, 0, 0),
+            splash::Dimensions(0, 0, 0),
+            globalSizeOut));
+        return globalSizeOut;
+    }
 
     template<typename T>
     void SplashFieldReader::operator()(T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain)
