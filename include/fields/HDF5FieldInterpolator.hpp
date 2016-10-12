@@ -24,6 +24,7 @@
 #include "plugins/ISimulationPlugin.hpp"
 #include "plugins/hdf5/BasePlugin.hpp"
 #include "plugins/hdf5/SplashWriter.hpp"
+#include "plugins/hdf5/interpolationHelpers.hpp"
 #include "plugins/openPMD/helpers.hpp"
 #include <cuSTL/container/HostBuffer.hpp>
 
@@ -77,9 +78,6 @@ private:
     /** Interpolates the field for the given time, uploading it to the device when finished.
      *  Loads from HDF5 if necessary */
     void loadField(Type curTime);
-    /** Return the biggest HDF5 timestep for which h5Time<=curTime is valid
-     *  Requires open HDF5 file*/
-    uint32_t findTimestep(Type curTime, uint32_t startTimestep = 0);
     /** Reinitializes the fields from HDF5 starting at curHDF5Timestep as the lower bound
      *  If force is true, data is loaded even when the timestep did not change */
     void reinitFields(Type curTime, bool force);
@@ -104,6 +102,7 @@ void HDF5FieldInterpolator<T_Field>::pluginLoad()
     lastTime = nextTime = -1;
     curHDF5Timestep = maxHDF5Timestep = 0;
     openH5File(baseFilename, true);
+    // TODO: Validate spacing, dataOrder etc.
     reinitFields(0, true);
     closeH5File();
 }
@@ -117,50 +116,10 @@ void HDF5FieldInterpolator<T_Field>::pluginUnload()
 }
 
 template<class T_Field>
-uint32_t HDF5FieldInterpolator<T_Field>::findTimestep(Type curTime, uint32_t startTimestep)
-{
-    namespace openPMD = plugins::openPMD;
-    // Open at first timestep and validate file
-    auto reader = plugins::hdf5::makeSplashWriter(*dataCollector, startTimestep);
-    maxHDF5Timestep = dataCollector->getMaxID();
-    openPMD::validate(reader, false);
-    // Get the current delta t
-    auto readAttr = reader(openPMD::getBasePath(reader)).getAttributeReader();
-    float_64 timeUnitSI;
-    float_X dt;
-    readAttr("dt", dt);
-    readAttr("timeUnitSI", timeUnitSI);
-    dt *= UNIT_TIME/timeUnitSI;
-    // Get first time
-    float_X time = openPMD::getTime(reader);
-    // This time should be smaller, than our time.
-    // We still consider it valid, if the difference is at most 1 dt (in which case we extrapolate)
-    if(time > curTime + dt)
-        throw std::runtime_error(std::string("Cannot load field as first entry is at ") +
-                std::to_string(time / UNIT_TIME) + "s but requested time is " +
-                std::to_string(curTime / UNIT_TIME) + "s");
-    else if(time < curTime)
-    {
-        // We increase the HDF5 time till it is >= our time.
-        // Then stepping back takes as to the very last timestep before curTime
-        // First fast forward assuming equal distance times
-        float_X  diff = curTime - time;
-        reader.setId(std::min<uint32_t>(ceil(diff / dt), maxHDF5Timestep));
-        // Now single steps
-        while(openPMD::getTime(reader) < curTime && reader.getId() < maxHDF5Timestep)
-            reader.setId(reader.getId() + 1);
-        // And now backward till H5time <= curTime (guaranteed to terminate as for id=0 'time < curTime' is checked
-        while(openPMD::getTime(reader) > curTime)
-            reader.setId(reader.getId() - 1);
-    }
-    return reader.getId();
-}
-
-template<class T_Field>
 void HDF5FieldInterpolator<T_Field>::reinitFields(Type curTime, bool force)
 {
     namespace openPMD = plugins::openPMD;
-    uint32_t newHDF5Timestep = findTimestep(curTime, curHDF5Timestep);
+    uint32_t newHDF5Timestep = plugins::hdf5::findTimestep(*dataCollector, curTime, &maxHDF5Timestep, curHDF5Timestep);
     // No new step
     if(!force && newHDF5Timestep != curHDF5Timestep)
         return;
