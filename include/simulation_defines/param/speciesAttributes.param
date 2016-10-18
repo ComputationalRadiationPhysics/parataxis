@@ -1,3 +1,23 @@
+/**
+ * Copyright 2014-2016 Rene Widera, Marco Garten, Alexander Grund, Axel Huebl,
+ *                     Heiko Burau, Alexander Grund
+ *
+ * This file is part of ParaTAXIS.
+ *
+ * ParaTAXIS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ParaTAXIS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
 #pragma once
 
 #include <pmacc_types.hpp>
@@ -17,8 +37,7 @@ namespace xrt {
     /** Global cell index of a particle (calculated and used only in HDF5 dump) */
     value_identifier(Space, globalCellIdx_pic, Space());
 
-    /** specialization for the relative in-cell position.
-     *  64 bit required to get enough accuracy after ~150 (in praxis ~600-800) timesteps */
+    /** specialization for the relative in-cell position. */
     value_identifier(floatD_X, position_pic, floatD_X::create(0.));
     /** direction in which the photon is moving */
     value_identifier(float3_X, direction, float3_X::create(0.));
