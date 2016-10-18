@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 
     /// Shrinks a DataSpace to the new dimensionality by removing the first dimension(s)
     /// Acts like the shrink-member-function but leaves nD->nD untouched
@@ -53,4 +53,4 @@ namespace xrt {
         return ShrinkToDim<T_newDims, T_oldDims>()(old);
     }
 
-}  // namespace xrt
+}  // namespace parataxis

@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "particles/functors/GetPhaseByTimestep.hpp"
 #include "particles/functors/GetWavelength.hpp"
 #include "particles/functors/GetAngFrequency.hpp"
@@ -28,7 +28,7 @@
 #include <algorithms/math.hpp>
 #include <basicOperations.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace detector {
 
     /**
@@ -136,4 +136,4 @@ namespace detector {
     };
 
 }  // namespace detector
-}  // namespace xrt
+}  // namespace parataxis

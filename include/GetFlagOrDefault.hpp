@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 
     /**
      * When a flag with the given key exists in the object the resolved
@@ -59,4 +59,4 @@ namespace xrt {
     >
     using GetFlagOrDefault_t = typename GetFlagOrDefault<T_Object, T_Key, T_Default>::type;
 
-}  // namespace xrt
+}  // namespace parataxis

@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "fields/IFieldManipulator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
 template<class T_Field>
@@ -53,4 +53,4 @@ public:
 };
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

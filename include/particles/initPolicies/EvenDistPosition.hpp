@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <algorithms/math.hpp>
 #include <cmath>
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace initPolicies {
 
@@ -120,4 +120,4 @@ namespace initPolicies {
 
 }  // namespace initPolicies
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

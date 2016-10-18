@@ -22,7 +22,7 @@
 #include "particles/ProcessLeavingParticles.hpp"
 #include <particles/ParticleDescription.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 
     template<
@@ -47,4 +47,4 @@ namespace particles {
     >;
 
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

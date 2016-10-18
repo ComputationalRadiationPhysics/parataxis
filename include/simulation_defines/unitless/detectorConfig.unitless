@@ -27,28 +27,28 @@
 namespace PMacc { namespace traits {
 
     template<>
-    struct Resolve<xrt::detector::particleHandlers::CountParticles>
+    struct Resolve<parataxis::detector::particleHandlers::CountParticles>
     {
-        using type  = xrt::detector::CountParticles<>;
+        using type  = parataxis::detector::CountParticles<>;
     };
 
     template<>
-    struct Resolve<xrt::detector::particleHandlers::AddWaveParticles>
+    struct Resolve<parataxis::detector::particleHandlers::AddWaveParticles>
     {
-        using type  = xrt::detector::AddWaveParticles<>;
+        using type  = parataxis::detector::AddWaveParticles<>;
     };
 
     template<>
-    struct Resolve<xrt::detector::PhotonDetector>
+    struct Resolve<parataxis::detector::PhotonDetector>
     {
-        using Config = xrt::detector::PhotonDetector;
-        using type  = xrt::detector::PhotonDetectorImpl<Config, xrt::PIC_Photons>;
+        using Config = parataxis::detector::PhotonDetector;
+        using type  = parataxis::detector::PhotonDetectorImpl<Config, parataxis::PIC_Photons>;
     };
 
     template<>
-    struct Resolve<xrt::detector::NoDetector>
+    struct Resolve<parataxis::detector::NoDetector>
     {
-        using type  = xrt::detector::NoDetectorImpl;
+        using type  = parataxis::detector::NoDetectorImpl;
     };
 
 }}

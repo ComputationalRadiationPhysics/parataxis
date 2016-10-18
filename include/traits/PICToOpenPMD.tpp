@@ -20,10 +20,10 @@
 
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "traits/SIBaseUnits.hpp"
 
-namespace xrt
+namespace parataxis
 {
 namespace traits
 {
@@ -91,4 +91,4 @@ namespace traits
     };
 
 } // namespace traits
-} // namespace xrt
+} // namespace parataxis

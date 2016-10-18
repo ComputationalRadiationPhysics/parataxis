@@ -102,7 +102,7 @@ class Compilation:
         cmd = 'mkdir -p "' + buildPath + '" && cd "' + buildPath + '"\n'
         cmd += "cmake"
         cmd += " " + self.example.getCMakeFlags()[self.cmakePreset].replace(";", "\\;")
-        cmd += ' -DXRT_EXTENSION_PATH="' + self.example.getFolder() + '"'
+        cmd += ' -DPARATAXIS_EXTENSION_PATH="' + self.example.getFolder() + '"'
         cmd += ' -DCMAKE_INSTALL_PREFIX="' + self.getInstallPath() + '"'
         cmd += ' "' + pathToCMakeLists + '"'
         if dryRun or verbose:

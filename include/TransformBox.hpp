@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "traits/stdRenamings.hpp"
 
-namespace xrt {
+namespace parataxis {
 
     /**
      * A simple wrapper around a DataBox that transforms elements on access
@@ -85,4 +85,4 @@ namespace xrt {
         using BaseBox = traits::remove_cv_t<traits::remove_reference_t<T_BaseBox>>;
         return TransformBox<BaseBox, detail::HostTransformWrapper<T_Transform>>(box, transformation);
     }
-}  // namespace xrt
+}  // namespace parataxis

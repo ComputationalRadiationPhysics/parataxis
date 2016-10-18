@@ -19,12 +19,12 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "traits/PICToSplash.hpp"
 #include "plugins/hdf5/splashUtils.hpp"
 #include <splash/splash.h>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -56,7 +56,7 @@ namespace hdf5 {
     template<typename T>
     void SplashFieldWriter::operator()(const T* data, unsigned numDims, const splash::Dimensions& globalSize, const splash::Domain& localDomain)
     {
-        PMacc::log<XRTLogLvl::DEBUG>("HDF5: writing %4%D record %1% (globalSize: %2%, localDomain: %3%")
+        PMacc::log<PARATAXISLogLvl::DEBUG>("HDF5: writing %4%D record %1% (globalSize: %2%, localDomain: %3%")
                 % datasetName_ % globalSize.toString() % localDomain.toString() % numDims;
 
         typename traits::PICToSplash<T>::type splashType;
@@ -81,4 +81,4 @@ namespace hdf5 {
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

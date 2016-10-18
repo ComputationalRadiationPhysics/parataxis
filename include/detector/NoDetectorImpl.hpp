@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace detector {
 
     class NoDetectorImpl: PMacc::ISimulationData
@@ -79,4 +79,4 @@ namespace detector {
     };
 
 }  // namespace detector
-}  // namespace xrt
+}  // namespace parataxis

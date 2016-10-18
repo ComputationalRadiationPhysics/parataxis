@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <simulationControl/TimeInterval.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     class TimeIntervallExt: public PMacc::TimeIntervall
     {
@@ -41,4 +41,4 @@ namespace xrt {
         }
     };
 
-}  // namespace xrt
+}  // namespace parataxis

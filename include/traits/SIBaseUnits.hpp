@@ -20,7 +20,7 @@
 
 #pragma once
 
-namespace xrt
+namespace parataxis
 {
 namespace traits
 {
@@ -45,4 +45,4 @@ namespace traits
     }
 
 } // namespace traits
-} // namespace xrt
+} // namespace parataxis

@@ -28,7 +28,7 @@
 #   define PARAM_FACTORZ 0
 #endif
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace scatterer {
 
@@ -102,4 +102,4 @@ namespace scatterer {
 
 }  // namespace scatterer
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

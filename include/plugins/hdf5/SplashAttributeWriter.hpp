@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/SplashBaseAttributeWriter.hpp"
 #include <splash/splash.h>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -96,4 +96,4 @@ void SplashGlobalAttributeWriter::write(const splash::CollectionType& colType, c
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

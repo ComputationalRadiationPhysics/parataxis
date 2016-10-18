@@ -20,7 +20,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 #include <dimensions/DataSpaceOperations.hpp>
 #include <memory/boxes/CachedBox.hpp>
@@ -29,7 +29,7 @@
 #include <particles/Identifier.hpp>
 #include <nvidia/atomic.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace kernel {
 
     /**
@@ -330,4 +330,4 @@ namespace kernel {
     }
 
 }  // namespace kernel
-}  // namespace xrt
+}  // namespace parataxis

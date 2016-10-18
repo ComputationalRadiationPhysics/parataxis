@@ -21,7 +21,7 @@
 
 #include "plugins/openPMD/ParticlePatches.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -66,4 +66,4 @@ void PatchReader::read(T_SplashReader&& reader, std::vector<uint64_t>& values, u
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

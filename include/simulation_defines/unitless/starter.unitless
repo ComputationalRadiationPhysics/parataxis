@@ -22,8 +22,8 @@
 #include "Simulation.hpp"
 #include "simulationControl/SimulationStarter.hpp"
 
-namespace xrt {
+namespace parataxis {
 
     using SimStarter = SimulationStarter<Simulation>;
 
-}  // namespace xrt
+}  // namespace parataxis

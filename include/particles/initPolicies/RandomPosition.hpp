@@ -19,17 +19,17 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <random/distributions/Uniform.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace initPolicies {
 
     template<class T_Species>
     struct RandomPosition
     {
-#if XRT_USE_SLOW_RNG
+#if PARATAXIS_USE_SLOW_RNG
         using Random = SlowRNGFunctor;
 #else
         using Distribution = PMacc::random::distributions::Uniform<float>;
@@ -37,7 +37,7 @@ namespace initPolicies {
 #endif
 
         HINLINE RandomPosition()
-#if !XRT_USE_SLOW_RNG
+#if !PARATAXIS_USE_SLOW_RNG
                 :rand(RNGProvider::createRandom<Distribution>())
 #endif
         {}
@@ -67,4 +67,4 @@ namespace initPolicies {
 
 }  // namespace initPolicies
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

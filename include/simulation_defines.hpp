@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 
     namespace bmpl = boost::mpl;
     enum class CommTag: uint32_t
@@ -29,7 +29,7 @@ namespace xrt {
         SPECIES_FIRSTTAG /* This needs to be the last one! */
     };
 
-}  // namespace xrt
+}  // namespace parataxis
 
 /* Use #include <> to allow user overrides */
 #include <simulation_defines/_defaultParam.loader>

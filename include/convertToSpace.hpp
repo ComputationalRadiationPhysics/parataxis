@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <string>
 
-namespace xrt {
+namespace parataxis {
 
     /**
      * Copies values from a vector-like container (size(), push_back(..), []) to a Space instance
@@ -64,4 +64,4 @@ namespace xrt {
     }
 
 
-}  // namespace xrt
+}  // namespace parataxis

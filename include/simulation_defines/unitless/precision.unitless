@@ -21,7 +21,7 @@
 
 #include "math/Vector.hpp"
 
-namespace xrt
+namespace parataxis
 {
 
     namespace precision32Bit
@@ -45,11 +45,11 @@ namespace xrt
     }
 
     /*variable precision defines*/
-    typedef precisionXRT::float_X float_X;
-    typedef precisionXRT::float1_X float1_X;
-    typedef precisionXRT::float2_X float2_X;
-    typedef precisionXRT::float3_X float3_X;
-    typedef precisionXRT::floatD_X floatD_X;
+    typedef precisionPARATAXIS::float_X float_X;
+    typedef precisionPARATAXIS::float1_X float1_X;
+    typedef precisionPARATAXIS::float2_X float2_X;
+    typedef precisionPARATAXIS::float3_X float3_X;
+    typedef precisionPARATAXIS::floatD_X floatD_X;
 
     /*32 Bit defines*/
     typedef precision32Bit::float_X float_32;

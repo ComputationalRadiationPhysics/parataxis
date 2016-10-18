@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace filters {
 
@@ -51,4 +51,4 @@ namespace filters {
 
 }  // namespace filters
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

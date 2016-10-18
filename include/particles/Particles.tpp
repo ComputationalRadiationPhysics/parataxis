@@ -41,7 +41,7 @@
 #include <fields/DensityField.hpp>
 #include <type_traits>
 
-namespace xrt{
+namespace parataxis{
 
     namespace detail {
 
@@ -106,7 +106,7 @@ namespace xrt{
         this->particlesBuffer = new BufferType( gridLayout.getDataSpace(), gridLayout.getGuard() );
 
         const uint32_t commTag = PMacc::traits::GetUniqueTypeId<FrameType, uint32_t>::uid() + static_cast<uint32_t>(CommTag::SPECIES_FIRSTTAG);
-        PMacc::log< XRTLogLvl::MEMORY > ( "communication tag for species %1%: %2%" ) % FrameType::getName() % commTag;
+        PMacc::log< PARATAXISLogLvl::MEMORY > ( "communication tag for species %1%: %2%" ) % FrameType::getName() % commTag;
 
         detail::AddExchanges<simDim>::add(this->particlesBuffer, commTag);
     }
@@ -234,4 +234,4 @@ namespace xrt{
         dc.releaseData(Detector::getName());
     }
 
-} // namespace xrt
+} // namespace parataxis

@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/plugins.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "fields/DensityField.hpp"
@@ -31,7 +31,7 @@
 #include <boost/program_options/options_description.hpp>
 #include <list>
 
-namespace xrt{
+namespace parataxis{
 
     namespace po = boost::program_options;
 
@@ -74,7 +74,7 @@ namespace xrt{
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
             pluginConnector.loadPlugins();
-            PMacc::log< XRTLogLvl::SIM_STATE >("Startup");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Startup");
             simulationClass.startSimulation();
         }
 
@@ -95,23 +95,23 @@ namespace xrt{
 
         void load()
         {
-            PMacc::log< XRTLogLvl::SIM_STATE >("Loading simulation");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Loading simulation");
             simulationClass.load();
-            PMacc::log< XRTLogLvl::SIM_STATE >("Loading plugins");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Loading plugins");
 
             for(auto&& plugin: Environment::get().PluginConnector().getPluginsFromType<ISimulationPlugin>())
                 plugin->setMappingDesc(simulationClass.getMappingDesc());
-            PMacc::log< XRTLogLvl::SIM_STATE >("Loading done");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Loading done");
         }
 
         void unload()
         {
             PMacc::PluginConnector& pluginConnector = Environment::get().PluginConnector();
-            PMacc::log< XRTLogLvl::SIM_STATE >("Unloading plugins");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Unloading plugins");
             pluginConnector.unloadPlugins();
-            PMacc::log< XRTLogLvl::SIM_STATE >("Unloading simulation");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Unloading simulation");
             simulationClass.unload();
-            PMacc::log< XRTLogLvl::SIM_STATE >("Everything unloaded");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE >("Everything unloaded");
         }
     private:
 
@@ -200,4 +200,4 @@ namespace xrt{
             return ArgsErrorCode::SUCCESS;
         }
     };
-} // namespace xrt
+} // namespace parataxis

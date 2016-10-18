@@ -21,7 +21,7 @@
 
 #include <memory/boxes/DataBoxDim1Access.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -93,6 +93,6 @@ void writeDataBox(T_SplashWriter&& writer, const T_DataBox& dataBox,
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis
 
 #include "plugins/hdf5/ComplexBoxWriter.hpp"

@@ -21,7 +21,7 @@
 
 #include "generators.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace initialDensity {
 namespace AvailableGenerators {
 
@@ -37,63 +37,63 @@ namespace AvailableGenerators {
 
 }  // namespace AvailableGenerators
 }  // namespace initialDensity
-}  // namespace xrt
+}  // namespace parataxis
 
 namespace PMacc { namespace traits {
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Const>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Const>
     {
-        using type  = xrt::generators::Const<xrt::float_X, xrt::initialDensity::AvailableGenerators::Const>;
+        using type  = parataxis::generators::Const<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Const>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Line>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Line>
     {
-        using type  = xrt::generators::Line<xrt::float_X, xrt::initialDensity::AvailableGenerators::Line>;
+        using type  = parataxis::generators::Line<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Line>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Cuboid>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Cuboid>
     {
-        using type  = xrt::generators::Cuboid<xrt::float_X, xrt::initialDensity::AvailableGenerators::Cuboid>;
+        using type  = parataxis::generators::Cuboid<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Cuboid>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Cylinder>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Cylinder>
     {
-        using type  = xrt::generators::Cylinder<xrt::float_X, xrt::initialDensity::AvailableGenerators::Cylinder>;
+        using type  = parataxis::generators::Cylinder<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Cylinder>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Edge>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Edge>
     {
-        using type  = xrt::generators::Edge<xrt::float_X, xrt::initialDensity::AvailableGenerators::Edge>;
+        using type  = parataxis::generators::Edge<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Edge>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::DoubleSlit>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::DoubleSlit>
     {
-        using type  = xrt::generators::DoubleSlit<xrt::float_X, xrt::initialDensity::AvailableGenerators::DoubleSlit>;
+        using type  = parataxis::generators::DoubleSlit<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::DoubleSlit>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::RaisingLine>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::RaisingLine>
     {
-        using type  = xrt::generators::RaisingLine<xrt::float_X, xrt::initialDensity::AvailableGenerators::RaisingLine>;
+        using type  = parataxis::generators::RaisingLine<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::RaisingLine>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::Strips>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::Strips>
     {
-        using type  = xrt::generators::Strips<xrt::float_X, xrt::initialDensity::AvailableGenerators::Strips>;
+        using type  = parataxis::generators::Strips<parataxis::float_X, parataxis::initialDensity::AvailableGenerators::Strips>;
     };
 
     template<>
-    struct Resolve<xrt::initialDensity::AvailableGenerators::CombinedGenerator>
+    struct Resolve<parataxis::initialDensity::AvailableGenerators::CombinedGenerator>
     {
-        using Cfg = xrt::initialDensity::AvailableGenerators::CombinedGenerator;
-        using type  = xrt::generators::CombinedGenerator<xrt::float_X, Cfg>;
+        using Cfg = parataxis::initialDensity::AvailableGenerators::CombinedGenerator;
+        using type  = parataxis::generators::CombinedGenerator<parataxis::float_X, Cfg>;
     };
 
 }}

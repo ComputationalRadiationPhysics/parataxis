@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/DataBoxReader.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -36,7 +36,7 @@ struct LoadField
     template<class T_DataBox>
     void operator()(const std::string& name, const GridLayout& fieldLayout, T_DataBox fieldBox)
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("Begin loading field '%1%'") % name;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("Begin loading field '%1%'") % name;
 
         const auto& subGrid = Environment::get().SubGrid();
 
@@ -52,7 +52,7 @@ struct LoadField
                     )
                 );
 
-        PMacc::log<XRTLogLvl::IN_OUT>("Finished loading field '%1%'") % name;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("Finished loading field '%1%'") % name;
     }
 };
 
@@ -85,4 +85,4 @@ struct LoadFields
 
 } //namespace openPMD
 } //namespace plugins
-} //namespace xrt
+} //namespace parataxis

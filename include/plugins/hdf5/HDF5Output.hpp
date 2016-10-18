@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "plugins/hdf5/SplashWriter.hpp"
 #include "plugins/hdf5/DataBoxWriter.hpp"
@@ -41,7 +41,7 @@
 #include <boost/filesystem.hpp>
 #include <string>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -117,7 +117,7 @@ void HDF5Output::writeHDF5(uint32_t currentStep, bool isCheckpoint)
 
     // Write IdProvider
     const auto idProviderState = PMacc::IdProvider<simDim>::getState();
-    PMacc::log<XRTLogLvl::IN_OUT>("HDF5: Writing IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
+    PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: Writing IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
             % idProviderState.startId % idProviderState.nextId % idProviderState.maxNumProc;
     writer.setCurrentDataset("picongpu/idProvider/startId");
     splash::Domain globalDomain =
@@ -190,7 +190,7 @@ void HDF5Output::restart(uint32_t restartStep, const std::string restartDirector
     writer.setCurrentDataset("picongpu/idProvider/nextId");
     writer.getDomainReader()(&idProviderState.nextId, simDim, globalDomain, localDomain);
 
-    PMacc::log<XRTLogLvl::IN_OUT>("HDF5: Setting IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
+    PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: Setting IdProvider state (StartId: %1%, NextId: %2%, maxNumProc: %3%)")
             % idProviderState.startId % idProviderState.nextId % idProviderState.maxNumProc;
      PMacc::IdProvider<simDim>::setState(idProviderState);
 
@@ -230,4 +230,4 @@ void HDF5Output::pluginUnload()
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

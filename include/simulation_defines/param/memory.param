@@ -22,7 +22,7 @@
 #include <math/Vector.hpp>
 #include <mappings/kernel/MappingDescription.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     constexpr uint32_t KiB = 1024;
     constexpr uint32_t MiB = 1024 * KiB;
@@ -48,4 +48,4 @@ namespace xrt {
 
     }  // namespace exchangeSize
 
-}  // namespace xrt
+}  // namespace parataxis

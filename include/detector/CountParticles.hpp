@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace detector {
 
     struct DetectorConfig;
@@ -58,4 +58,4 @@ namespace detector {
     };
 
 }  // namespace detector
-}  // namespace xrt
+}  // namespace parataxis

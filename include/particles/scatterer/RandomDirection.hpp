@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "debug/LogLevels.hpp"
 #include <random/distributions/Uniform.hpp>
 #include <algorithms/math.hpp>
 #include <debug/VerboseLog.hpp>
 #include <cmath>
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace scatterer {
 
@@ -37,7 +37,7 @@ namespace scatterer {
     struct RandomDirection
     {
         using Config = T_Config;
-#if XRT_USE_SLOW_RNG
+#if PARATAXIS_USE_SLOW_RNG
         using Random = SlowRNGFunctor;
 #else
         using Distribution = PMacc::random::distributions::Uniform<float>;
@@ -46,7 +46,7 @@ namespace scatterer {
 
         HINLINE explicit
         RandomDirection(uint32_t currentStep)
-#if !XRT_USE_SLOW_RNG
+#if !PARATAXIS_USE_SLOW_RNG
                 :rand(RNGProvider::createRandom<Distribution>())
 #endif
         {
@@ -55,9 +55,9 @@ namespace scatterer {
             {
                 angleChecked = true;
                 if(PMaccMath::abs(Config::minAzimuth) > PI || PMaccMath::abs(Config::maxAzimuth) > PI)
-                    PMacc::log<XRTLogLvl::DOMAINS>("Azimuth angle not in range [-PI,PI]. Possibly reduced precision!");
+                    PMacc::log<PARATAXISLogLvl::DOMAINS>("Azimuth angle not in range [-PI,PI]. Possibly reduced precision!");
                 if(PMaccMath::abs(Config::minPolar) > PI || PMaccMath::abs(Config::maxPolar) > PI)
-                    PMacc::log<XRTLogLvl::DOMAINS>("Polar angle not in range [-PI,PI]. Possibly reduced precision!");
+                    PMacc::log<PARATAXISLogLvl::DOMAINS>("Polar angle not in range [-PI,PI]. Possibly reduced precision!");
             }
         }
 
@@ -131,4 +131,4 @@ namespace scatterer {
 
 }  // namespace scatterer
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

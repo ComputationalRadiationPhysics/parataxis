@@ -26,9 +26,9 @@ namespace PMacc {
 namespace traits {
 
     template<>
-    struct Resolve<xrt::particles::pusher::None>
+    struct Resolve<parataxis::particles::pusher::None>
     {
-        using type = xrt::particles::functors::NoAlgo;
+        using type = parataxis::particles::functors::NoAlgo;
     };
 
 }  // namespace traits

@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/LoadParticleAttribute.hpp"
 #include "plugins/hdf5/splashUtils.hpp"
 #include "plugins/openPMD/PatchReader.hpp"
@@ -35,7 +35,7 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/pair.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -71,11 +71,11 @@ struct LoadSpecies
     {
         using namespace PMacc::algorithms::forEach;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: (begin) read species: %1%") % FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: (begin) read species: %1%") % FrameType::getName();
         reader.setCurrentDataset(std::string("particles/") + FrameType::getName());
 
         ParticlePatches particlePatches = PatchReader()(reader, Environment::get().GridController().getGlobalSize());
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  Loaded patches: %1%") % particlePatches.toString();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  Loaded patches: %1%") % particlePatches.toString();
 
 
         const auto& subGrid = Environment::get().SubGrid();
@@ -103,17 +103,17 @@ struct LoadSpecies
 
             if(exactlyMyPatch)
             {
-                PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  Found local patch: %1%") % i;
+                PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  Found local patch: %1%") % i;
                 patchNumParticles = particlePatches.numParticles[i];
                 patchParticleOffset = particlePatches.numParticlesOffset[i];
                 break;
             }
         }
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  Loading %1% particles from offset %2%") % patchNumParticles % patchParticleOffset;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  Loading %1% particles from offset %2%") % patchNumParticles % patchParticleOffset;
 
         Hdf5FrameType hostFrame;
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  malloc mapped memory: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  malloc mapped memory: %1%") % Hdf5FrameType::getName();
         /*malloc mapped memory*/
         ForEach<typename Hdf5FrameType::ValueTypeSeq, AllocMemory<bmpl::_1, MappedMemAllocator> > mallocMem;
         mallocMem(PMacc::forward(hostFrame), patchNumParticles);
@@ -123,7 +123,7 @@ struct LoadSpecies
 
         if(patchNumParticles > 0)
         {
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  get mapped memory device pointer: %1%") % Hdf5FrameType::getName();
+            PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  get mapped memory device pointer: %1%") % Hdf5FrameType::getName();
             /*load device pointer of mapped memory*/
             Hdf5FrameType deviceFrame;
             ForEach<typename Hdf5FrameType::ValueTypeSeq, GetDevicePtr<bmpl::_1> > getDevicePtr;
@@ -137,7 +137,7 @@ struct LoadSpecies
 
             PMacc::particles::operations::splitIntoListOfFrames(speciesTmp, deviceFrame,
                     patchNumParticles, restartChunkSize, cellsInSuperCell,
-                    subGrid.getLocalDomain().offset, cellDescription, XRTLogLvl::IN_OUT());
+                    subGrid.getLocalDomain().offset, cellDescription, PARATAXISLogLvl::IN_OUT());
 
             /*free host memory*/
             ForEach<typename Hdf5FrameType::ValueTypeSeq, FreeMemory<bmpl::_1, MappedMemAllocator> > freeMem;
@@ -145,10 +145,10 @@ struct LoadSpecies
 
             dc.releaseData(FrameType::getName());
         }
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: ( end ) read species: %1%") % FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: ( end ) read species: %1%") % FrameType::getName();
     }
 };
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

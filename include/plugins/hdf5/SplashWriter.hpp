@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/SplashAttributeWriter.hpp"
 #include "plugins/hdf5/SplashFieldWriter.hpp"
 #include "plugins/hdf5/SplashDomainWriter.hpp"
@@ -28,7 +28,7 @@
 #include "plugins/hdf5/SplashFieldReader.hpp"
 #include "plugins/hdf5/SplashDomainReader.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -170,4 +170,4 @@ SplashDomainReader SplashWriter<T_DataCollector>::getDomainReader()
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

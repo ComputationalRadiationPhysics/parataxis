@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 #include <dimensions/DataSpaceOperations.hpp>
 
-namespace xrt{
+namespace parataxis{
 namespace particles{
 namespace functors{
 
@@ -91,4 +91,4 @@ namespace functors{
 
 } // namespace functors
 } // namespace plugins
-} // namespace xrt
+} // namespace parataxis

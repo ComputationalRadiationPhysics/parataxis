@@ -23,7 +23,7 @@
 #include "TransformBox.hpp"
 #include <math/complex/Complex.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -53,4 +53,4 @@ struct DataBoxWriter<PMacc::math::Complex<T_ValueType>>
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

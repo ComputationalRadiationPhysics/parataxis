@@ -22,7 +22,7 @@
 #include <vector>
 #include <array>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -80,4 +80,4 @@ namespace openPMD {
 
 } // namespace openPMD
 } // namespace plugins
-} // namespace xrt
+} // namespace parataxis

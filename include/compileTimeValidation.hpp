@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 
     // The PMacc algorithm assumes that we can only get to the neighbor cell in one timestep
     static_assert(DELTA_T * SPEED_OF_LIGHT <= CELL_WIDTH,  "Cells are to big");
@@ -32,4 +32,4 @@ namespace xrt {
             DELTA_T * SPEED_OF_LIGHT > CELL_HEIGHT * 0.5 ||
             DELTA_T * SPEED_OF_LIGHT > CELL_DEPTH * 0.5,  "Cells are to small");
 
-}  // namespace xrt
+}  // namespace parataxis

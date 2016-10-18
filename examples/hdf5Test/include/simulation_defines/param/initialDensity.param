@@ -21,7 +21,7 @@
 
 #include "math/vector/compile-time/UInt32.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace initialDensity {
 
     namespace AvailableGenerators{
@@ -55,4 +55,4 @@ namespace initialDensity {
             AvailableGenerators::Cuboid;
 
 }  // namespace initialDensity
-}  // namespace xrt
+}  // namespace parataxis

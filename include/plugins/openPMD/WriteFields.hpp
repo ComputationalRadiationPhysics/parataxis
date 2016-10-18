@@ -17,10 +17,10 @@
  * along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/openPMD/WriteField.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -63,4 +63,4 @@ public:
 };
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

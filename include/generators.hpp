@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace generators {
 
     /**
@@ -271,4 +271,4 @@ namespace generators {
     };
 
 }  // namespace generators
-}  // namespace xrt
+}  // namespace parataxis
