@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <tiffWriter/tiffWriter.hpp>
 #include <string>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace imaging {
 
@@ -48,4 +48,4 @@ namespace imaging {
 
 }  // namespace imaging
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

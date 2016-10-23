@@ -22,7 +22,7 @@
 #include <math/vector/Vector.hpp>
 #include <type_traits>
 
-namespace xrt {
+namespace parataxis {
 
     namespace detail {
 
@@ -80,4 +80,4 @@ namespace xrt {
     template<class T_Src, int32_t T_dim, typename T_Type = typename std::remove_cv<decltype(T_Src::X)>::type>
     using ToVector = detail::ToVector<T_Src, T_dim, T_Type>;
 
-}  // namespace xrt
+}  // namespace parataxis

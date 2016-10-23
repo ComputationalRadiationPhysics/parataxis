@@ -20,7 +20,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <dimensions/DataSpaceOperations.hpp>
 #include <particles/operations/SetAttributeToDefault.hpp>
 #include <compileTime/conversion/ResolveAndRemoveFromSeq.hpp>
@@ -28,7 +28,7 @@
 #include <nvidia/atomic.hpp>
 #include <boost/mpl/vector.hpp>
 
-namespace xrt{
+namespace parataxis{
 namespace kernel{
 
 #define isMaster (linearThreadIdx == 0)
@@ -230,4 +230,4 @@ namespace kernel{
 #undef isMaster
 
 } // namespace kernel
-} // namespace xrt
+} // namespace parataxis

@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace laserConfig {
 
     /** Maximum in-cell position for the direction in which photons enter */
@@ -36,7 +36,7 @@ namespace laserConfig {
                                                                     PMacc::FRONT;
 
 }  // namespace laserConfig
-}  // namespace xrt
+}  // namespace parataxis
 
 #include "particles/initPolicies/ConstDistribution.hpp"
 
@@ -51,7 +51,7 @@ namespace laserConfig {
 #include <traits/Resolve.hpp>
 #include <math/ConstVector.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace laserConfig {
 namespace distribution {
 
@@ -66,7 +66,7 @@ namespace position {
 
 }  // namespace position
 }  // namespace laserConfig
-}  // namespace xrt
+}  // namespace parataxis
 
 namespace PMacc {
 namespace traits {
@@ -74,45 +74,45 @@ namespace traits {
     /* Distribution */
 
     template<>
-    struct Resolve<xrt::laserConfig::distribution::Const>
+    struct Resolve<parataxis::laserConfig::distribution::Const>
     {
-        using Value = xrt::laserConfig::distribution::Const;
-        using type  = xrt::particles::initPolicies::ConstDistribution<Value::numParts>;
+        using Value = parataxis::laserConfig::distribution::Const;
+        using type  = parataxis::particles::initPolicies::ConstDistribution<Value::numParts>;
     };
 
     /* Position */
 
     template<>
-    struct Resolve<xrt::laserConfig::position::Const>
+    struct Resolve<parataxis::laserConfig::position::Const>
     {
-        using Value = xrt::laserConfig::position::Const;
-        using type  = xrt::particles::initPolicies::ConstPosition<Value>;
+        using Value = parataxis::laserConfig::position::Const;
+        using type  = parataxis::particles::initPolicies::ConstPosition<Value>;
     };
     template<>
-    struct Resolve<xrt::laserConfig::position::EvenDistance>
+    struct Resolve<parataxis::laserConfig::position::EvenDistance>
     {
-        using type  = xrt::particles::initPolicies::EvenDistPosition;
+        using type  = parataxis::particles::initPolicies::EvenDistPosition;
     };
     template<>
-    struct Resolve<xrt::laserConfig::position::Random>
+    struct Resolve<parataxis::laserConfig::position::Random>
     {
-        using Value = xrt::laserConfig::position::Random;
-        using type  = xrt::particles::initPolicies::RandomPosition<xrt::PIC_Photons>;
+        using Value = parataxis::laserConfig::position::Random;
+        using type  = parataxis::particles::initPolicies::RandomPosition<parataxis::PIC_Photons>;
     };
 
     /* Phase */
     template<>
-    struct Resolve<xrt::laserConfig::phase::PlaneWave>
+    struct Resolve<parataxis::laserConfig::phase::PlaneWave>
     {
-        using type  = xrt::particles::initPolicies::PlaneWavePhase<xrt::PIC_Photons>;
+        using type  = parataxis::particles::initPolicies::PlaneWavePhase<parataxis::PIC_Photons>;
     };
 
     /* Direction */
     template<>
-    struct Resolve<xrt::laserConfig::direction::Const>
+    struct Resolve<parataxis::laserConfig::direction::Const>
     {
-        using Value = xrt::laserConfig::direction::Const;
-        using type  = xrt::particles::initPolicies::ConstDirection<Value>;
+        using Value = parataxis::laserConfig::direction::Const;
+        using type  = parataxis::particles::initPolicies::ConstDirection<Value>;
     };
 
 }  // namespace traits

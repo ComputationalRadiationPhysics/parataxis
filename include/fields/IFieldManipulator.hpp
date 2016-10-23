@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
 /** Update a field in each timestep before photons are moved */
@@ -33,4 +33,4 @@ public:
 };
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

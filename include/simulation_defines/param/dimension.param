@@ -19,8 +19,8 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 
     constexpr uint32_t simDim = 3;
 
-}  // namespace xrt
+}  // namespace parataxis

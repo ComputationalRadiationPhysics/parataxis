@@ -22,7 +22,7 @@
 
 #include <math/ConstVector.hpp>
 
-namespace xrt
+namespace parataxis
 {
     // normed grid parameters
     constexpr float_X DELTA_T = float_X(SI::DELTA_T / UNIT_TIME);

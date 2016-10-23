@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 namespace PMacc{namespace algorithms{namespace math{
 

@@ -21,7 +21,7 @@
 
 #include <math/vector/Float.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace laserConfig {
 
     /* Initialization for the 'laser' */
@@ -84,5 +84,5 @@ namespace laserConfig {
     constexpr int32_t DIRECTION = 0;
 
 }  // namespace laserConfig
-}  // namespace xrt
+}  // namespace parataxis
 

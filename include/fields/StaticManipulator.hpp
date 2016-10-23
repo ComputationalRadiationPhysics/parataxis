@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "fields/IFieldManipulator.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
 /** Manipulator that does nothing, which results in a static field */
@@ -39,4 +39,4 @@ public:
 };
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

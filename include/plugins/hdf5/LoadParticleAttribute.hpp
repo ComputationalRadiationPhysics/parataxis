@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -51,7 +51,7 @@ struct LoadParticleAttribute
         typedef typename Resolve_t<T_Identifier>::type ValueType;
         constexpr uint32_t numComponents = PMacc::traits::GetNComponents<ValueType>::value;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) load species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) load species attribute: %1%") % T_Identifier::getName();
         T_SplashReader reader = inReader[traits::OpenPMDName<T_Identifier>::get()];
 
         typedef typename PMacc::traits::GetComponentsType<ValueType>::type ComponentValueType;
@@ -77,11 +77,11 @@ struct LoadParticleAttribute
         }
         __deleteArray(tmpArray);
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) load species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) load species attribute: %1%") % T_Identifier::getName();
     }
 
 };
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

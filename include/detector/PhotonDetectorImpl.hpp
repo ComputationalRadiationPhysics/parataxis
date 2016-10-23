@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "particles/functors/GetWavelength.hpp"
 #include "debug/LogLevels.hpp"
 #include "math/angleHelpers.hpp"
@@ -30,7 +30,7 @@
 #include <memory/buffers/HostDeviceBuffer.hpp>
 #include <dataManagement/ISimulationData.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace detector {
 
     namespace detail {
@@ -248,7 +248,7 @@ namespace detector {
             {
                 using math::rad2deg;
                 PMacc::math::Vector<float_64, 2> angleRange = anglePerCell_ * precisionCast<float_64>(size) / 2;
-                PMacc::log< XRTLogLvl::DOMAINS >("Detector detects angles in +- %g/%g(%g°/%g°) with resolution %g/%g(%g°/%g°)")
+                PMacc::log< PARATAXISLogLvl::DOMAINS >("Detector detects angles in +- %g/%g(%g°/%g°) with resolution %g/%g(%g°/%g°)")
                             % angleRange.x() % angleRange.y()
                             % rad2deg(angleRange.x()) % rad2deg(angleRange.y())
                             % anglePerCell_.x() % anglePerCell_.y()
@@ -280,7 +280,7 @@ namespace detector {
 
             if(doReport)
             {
-                PMacc::log< XRTLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px) and light of wavelength %3%nm:\n"
+                PMacc::log< PARATAXISLogLvl::DOMAINS >("[INFO] Constraints for the detector (Resolution: %1%x%2% px) and light of wavelength %3%nm:\n"
                     "Size: %4%m - %5%m (%6% - %7% px)\n"
                     "CellSize: %8%µm - %9%µm\n"
                     "Distance: %10%m - %11%m")
@@ -296,7 +296,7 @@ namespace detector {
             {
                 if(doReport)
                 {
-                    PMacc::log< XRTLogLvl::DOMAINS >("[WARNING] Detector is probably to small or to far away.\n"
+                    PMacc::log< PARATAXISLogLvl::DOMAINS >("[WARNING] Detector is probably to small or to far away.\n"
                             "Required size: %1%m\n"
                             "Current size: (%2%m x %3%m)\n"
                             "Or maximum distance: %4%m. Current: %5%m")
@@ -311,7 +311,7 @@ namespace detector {
             {
                 if(doReport)
                 {
-                    PMacc::log< XRTLogLvl::DOMAINS >("[WARNING] Detector resolution might be to low or it is to close.\n"
+                    PMacc::log< PARATAXISLogLvl::DOMAINS >("[WARNING] Detector resolution might be to low or it is to close.\n"
                             "Maximum cell size: %1%µm\n"
                             "Current cell size: %2%µm\n"
                             "Or minimum distance: %3%m. Current: %4%m")
@@ -327,4 +327,4 @@ namespace detector {
     };
 
 }  // namespace detector
-}  // namespace xrt
+}  // namespace parataxis

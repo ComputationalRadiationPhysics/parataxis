@@ -23,7 +23,7 @@
 #   define PARAM_PRECISION_TRIGO PARAM_PRECISION
 #endif
 
-namespace xrt
+namespace parataxis
 {
     namespace precision32Bit{}
     namespace precision64Bit{}
@@ -34,18 +34,18 @@ namespace xrt
      *  - precision64Bit : use 64Bit floating point numbers (need CUDA_ARCH>=sm_20)
      *                     [significant digits 15 to 16]
      */
-    namespace precisionXRT      = PARAM_PRECISION;
+    namespace precisionPARATAXIS      = PARAM_PRECISION;
 
     /*! Select a precision special operations (can be different from simulation precision)
-     *  - precisionXRT : use precision which is selected on top
+     *  - precisionPARATAXIS : use precision which is selected on top
      *  - precision32Bit    : use 32Bit floating point numbers
      *  - precision64Bit    : use 64Bit floating point numbers
      */
-    namespace precisionSqrt          = precisionXRT;
-    namespace precisionExp           = precisionXRT;
-    namespace precisionTrigonometric = precisionXRT;
+    namespace precisionSqrt          = precisionPARATAXIS;
+    namespace precisionExp           = precisionPARATAXIS;
+    namespace precisionTrigonometric = precisionPARATAXIS;
 
 
-}//namespace xrt
+}//namespace parataxis
 
 #include "simulation_defines/unitless/precision.unitless"

@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "ShrinkToDim.hpp"
 #include "convertToSpace.hpp"
 
 #include <tiffWriter/tiffWriter.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     namespace detail {
@@ -275,7 +275,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
-            PMacc::log< XRTLogLvl::IN_OUT >("Loading density field");
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Loading density field");
 
             if(cfg.firstIdx == cfg.lastIdx || cfg.filePath.find("%i") == std::string::npos)
                 detail::FillDensityFromTiff<simDim>::load2D<fields::DensityField>(*cellDescription_, cfg);
@@ -299,4 +299,4 @@ namespace plugins {
     };
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

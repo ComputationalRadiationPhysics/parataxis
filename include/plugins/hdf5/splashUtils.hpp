@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <splash/splash.h>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -93,4 +93,4 @@ bool isDomainValid(const splash::Domain& domain, unsigned numDims)
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

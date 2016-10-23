@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/DataBoxReader.hpp"
 #include <random/methods/Xor.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -78,4 +78,4 @@ namespace hdf5 {
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

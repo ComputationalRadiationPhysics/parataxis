@@ -19,12 +19,12 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "GatherSlice.hpp"
-#if XRT_ENABLE_PNG
+#if PARATAXIS_ENABLE_PNG
 #   include "plugins/imaging/PngCreator.hpp"
 #endif
-#if XRT_ENABLE_TIFF
+#if PARATAXIS_ENABLE_TIFF
 #   include "plugins/imaging/TiffCreator.hpp"
 #endif
 #include "plugins/ISimulationPlugin.hpp"
@@ -36,7 +36,7 @@
 #include <sstream>
 #include <memory>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     template<class T_Field>
@@ -90,7 +90,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
-            PMacc::log< XRTLogLvl::IN_OUT >("Outputting field at timestep %1%") % currentStep;
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Outputting field at timestep %1%") % currentStep;
 
             auto &dc = Environment::get().DataConnector();
 
@@ -114,13 +114,13 @@ namespace plugins {
                             ));
                     if(format == "png")
                     {
-#if XRT_ENABLE_PNG
+#if PARATAXIS_ENABLE_PNG
                         imaging::PngCreator img;
                         img(fileName.str(), data, gather->getData().size());
 #endif
                     }else
                     {
-#if XRT_ENABLE_TIFF
+#if PARATAXIS_ENABLE_TIFF
                         imaging::TiffCreator img;
                         img(fileName.str(), data, gather->getData().size());
 #endif
@@ -157,18 +157,18 @@ namespace plugins {
             std::transform(format.begin(), format.end(), format.begin(), ::tolower);
             if(format != "tiff" && format != "tif")
                 format = "png";
-#if !XRT_ENABLE_PNG
+#if !PARATAXIS_ENABLE_PNG
             format = "tif";
-#elif !XRT_ENABLE_TIFF
+#elif !PARATAXIS_ENABLE_TIFF
             format = "png";
 #endif
-#if XRT_ENABLE_PNG || XRT_ENABLE_TIFF
+#if PARATAXIS_ENABLE_PNG || PARATAXIS_ENABLE_TIFF
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
             // TODO: Ineffective. Improve!
             for(uint32_t slicePoint: slicePoints)
                 gather_.push_back(new UsedGatherSlice(slicePoint, nAxis_));
 #else
-            PMacc::log<XRTLogLvl::PLUGINS>("Did not found tiff or png library. %1% is disabled") % getName();
+            PMacc::log<PARATAXISLogLvl::PLUGINS>("Did not found tiff or png library. %1% is disabled") % getName();
 #endif
         }
 
@@ -182,4 +182,4 @@ namespace plugins {
      };
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

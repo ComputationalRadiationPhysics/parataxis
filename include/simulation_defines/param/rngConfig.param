@@ -23,22 +23,22 @@
 #include <random/methods/XorMin.hpp>
 
 
-#ifndef XRT_USE_SLOW_RNG
-#   define XRT_USE_SLOW_RNG 0
+#ifndef PARATAXIS_USE_SLOW_RNG
+#   define PARATAXIS_USE_SLOW_RNG 0
 #endif
 
-#if XRT_USE_SLOW_RNG
+#if PARATAXIS_USE_SLOW_RNG
 #   include "nvidia/rng/RNG.hpp"
 #   include "nvidia/rng/methods/Xor.hpp"
 #   include "nvidia/rng/distributions/Uniform_float.hpp"
 #   include "mpi/SeedPerRank.hpp"
 #endif
 
-namespace xrt {
+namespace parataxis {
 
     using RNGProvider = PMacc::random::RNGProvider<simDim, PMacc::random::methods::XorMin>;
 
-#if XRT_USE_SLOW_RNG
+#if PARATAXIS_USE_SLOW_RNG
     namespace nvrng = PMacc::nvidia::rng;
     namespace rngMethods = nvrng::methods;
     namespace rngDistributions = nvrng::distributions;
@@ -81,4 +81,4 @@ namespace xrt {
 
 #endif
 
-}  // namespace xrt
+}  // namespace parataxis

@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace SI {
 
     /** Duration of one timestep
@@ -37,4 +37,4 @@ namespace SI {
     constexpr float_64 CELL_DEPTH = CELL_WIDTH;
 
 }  // namespace SI
-}  // namespace xrt
+}  // namespace parataxis

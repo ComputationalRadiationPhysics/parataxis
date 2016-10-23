@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace detector {
 
     namespace particleHandlers {
@@ -74,4 +74,4 @@ namespace detector {
     };
 
 }  // namespace detector
-}  // namespace xrt
+}  // namespace parataxis

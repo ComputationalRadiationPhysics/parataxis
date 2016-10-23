@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 #include <dimensions/DataSpaceOperations.hpp>
 #include <mappings/kernel/AreaMapping.hpp>
@@ -28,7 +28,7 @@
 
 #include <memory>
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
     namespace kernel
@@ -142,4 +142,4 @@ namespace fields {
 
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

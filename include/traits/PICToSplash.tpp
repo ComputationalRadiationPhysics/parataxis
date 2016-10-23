@@ -19,14 +19,14 @@
  
 #pragma once
 
-#if (XRT_ENABLE_HDF5==1)
+#if (PARATAXIS_ENABLE_HDF5==1)
 #include <splash/splash.h>
 
 #include "simulation_defines.hpp"
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace traits {
 
     template<>
@@ -96,6 +96,6 @@ namespace traits {
     };
 
 } //namespace traits
-}// namespace xrt
+}// namespace parataxis
 
-#endif // (XRT_ENABLE_HDF5==1)
+#endif // (PARATAXIS_ENABLE_HDF5==1)

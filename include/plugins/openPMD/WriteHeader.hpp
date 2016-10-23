@@ -19,12 +19,12 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "version.hpp"
 #include "plugins/common/stringHelpers.hpp"
 #include "plugins/hdf5/SplashWriter.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -50,11 +50,11 @@ struct WriteHeader
         std::string author = Environment::get().SimulationDescription().getAuthor();
         if(!author.empty())
         	writeGlobalAttribute("author", author);
-        writeGlobalAttribute("software", "XRT");
+        writeGlobalAttribute("software", "PARATAXIS");
         std::stringstream softwareVersion;
-        softwareVersion << XRT_VERSION_MAJOR << "."
-                        << XRT_VERSION_MINOR << "."
-                        << XRT_VERSION_PATCH;
+        softwareVersion << PARATAXIS_VERSION_MAJOR << "."
+                        << PARATAXIS_VERSION_MINOR << "."
+                        << PARATAXIS_VERSION_PATCH;
         writeGlobalAttribute("softwareVersion", softwareVersion.str());
         writeGlobalAttribute("date", common::getDateString("%F %T %z"));
 
@@ -88,4 +88,4 @@ void writeHeader(hdf5::SplashWriter<T_DataCollector>& writer, const std::string&
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

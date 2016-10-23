@@ -27,7 +27,7 @@
 #include "particles/scatterer/Reflect.hpp"
 #include "particles/scatterer/RandomDirection.hpp"
 
-namespace xrt { namespace particles { namespace scatterer {
+namespace parataxis { namespace particles { namespace scatterer {
 
     namespace conditions {
         struct Never;
@@ -42,56 +42,56 @@ namespace xrt { namespace particles { namespace scatterer {
         struct RandomDirection;
     }  // namespace direction
 
-}}}  // namespace xrt
+}}}  // namespace parataxis
 
 namespace PMacc {
 namespace traits {
 
     template<>
-    struct Resolve<xrt::particles::scatterer::conditions::Never>
+    struct Resolve<parataxis::particles::scatterer::conditions::Never>
     {
-        using type = xrt::particles::scatterer::Never<>;
+        using type = parataxis::particles::scatterer::Never<>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::conditions::OnThreshold>
+    struct Resolve<parataxis::particles::scatterer::conditions::OnThreshold>
     {
-        using Config = xrt::particles::scatterer::conditions::OnThreshold;
-        using type = xrt::particles::scatterer::OnThreshold<Config>;
+        using Config = parataxis::particles::scatterer::conditions::OnThreshold;
+        using type = parataxis::particles::scatterer::OnThreshold<Config>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::conditions::OnRandom>
+    struct Resolve<parataxis::particles::scatterer::conditions::OnRandom>
     {
-        using Config = xrt::particles::scatterer::conditions::OnRandom;
-        using type = xrt::particles::scatterer::OnRandom<Config>;
+        using Config = parataxis::particles::scatterer::conditions::OnRandom;
+        using type = parataxis::particles::scatterer::OnRandom<Config>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::direction::Fixed>
+    struct Resolve<parataxis::particles::scatterer::direction::Fixed>
     {
-        using Config = xrt::particles::scatterer::direction::Fixed;
-        using type = xrt::particles::scatterer::Fixed<Config>;
+        using Config = parataxis::particles::scatterer::direction::Fixed;
+        using type = parataxis::particles::scatterer::Fixed<Config>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::direction::LinearDensity>
+    struct Resolve<parataxis::particles::scatterer::direction::LinearDensity>
     {
-        using Config = xrt::particles::scatterer::direction::LinearDensity;
-        using type = xrt::particles::scatterer::LinearDensity<Config>;
+        using Config = parataxis::particles::scatterer::direction::LinearDensity;
+        using type = parataxis::particles::scatterer::LinearDensity<Config>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::direction::Reflect>
+    struct Resolve<parataxis::particles::scatterer::direction::Reflect>
     {
-        using type = xrt::particles::scatterer::Reflect<>;
+        using type = parataxis::particles::scatterer::Reflect<>;
     };
 
     template<>
-    struct Resolve<xrt::particles::scatterer::direction::RandomDirection>
+    struct Resolve<parataxis::particles::scatterer::direction::RandomDirection>
     {
-        using Config = xrt::particles::scatterer::direction::RandomDirection;
-        using type = xrt::particles::scatterer::RandomDirection<Config>;
+        using Config = parataxis::particles::scatterer::direction::RandomDirection;
+        using type = parataxis::particles::scatterer::RandomDirection<Config>;
     };
 
 }  // namespace traits

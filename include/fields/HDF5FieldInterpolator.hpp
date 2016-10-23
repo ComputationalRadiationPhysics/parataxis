@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "fields/IFieldManipulator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "plugins/hdf5/BasePlugin.hpp"
@@ -28,7 +28,7 @@
 #include "plugins/openPMD/helpers.hpp"
 #include <cuSTL/container/HostBuffer.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
 template<class T_Field>
@@ -153,7 +153,7 @@ void HDF5FieldInterpolator<T_Field>::reinitFields(Type curTime, bool force)
         nextTime = lastTime;
         *nextField = *lastField;
     }
-    PMacc::log<XRTLogLvl::IN_OUT>("(Re-)Initialized fields from HDF5. Record %1%/%2%, time %3% - %4%")
+    PMacc::log<PARATAXISLogLvl::IN_OUT>("(Re-)Initialized fields from HDF5. Record %1%/%2%, time %3% - %4%")
             % curHDF5Timestep % maxHDF5Timestep % lastTime % nextTime;
 }
 
@@ -211,4 +211,4 @@ void HDF5FieldInterpolator<T_Field>::loadField(Type curTime)
 }
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

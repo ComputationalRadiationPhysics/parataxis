@@ -19,12 +19,12 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/DataBoxWriter.hpp"
 #include "debug/LogLevels.hpp"
 #include <debug/VerboseLog.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -47,7 +47,7 @@ struct WriteField
     {
         using ValueType = typename T_DataBox::ValueType;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: write field: %1%") % name;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: write field: %1%") % name;
 
         const SubGrid& subGrid = Environment::get().SubGrid();
         /* parameter checking */
@@ -106,4 +106,4 @@ struct WriteField
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

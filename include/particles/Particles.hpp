@@ -19,13 +19,13 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <particles/ParticlesBase.hpp>
 #include <particles/memory/buffers/ParticlesBuffer.hpp>
 
 #include <dataManagement/ISimulationData.hpp>
 
-namespace xrt{
+namespace parataxis{
 
 namespace fields {
     class DensityField;
@@ -85,4 +85,4 @@ namespace fields {
         uint32_t lastProcessedStep_;
     };
 
-} //namespace xrt
+} //namespace parataxis

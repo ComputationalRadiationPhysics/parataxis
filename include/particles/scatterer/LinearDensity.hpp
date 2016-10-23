@@ -19,12 +19,12 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "ToVector.hpp"
 #include <algorithms/math.hpp>
 #include <algorithms/TypeCast.hpp>
 
-namespace xrt{
+namespace parataxis{
 namespace particles {
 namespace scatterer {
 
@@ -55,4 +55,4 @@ namespace scatterer {
 
 }  // namespace scatterer
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/SplashBaseAttributeReader.hpp"
 #include <splash/splash.h>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -70,4 +70,4 @@ splash::DCAttributeInfo* SplashGlobalAttributeReader::readImpl(const std::string
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

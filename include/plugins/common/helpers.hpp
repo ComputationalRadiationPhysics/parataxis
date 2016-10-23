@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     struct OperatorCreateVectorBox
@@ -123,4 +123,4 @@ namespace plugins {
     };
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

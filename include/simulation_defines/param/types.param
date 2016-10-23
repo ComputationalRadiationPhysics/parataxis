@@ -25,7 +25,7 @@
 #include <mappings/simulation/SubGrid.hpp>
 #include <memory/buffers/GridBuffer.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     typedef PMacc::Environment<simDim> Environment;
     typedef PMacc::DataSpace<simDim> Space;
@@ -34,4 +34,4 @@ namespace xrt {
     typedef PMacc::GridLayout<simDim> GridLayout;
     typedef PMacc::SubGrid<simDim> SubGrid;
 
-}  // namespace xrt
+}  // namespace parataxis

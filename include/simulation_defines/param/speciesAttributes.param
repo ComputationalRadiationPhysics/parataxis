@@ -26,7 +26,7 @@
 #include <particles/Identifier.hpp>
 #include <particles/IdProvider.def>
 
-namespace xrt {
+namespace parataxis {
 
     /** relative (to cell origin) in-cell position of a particle
      * With this definition we don't define any type like float3, double3,...
@@ -76,4 +76,4 @@ namespace xrt {
 
     alias(mass);
     alias(charge);
-}  // namespace xrt
+}  // namespace parataxis

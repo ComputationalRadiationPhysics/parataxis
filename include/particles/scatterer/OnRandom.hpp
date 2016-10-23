@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <random/distributions/Uniform.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace scatterer {
 
@@ -36,7 +36,7 @@ namespace scatterer {
     struct OnRandom
     {
         using Config = T_Config;
-#if XRT_USE_SLOW_RNG
+#if PARATAXIS_USE_SLOW_RNG
         using Random = SlowRNGFunctor;
 #else
         using Distribution = PMacc::random::distributions::Uniform<float>;
@@ -45,7 +45,7 @@ namespace scatterer {
 
         HINLINE explicit
         OnRandom(uint32_t currentStep)
-#if !XRT_USE_SLOW_RNG
+#if !PARATAXIS_USE_SLOW_RNG
                 :rand(RNGProvider::createRandom<Distribution>())
 #endif
         {}
@@ -70,4 +70,4 @@ namespace scatterer {
 
 }  // namespace scatterer
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

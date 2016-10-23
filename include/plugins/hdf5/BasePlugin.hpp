@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
-#if (XRT_ENABLE_HDF5 == 1)
+#include "parataxisTypes.hpp"
+#if (PARATAXIS_ENABLE_HDF5 == 1)
 #   include <splash/splash.h>
 #endif
 
 namespace po = boost::program_options;
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -34,7 +34,7 @@ class BasePlugin
 {
 protected:
     BasePlugin()
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
      : dataCollector(nullptr)
 #endif
     {}
@@ -45,7 +45,7 @@ protected:
 
     void pluginRegisterHelp(po::options_description& desc)
     {
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
         restartFilename.clear();
         desc.add_options()
             ((getPrefix() + ".file").c_str(), po::value<std::string>(&filename)->default_value(getPrefix() + "_data"), "HDF5 output filename (prefix)")
@@ -60,7 +60,7 @@ protected:
     void pluginLoad();
     void pluginUnload();
 
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
     std::string filename;
     std::string checkpointFilename;
     std::string restartFilename;
@@ -72,10 +72,10 @@ protected:
 
 void BasePlugin::closeH5File()
 {
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
     if (dataCollector)
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: close DataCollector");
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: close DataCollector");
         dataCollector->close();
     }
 #endif
@@ -83,7 +83,7 @@ void BasePlugin::closeH5File()
 
 void BasePlugin::openH5File(const std::string& filename, bool openRead)
 {
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
     const uint32_t maxOpenFilesPerNode = 4;
     if (!dataCollector)
     {
@@ -104,7 +104,7 @@ void BasePlugin::openH5File(const std::string& filename, bool openRead)
     // open datacollector
     try
     {
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: open DataCollector with file: %1%") % filename;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: open DataCollector with file: %1%") % filename;
         dataCollector->open(filename.c_str(), attr);
     }
     catch (const splash::DCException& e)
@@ -117,7 +117,7 @@ void BasePlugin::openH5File(const std::string& filename, bool openRead)
 
 void BasePlugin::pluginLoad()
 {
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
     auto& gc = Environment::get().GridController();
     /* It is important that we never change the mpi_pos after this point
      * because we get problems with the restart.
@@ -141,7 +141,7 @@ void BasePlugin::pluginLoad()
 
 void BasePlugin::pluginUnload()
 {
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
    if (dataCollector)
         dataCollector->finalize();
 
@@ -151,4 +151,4 @@ void BasePlugin::pluginUnload()
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

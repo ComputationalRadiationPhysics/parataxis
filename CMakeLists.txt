@@ -286,26 +286,26 @@ if(PARAM_OVERWRITES)
 endif(PARAM_OVERWRITES)
 
 ################################################################################
-# XRT
+# PARATAXIS
 ################################################################################
 
-set(XRT_VERBOSE "1" CACHE STRING "Set verbosity level for XRT")
-add_definitions(-DXRT_VERBOSE_LVL=${XRT_VERBOSE})
-option(XRT_CHECK_PHOTON_CT "Checks if the number of photons generated can fit into the memory" ON)
-option(XRT_FORCE_SINGLE_SCATTERING "Make particles scatter only once" OFF)
-set(XRT_NVPROF_START_TS 200 CACHE STRING "Start profiling at this timestep")
-set(XRT_NVPROF_NUM_TS 0 CACHE STRING "Number of timesteps to profile. 0 = Disabled") 
-if(XRT_CHECK_PHOTON_CT)
-    add_definitions(-DXRT_CHECK_PHOTON_CT=1)
+set(PARATAXIS_VERBOSE "1" CACHE STRING "Set verbosity level for PARATAXIS")
+add_definitions(-DPARATAXIS_VERBOSE_LVL=${PARATAXIS_VERBOSE})
+option(PARATAXIS_CHECK_PHOTON_CT "Checks if the number of photons generated can fit into the memory" ON)
+option(PARATAXIS_FORCE_SINGLE_SCATTERING "Make particles scatter only once" OFF)
+set(PARATAXIS_NVPROF_START_TS 200 CACHE STRING "Start profiling at this timestep")
+set(PARATAXIS_NVPROF_NUM_TS 0 CACHE STRING "Number of timesteps to profile. 0 = Disabled") 
+if(PARATAXIS_CHECK_PHOTON_CT)
+    add_definitions(-DPARATAXIS_CHECK_PHOTON_CT=1)
 else()
-    add_definitions(-DXRT_CHECK_PHOTON_CT=0)
+    add_definitions(-DPARATAXIS_CHECK_PHOTON_CT=0)
 endif()
-if(XRT_FORCE_SINGLE_SCATTERING)
-    add_definitions(-DXRT_FORCE_SINGLE_SCATTERING=1)
+if(PARATAXIS_FORCE_SINGLE_SCATTERING)
+    add_definitions(-DPARATAXIS_FORCE_SINGLE_SCATTERING=1)
 else()
-    add_definitions(-DXRT_FORCE_SINGLE_SCATTERING=0)
+    add_definitions(-DPARATAXIS_FORCE_SINGLE_SCATTERING=0)
 endif()
-add_definitions(-DXRT_NVPROF_START_TS=${XRT_NVPROF_START_TS} -DXRT_NVPROF_NUM_TS=${XRT_NVPROF_NUM_TS})
+add_definitions(-DPARATAXIS_NVPROF_START_TS=${PARATAXIS_NVPROF_START_TS} -DPARATAXIS_NVPROF_NUM_TS=${PARATAXIS_NVPROF_NUM_TS})
 
 ################################################################################
 # Warnings
@@ -341,12 +341,12 @@ find_package(Splash 1.4.0 COMPONENTS PARALLEL)
 
 if(Splash_FOUND)
     include_directories(SYSTEM ${Splash_INCLUDE_DIRS})
-    list(APPEND Splash_DEFINITIONS "-DXRT_ENABLE_HDF5=1")
+    list(APPEND Splash_DEFINITIONS "-DPARATAXIS_ENABLE_HDF5=1")
     add_definitions(${Splash_DEFINITIONS})
     list(APPEND LIBS ${Splash_LIBRARIES})
     message(STATUS "HDF5 support activated")
 else()
-    add_definitions("-DXRT_ENABLE_HDF5=0")
+    add_definitions("-DPARATAXIS_ENABLE_HDF5=0")
 endif(Splash_FOUND)
 
 
@@ -359,12 +359,12 @@ find_package(PNGwriter 0.5.5)
 
 if(PNGwriter_FOUND)
     include_directories(SYSTEM ${PNGwriter_INCLUDE_DIRS})
-    list(APPEND PNGwriter_DEFINITIONS "-DXRT_ENABLE_PNG=1")
+    list(APPEND PNGwriter_DEFINITIONS "-DPARATAXIS_ENABLE_PNG=1")
     add_definitions(${PNGwriter_DEFINITIONS})
     list(APPEND LIBS ${PNGwriter_LIBRARIES})
     message(STATUS "PNG output support activated")
 else()
-    add_definitions("-DXRT_ENABLE_PNG=0")
+    add_definitions("-DPARATAXIS_ENABLE_PNG=0")
 endif()
 
 ################################################################################
@@ -375,12 +375,12 @@ find_package(TiffWriter 0.2.0)
 
 if(TiffWriter_FOUND)
     include_directories(${TiffWriter_INCLUDE_DIRS})
-    list(APPEND TiffWriter_DEFINITIONS "-DXRT_ENABLE_TIFF=1")
+    list(APPEND TiffWriter_DEFINITIONS "-DPARATAXIS_ENABLE_TIFF=1")
     add_definitions(${TiffWriter_DEFINITIONS})
     list(APPEND LIBS ${TiffWriter_LIBRARIES})
     message(STATUS "TIFF output support activated")
 else()
-    add_definitions("-DXRT_ENABLE_TIFF=0")
+    add_definitions("-DPARATAXIS_ENABLE_TIFF=0")
 endif()
 
 ################################################################################
@@ -393,10 +393,10 @@ set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
 
 
 ################################################################################
-# Check for XRT_EXTENSION_PATH
+# Check for PARATAXIS_EXTENSION_PATH
 ################################################################################
 
-find_path(XRT_EXTENSION_PATH
+find_path(PARATAXIS_EXTENSION_PATH
     NAMES include/simulation_defines/param/precision.param include/simulation_defines/param/speciesDefinition.param
     PATHS "${CMAKE_CURRENT_SOURCE_DIR}"
     DOC "search PATH to extension folder"
@@ -406,9 +406,9 @@ find_path(XRT_EXTENSION_PATH
     )
 
 include_directories(include)
-if(XRT_EXTENSION_PATH)
-    include_directories(BEFORE ${XRT_EXTENSION_PATH}/include)
-    message(STATUS "Using extension path: ${XRT_EXTENSION_PATH}")
+if(PARATAXIS_EXTENSION_PATH)
+    include_directories(BEFORE ${PARATAXIS_EXTENSION_PATH}/include)
+    message(STATUS "Using extension path: ${PARATAXIS_EXTENSION_PATH}")
 endif()
 
 ################################################################################
@@ -452,21 +452,21 @@ endif(SCOREP_ENABLE)
 # Configure
 ################################################################################
 
-set(XRT_BASE_CFG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/submit")
-file(GLOB CFG_Files RELATIVE "${XRT_BASE_CFG_PATH}" "${XRT_BASE_CFG_PATH}/*.cfg.in")
-if(XRT_EXTENSION_PATH)
-    set(XRT_EXTENSION_CFG_PATH "${XRT_EXTENSION_PATH}/submit")
-    file(GLOB CFG_Files_Ext RELATIVE "${XRT_EXTENSION_CFG_PATH}" "${XRT_EXTENSION_CFG_PATH}/*.cfg.in")
+set(PARATAXIS_BASE_CFG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/submit")
+file(GLOB CFG_Files RELATIVE "${PARATAXIS_BASE_CFG_PATH}" "${PARATAXIS_BASE_CFG_PATH}/*.cfg.in")
+if(PARATAXIS_EXTENSION_PATH)
+    set(PARATAXIS_EXTENSION_CFG_PATH "${PARATAXIS_EXTENSION_PATH}/submit")
+    file(GLOB CFG_Files_Ext RELATIVE "${PARATAXIS_EXTENSION_CFG_PATH}" "${PARATAXIS_EXTENSION_CFG_PATH}/*.cfg.in")
     list(APPEND CFG_Files ${CFG_Files_Ext})
     list(REMOVE_DUPLICATES CFG_Files)
 endif()
 
 foreach(fileName ${CFG_Files})
     get_filename_component(fileNoExt ${fileName} NAME_WE)
-    if(XRT_EXTENSION_PATH AND EXISTS "${XRT_EXTENSION_CFG_PATH}/${fileName}")
-        set(file "${XRT_EXTENSION_CFG_PATH}/${fileName}")
+    if(PARATAXIS_EXTENSION_PATH AND EXISTS "${PARATAXIS_EXTENSION_CFG_PATH}/${fileName}")
+        set(file "${PARATAXIS_EXTENSION_CFG_PATH}/${fileName}")
     else()
-        set(file "${XRT_BASE_CFG_PATH}/${fileName}")
+        set(file "${PARATAXIS_BASE_CFG_PATH}/${fileName}")
     endif()
     configure_file(${file} "submit/${fileNoExt}.cfg" @ONLY)
 endforeach()
@@ -506,11 +506,11 @@ install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/submit"
 install(DIRECTORY "include/simulation_defines"
         DESTINATION ${CMAKE_INSTALL_PREFIX})
 # Extension simulation config (overwrite base)
-if(XRT_EXTENSION_PATH)
+if(PARATAXIS_EXTENSION_PATH)
     # Overwrite with extension files
-    ForceCopyOnInstall("${XRT_EXTENSION_PATH}/include" "simulation_defines")
-    if(EXISTS "${XRT_EXTENSION_PATH}/testData")
-        install(DIRECTORY "${XRT_EXTENSION_PATH}/testData"
+    ForceCopyOnInstall("${PARATAXIS_EXTENSION_PATH}/include" "simulation_defines")
+    if(EXISTS "${PARATAXIS_EXTENSION_PATH}/testData")
+        install(DIRECTORY "${PARATAXIS_EXTENSION_PATH}/testData"
                 DESTINATION ${CMAKE_INSTALL_PREFIX})
     endif()
 endif()

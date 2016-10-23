@@ -20,7 +20,7 @@
 #include "plugins/common/stringHelpers.hpp"
 #include <ctime>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace common {
 
@@ -46,4 +46,4 @@ namespace common {
 
 } // namespace common
 } // namespace plugins
-} // namespace xrt
+} // namespace parataxis

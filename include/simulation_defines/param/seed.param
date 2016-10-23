@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace seeds {
 
     /** global seed
@@ -48,4 +48,4 @@ namespace seeds {
     static constexpr uint32_t xorRNG = 0xC24E47F2;
 
 }  // namespace seeds
-}  // namespace xrt
+}  // namespace parataxis

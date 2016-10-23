@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace math {
 
     template<typename T>
@@ -32,4 +32,4 @@ namespace math {
     }
 
 }  // namespace math
-}  // namespace xrt
+}  // namespace parataxis

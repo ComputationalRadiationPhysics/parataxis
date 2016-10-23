@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace traits {
     /** Convert a PIConGPU Type to a Splash CollectionType
      *
@@ -30,6 +30,6 @@ namespace traits {
     struct PICToSplash;
 
 } //namespace traits
-}// namespace xrt
+}// namespace parataxis
 
 #include "PICToSplash.tpp"

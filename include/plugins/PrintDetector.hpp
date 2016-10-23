@@ -19,15 +19,15 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 #include "ComplexTraits.hpp"
 #include "math/abs.hpp"
-#if (XRT_ENABLE_TIFF == 1)
+#if (PARATAXIS_ENABLE_TIFF == 1)
 #   include "plugins/imaging/TiffCreator.hpp"
 #endif
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
 #   include "plugins/openPMD/WriteHeader.hpp"
 #   include "plugins/hdf5/DataBoxWriter.hpp"
 #   include "plugins/hdf5/DataBoxReader.hpp"
@@ -48,7 +48,7 @@
 #include <sstream>
 #include <array>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     template<class T_Detector>
@@ -98,7 +98,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
-            PMacc::log< XRTLogLvl::IN_OUT >("Outputting detector at timestep %1%") % currentStep;
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Outputting detector at timestep %1%") % currentStep;
             PMacc::DataConnector& dc = Environment::get().DataConnector();
 
             Detector& detector = dc.getData<Detector>(Detector::getName());
@@ -119,7 +119,7 @@ namespace plugins {
                 if(!noBeamstop)
                     doBeamstop(masterBuffer_->getDataBox(), size);
                 auto transformedBox = makeTransformBox(masterBuffer_->getDataBox(), typename Detector::OutputTransformer());
-#if (XRT_ENABLE_TIFF==1)
+#if (PARATAXIS_ENABLE_TIFF==1)
                 if(!noTiff)
                 {
                     std::stringstream fileName;
@@ -130,7 +130,7 @@ namespace plugins {
                     tiff(fileName.str(), transformedBox, size);
                 }
 #endif
-#if (XRT_ENABLE_HDF5==1)
+#if (PARATAXIS_ENABLE_HDF5==1)
                 if(!noHDF5)
                     writeHDF5(transformedBox, size, currentStep);
 #endif
@@ -167,7 +167,7 @@ namespace plugins {
             float_X numBeamCellsY = CELL_HEIGHT * simSize.y() / Detector::cellHeight;
             const Space2D start((size.x() - numBeamCellsX) / 2, (size.y() - numBeamCellsY) / 2);
             const Space2D end((size.x() + numBeamCellsX) / 2, (size.y() + numBeamCellsY) / 2);
-            PMacc::log< XRTLogLvl::IN_OUT >("Applying beamstop in range %1%-%2%/%3%-%4%") % start.x() % end.x() % start.y() % end.y();
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Applying beamstop in range %1%-%2%/%3%-%4%") % start.x() % end.x() % start.y() % end.y();
             for(unsigned y = start.y(); y <= end.y(); y++)
             {
                 for(unsigned x = start.x(); x <= end.x(); x++)
@@ -178,7 +178,7 @@ namespace plugins {
         void writeHDF5(T_DataBox&& data, const Space2D& size, uint32_t currentStep) const;
     };
 
-#if (XRT_ENABLE_HDF5==1)
+#if (PARATAXIS_ENABLE_HDF5==1)
 
     template<class T_Detector>
     template<class T_DataBox>
@@ -251,7 +251,7 @@ namespace plugins {
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
         openPMD::writeHeader(writer, this->fileName);
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: write detector: %1%") % Detector::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: write detector: %1%") % Detector::getName();
 
         /* Change dataset */
         writer.setCurrentDataset(std::string("meshes/") + Detector::getName());
@@ -322,7 +322,7 @@ namespace plugins {
         openH5File(fname, true);
         auto writer = hdf5::makeSplashWriter(*dataCollector, currentStep);
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: read detector: %1%") % Detector::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: read detector: %1%") % Detector::getName();
 
         /* Change dataset */
         writer.setCurrentDataset(std::string("meshes/") + Detector::getName());
@@ -360,7 +360,7 @@ namespace plugins {
 
     template<class T_Detector>
     void PrintDetector<T_Detector>::restart(uint32_t currentStep, const std::string restartDirectory){}
-#endif // XRT_ENABLE_HDF5
+#endif // PARATAXIS_ENABLE_HDF5
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

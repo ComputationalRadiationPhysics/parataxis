@@ -49,20 +49,20 @@ class TestInterference(unittest.TestCase):
                     params.AddDefine(param[0], param[1])
         params.ParseFolder(os.environ["TEST_OUTPUT_PATH"] + "/simulation_defines/param")
 
-        params.SetCurNamespace("xrt::detector::PhotonDetector")
+        params.SetCurNamespace("parataxis::detector::PhotonDetector")
         detector = scatter.DetectorData([], [params.GetNumber("cellWidth"), params.GetNumber("cellHeight")], params.GetNumber("distance"))
         self.assertEqual(params.GetValue("IncomingParticleHandler"), "particleHandlers::AddWaveParticles")
 
-        params.SetCurNamespace("xrt::particles::scatterer::direction::Fixed")
+        params.SetCurNamespace("parataxis::particles::scatterer::direction::Fixed")
         scatterAngles = [params.GetNumber("angleY"), params.GetNumber("angleZ")]
 
-        params.SetCurNamespace("xrt::initialDensity")
+        params.SetCurNamespace("parataxis::initialDensity")
         self.assertEqual(params.GetValue("Generator"), "AvailableGenerators::DoublePoint")
-        params.SetCurNamespace("xrt::initialDensity::AvailableGenerators::DoublePoint")
+        params.SetCurNamespace("parataxis::initialDensity::AvailableGenerators::DoublePoint")
         scatterParticle1 = scatter.ParticleData([params.GetNumber("offsetX"), params.GetNumber("offsetY"), params.GetNumber("offsetZ1")], scatterAngles)
         scatterParticle2 = scatter.ParticleData([params.GetNumber("offsetX"), params.GetNumber("offsetY"), params.GetNumber("offsetZ2")], scatterAngles)
 
-        params.SetCurNamespace("xrt")
+        params.SetCurNamespace("parataxis")
         simulation = scatter.SimulationData(list(map(int, os.environ["TEST_GRID_SIZE"].split(" "))),
                                             [params.GetNumber("SI::CELL_WIDTH"), params.GetNumber("SI::CELL_HEIGHT"), params.GetNumber("SI::CELL_DEPTH")])
 

@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace math {
 
     /** Rounds the given float value to the nearest integer.
@@ -43,4 +43,4 @@ namespace math {
     }
 
 }  // namespace math
-}  // namespace xrt
+}  // namespace parataxis

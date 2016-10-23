@@ -24,7 +24,7 @@
 #include "particles/functors/GetWavelength.hpp"
 #include <vector>
 
-namespace xrt{
+namespace parataxis{
 namespace traits{
 
 template<typename T_Type, typename T_Frame>
@@ -151,4 +151,4 @@ struct OpenPMDUnit<wasScattered, T_Frame>
 };
 
 } // namespace traits
-} // namespace xrt
+} // namespace parataxis

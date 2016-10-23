@@ -22,7 +22,7 @@
 #include "fields/DensityField.hpp"
 #include "fields/StaticManipulator.hpp"
 #include "fields/RandomManipulator.hpp"
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
 #   include "fields/HDF5FieldInterpolator.hpp"
 #endif
 
@@ -30,22 +30,22 @@ namespace PMacc {
 namespace traits {
 
     template<>
-    struct Resolve<xrt::fieldManipulators::Static>
+    struct Resolve<parataxis::fieldManipulators::Static>
     {
-        using type = xrt::fields::StaticManipulator<xrt::fields::DensityField>;
+        using type = parataxis::fields::StaticManipulator<parataxis::fields::DensityField>;
     };
 
     template<>
-    struct Resolve<xrt::fieldManipulators::Random>
+    struct Resolve<parataxis::fieldManipulators::Random>
     {
-        using type = xrt::fields::RandomManipulator<xrt::fields::DensityField>;
+        using type = parataxis::fields::RandomManipulator<parataxis::fields::DensityField>;
     };
 
-#if (XRT_ENABLE_HDF5 == 1)
+#if (PARATAXIS_ENABLE_HDF5 == 1)
     template<>
-    struct Resolve<xrt::fieldManipulators::HDF5Interpolator>
+    struct Resolve<parataxis::fieldManipulators::HDF5Interpolator>
     {
-        using type = xrt::fields::HDF5FieldInterpolator<xrt::fields::DensityField>;
+        using type = parataxis::fields::HDF5FieldInterpolator<parataxis::fields::DensityField>;
     };
 #endif
 

@@ -19,11 +19,11 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "fields/IFieldManipulator.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace fields {
 
     namespace kernel
@@ -95,4 +95,4 @@ private:
 };
 
 }  // namespace fields
-}  // namespace xrt
+}  // namespace parataxis

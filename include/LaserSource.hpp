@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "debug/LogLevels.hpp"
 #include "math/Max.hpp"
 #include "math/round.hpp"
 #include <nvidia/reduce/Reduce.hpp>
 #include <algorithms/TypeCast.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     namespace kernel {
 
@@ -76,10 +76,10 @@ namespace xrt {
 
         void init()
         {
-            PMacc::log< XRTLogLvl::DOMAINS >("Laser pulse is %1% timesteps long") % numTimeStepsLaserPulse;
+            PMacc::log< PARATAXISLogLvl::DOMAINS >("Laser pulse is %1% timesteps long") % numTimeStepsLaserPulse;
             uint32_t slotsAv = mallocMC::getAvailableSlots(sizeof(FrameType));
             uint64_t numParts = slotsAv * SuperCellSize::toRT().productOfComponents();
-            PMacc::log< XRTLogLvl::MEMORY > ("There are %1% slots available that can fit up to %2% particles") % slotsAv % numParts;
+            PMacc::log< PARATAXISLogLvl::MEMORY > ("There are %1% slots available that can fit up to %2% particles") % slotsAv % numParts;
         }
 
         void update(uint32_t currentStep)
@@ -140,7 +140,7 @@ namespace xrt {
                 msg = "There will be up to %1% particles spawned per timestep which most likely fit into the memory. "
                       "The maximum number of particles that could be spawned per timestep is %2%%3% for straight through propagation and %4%%5% for diagonal propagation";
             }
-            PMacc::log< XRTLogLvl::MEMORY >(msg.c_str())
+            PMacc::log< PARATAXISLogLvl::MEMORY >(msg.c_str())
                             % maxPartPerTs
                             % maxPartsPerTsStraight % (maxPartsPerTsStraight < maxPartPerTs ? "(!)":"")
                             % maxPartsPerTsDiagonal % (maxPartsPerTsDiagonal < maxPartPerTs ? "(!)":"");
@@ -168,4 +168,4 @@ namespace xrt {
         }
     };
 
-}  // namespace xrt
+}  // namespace parataxis

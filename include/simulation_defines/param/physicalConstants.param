@@ -20,7 +20,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 
     constexpr float_64 PI = 3.141592653589793238462643383279502884197169399;
 
@@ -63,4 +63,4 @@ namespace xrt {
     //
     constexpr float_64 UNITCONV_keV_to_Joule = 1.60217646e-16;
     constexpr float_64 UNITCONV_Joule_to_keV = (1.0 / UNITCONV_keV_to_Joule);
-}  // namespace xrt
+}  // namespace parataxis

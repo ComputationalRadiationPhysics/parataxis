@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 #include "convertToSpace.hpp"
 #include "particles/Particles.tpp"
@@ -51,7 +51,7 @@
 #include <memory>
 #include <vector>
 
-namespace xrt {
+namespace parataxis {
 
     namespace po   = boost::program_options;
 
@@ -74,7 +74,7 @@ namespace xrt {
 
         std::unique_ptr<fields::DensityField> densityField;
         std::unique_ptr<Detector> detector_;
-#if !XRT_USE_SLOW_RNG
+#if !PARATAXIS_USE_SLOW_RNG
         std::unique_ptr<RNGProvider> rngProvider_;
 #endif
         // Created with the Simulation class
@@ -119,44 +119,44 @@ namespace xrt {
             CUDA_CHECK(cudaDeviceSetLimit(cudaLimitPrintfFifoSize, 3 * MiB));
 #endif
             TimeIntervallExt timer;
-            PMacc::log<XRTLogLvl::SIM_STATE>("Creating buffers");
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Creating buffers");
             densityField.reset(new fields::DensityField(cellDescription));
             detector_.reset(new Detector(Space2D(detectorSize[0], detectorSize[1])));
-#if !XRT_USE_SLOW_RNG
+#if !PARATAXIS_USE_SLOW_RNG
             rngProvider_.reset(new RNGProvider(Environment::get().SubGrid().getLocalDomain().size));
 #endif
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
-            PMacc::log<XRTLogLvl::SIM_STATE>("Creating particle buffers");;
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Creating particle buffers");;
             /* create particle storage (does NOT use mallocMC) */
             particleStorage = new PIC_Photons(cellDescription, PIC_Photons::FrameType::getName());
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing MallocMC");
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing MallocMC");
             /* After all memory consuming stuff is initialized we can setup mallocMC with the remaining memory */
             initMallocMC();
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
             particleStorage->createParticleBuffer();
 
             size_t freeGpuMem(0);
             Environment::get().MemoryInfo().getMemoryInfo(&freeGpuMem);
-            PMacc::log< XRTLogLvl::MEMORY > ("free mem after all mem is allocated %1% MiB") % (freeGpuMem / MiB);
+            PMacc::log< PARATAXISLogLvl::MEMORY > ("free mem after all mem is allocated %1% MiB") % (freeGpuMem / MiB);
 
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing density field");
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing density field");
             densityField->init();
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing detector");
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing detector");
             detector_->init();
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing particles");
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing particles");
             particleStorage->init(densityField.get());
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
-            PMacc::log<XRTLogLvl::SIM_STATE>("Initializing laser source");
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing laser source");
             laserSource.init();
-            PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+            PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 
-            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation initialized.");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE > ("Simulation initialized.");
         }
 
         uint32_t fillSimulation() override
@@ -174,7 +174,7 @@ namespace xrt {
 
                 // restart simulation by loading from persistent data
                 // the simulation will start after restartStep
-                PMacc::log<XRTLogLvl::SIM_STATE>("Restarting simulation from timestep %1% in directory '%2%'") %
+                PMacc::log<PARATAXISLogLvl::SIM_STATE>("Restarting simulation from timestep %1% in directory '%2%'") %
                     restartStep % restartDirectory;
 
                 Environment::get().PluginConnector().restartPlugins(restartStep, restartDirectory);
@@ -186,34 +186,34 @@ namespace xrt {
                 auto&gc = Environment::get().GridController();
                 MPI_CHECK(MPI_Barrier(gc.getCommunicator().getMPIComm()));
 
-                PMacc::log<XRTLogLvl::SIM_STATE>("Loading from persistent data finished");
+                PMacc::log<PARATAXISLogLvl::SIM_STATE>("Loading from persistent data finished");
 
                 step = this->restartStep + 1;
             } else
             {
-                PMacc::log<XRTLogLvl::SIM_STATE>("Starting simulation from timestep 0");
+                PMacc::log<PARATAXISLogLvl::SIM_STATE>("Starting simulation from timestep 0");
 
                 PMacc::IdProvider<simDim>::init();
                 TimeIntervallExt timer;
 
-#if !XRT_USE_SLOW_RNG
-                PMacc::log<XRTLogLvl::SIM_STATE>("Initializing random number generators");
+#if !PARATAXIS_USE_SLOW_RNG
+                PMacc::log<PARATAXISLogLvl::SIM_STATE>("Initializing random number generators");
                 PMacc::mpi::SeedPerRank<simDim> seedPerRank;
                 uint32_t seed = seeds::xorRNG ^ seeds::Global()();
                 seed = seedPerRank(seed);
                 rngProvider_->init(seed);
-                PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+                PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
 #endif
 
-                PMacc::log<XRTLogLvl::SIM_STATE>("Creating density distribution");
+                PMacc::log<PARATAXISLogLvl::SIM_STATE>("Creating density distribution");
                 Resolve_t<initialDensity::Generator> generator;
                 densityField->createDensityDistribution(generator);
-                PMacc::log(XRTLogLvl::SIM_STATE() + XRTLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
+                PMacc::log(PARATAXISLogLvl::SIM_STATE() + PARATAXISLogLvl::TIMING(), "Done in %1%") % timer.printCurIntervallRestart();
             }
 
-            PMacc::log< XRTLogLvl::SIM_STATE > ("Simulation filled.");
+            PMacc::log< PARATAXISLogLvl::SIM_STATE > ("Simulation filled.");
 
-#if XRT_CHECK_PHOTON_CT
+#if PARATAXIS_CHECK_PHOTON_CT
             laserSource.checkPhotonCt(runSteps, this->cellDescription);
 #endif
             return step;
@@ -239,12 +239,12 @@ namespace xrt {
          */
         void runOneStep(uint32_t currentStep) override
         {
-#if (XRT_NVPROF_NUM_TS>0)
-            if(currentStep == XRT_NVPROF_START_TS)
+#if (PARATAXIS_NVPROF_NUM_TS>0)
+            if(currentStep == PARATAXIS_NVPROF_START_TS)
             {
                 CUDA_CHECK(cudaDeviceSynchronize());
                 CUDA_CHECK(cudaProfilerStart());
-            }else if(currentStep == XRT_NVPROF_START_TS + XRT_NVPROF_NUM_TS)
+            }else if(currentStep == PARATAXIS_NVPROF_START_TS + PARATAXIS_NVPROF_NUM_TS)
             {
                 CUDA_CHECK(cudaDeviceSynchronize());
                 CUDA_CHECK(cudaProfilerStop());
@@ -271,7 +271,7 @@ namespace xrt {
             if(seeds::Global::value != globalSeed)
             {
                 seeds::Global::value = globalSeed;
-                PMacc::log<XRTLogLvl::DOMAINS>("Using custom seed %1%") % globalSeed;
+                PMacc::log<PARATAXISLogLvl::DOMAINS>("Using custom seed %1%") % globalSeed;
             }
 
             Space periodic = Space::create(0); // Non periodic boundaries!
@@ -289,7 +289,7 @@ namespace xrt {
             Space localGridOffset(gc.getPosition() * localGridSize);
             /* Set up environment (subGrid and singletons) with this size */
             Environment::get().initGrids( gridSize, localGridSize, localGridOffset);
-            PMacc::log< XRTLogLvl::DOMAINS > ("rank %1%; local size %2%; local offset %3%;") %
+            PMacc::log< PARATAXISLogLvl::DOMAINS > ("rank %1%; local size %2%; local offset %3%;") %
                     gc.getPosition().toString() % localGridSize.toString() % localGridOffset.toString();
 
             Parent::pluginLoad();
@@ -315,7 +315,7 @@ namespace xrt {
             Environment::get().MemoryInfo().getMemoryInfo(&freeGpuMem);
             if(freeGpuMem < reservedGPUMemorySize)
             {
-                PMacc::log< XRTLogLvl::MEMORY > ("%1% MiB free memory < %2% MiB required reserved memory")
+                PMacc::log< PARATAXISLogLvl::MEMORY > ("%1% MiB free memory < %2% MiB required reserved memory")
                     % (freeGpuMem / MiB) % (reservedGPUMemorySize / MiB) ;
                 throw std::runtime_error("Cannot reserve enough memory");
             }
@@ -325,12 +325,12 @@ namespace xrt {
             if( Environment::get().MemoryInfo().isSharedMemoryPool() )
             {
                 heapSize /= 2;
-                PMacc::log< XRTLogLvl::MEMORY > ("Shared RAM between GPU and host detected - using only half of the 'device' memory.");
+                PMacc::log< PARATAXISLogLvl::MEMORY > ("Shared RAM between GPU and host detected - using only half of the 'device' memory.");
             }
             else
-                PMacc::log< XRTLogLvl::MEMORY > ("RAM is NOT shared between GPU and host.");
+                PMacc::log< PARATAXISLogLvl::MEMORY > ("RAM is NOT shared between GPU and host.");
 
-            PMacc::log< XRTLogLvl::MEMORY > ("%1% of %2% MiB free memory is reserved. Using %3% MiB as the heap for MallocMC")
+            PMacc::log< PARATAXISLogLvl::MEMORY > ("%1% of %2% MiB free memory is reserved. Using %3% MiB as the heap for MallocMC")
                 % (reservedGPUMemorySize / MiB) % (freeGpuMem / MiB) % (heapSize / MiB);
             // initializing the heap for particles
             mallocMC::initHeap(heapSize);
@@ -357,4 +357,4 @@ namespace xrt {
         }
     };
 
-}  // namespace xrt
+}  // namespace parataxis

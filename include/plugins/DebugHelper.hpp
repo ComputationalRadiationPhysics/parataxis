@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/ISimulationPlugin.hpp"
 #include "debug/LogLevels.hpp"
 
 #include <debug/VerboseLog.hpp>
 #include <string>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     template<class T_Particles>
@@ -83,9 +83,9 @@ namespace plugins {
                 return;
 
             Environment::get().PluginConnector().setNotificationPeriod(this, notifyFrequency);
-            PMacc::log< XRTLogLvl::PLUGINS >("Printing particle info for %1% every %2% timesteps") % T_Particles::FrameType::getName() % notifyFrequency;
+            PMacc::log< PARATAXISLogLvl::PLUGINS >("Printing particle info for %1% every %2% timesteps") % T_Particles::FrameType::getName() % notifyFrequency;
         }
     };
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

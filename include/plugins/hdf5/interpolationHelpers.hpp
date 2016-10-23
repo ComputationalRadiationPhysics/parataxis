@@ -22,7 +22,7 @@
 #include "plugins/hdf5/SplashWriter.hpp"
 #include "plugins/openPMD/helpers.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -78,4 +78,4 @@ namespace hdf5 {
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

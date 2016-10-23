@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 namespace particles {
 namespace scatterer {
 
@@ -78,4 +78,4 @@ namespace scatterer {
 
 }  // namespace scatterer
 }  // namespace particles
-}  // namespace xrt
+}  // namespace parataxis

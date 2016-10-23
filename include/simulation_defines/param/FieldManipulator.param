@@ -19,7 +19,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
     namespace fieldManipulators {
 
         /** Static field */
@@ -32,4 +32,4 @@ namespace xrt {
     }  // namespace fieldManipulators
 
     using FieldManipulator = fieldManipulators::Static;
-}  // namespace xrt
+}  // namespace parataxis

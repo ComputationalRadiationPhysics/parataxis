@@ -60,16 +60,16 @@ class TestLineDensity(unittest.TestCase):
                     params.AddDefine(param[0], param[1])
         params.ParseFolder(os.environ["TEST_OUTPUT_PATH"] + "/simulation_defines/param")
 
-        params.SetCurNamespace("xrt::detector::PhotonDetector")
+        params.SetCurNamespace("parataxis::detector::PhotonDetector")
         DetDist = params.GetNumber("distance")
         DetCellSize = [params.GetNumber("cellWidth"), params.GetNumber("cellHeight")]
         DetType = params.GetValue("IncomingParticleHandler")
 
-        params.SetCurNamespace("xrt::initialDensity")
+        params.SetCurNamespace("parataxis::initialDensity")
         self.assertEqual(params.GetValue("Generator"), "AvailableGenerators::RaisingLine")
         DensityPos = params.GetNumber("AvailableGenerators::RaisingLine::offsetOther")
 
-        params.SetCurNamespace("xrt")
+        params.SetCurNamespace("parataxis")
         ScatterAngleFactors = [params.GetNumber("particles::scatterer::direction::LinearDensity::factorY"), params.GetNumber("particles::scatterer::direction::LinearDensity::factorZ")]
         SimCellSize = [params.GetNumber("SI::CELL_WIDTH"), params.GetNumber("SI::CELL_HEIGHT"), params.GetNumber("SI::CELL_DEPTH")]
 

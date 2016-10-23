@@ -19,14 +19,14 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "traits/PICToSplash.hpp"
 #include <splash/splash.h>
 #include <array>
 #include <vector>
 #include <type_traits>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 namespace detail {
@@ -137,4 +137,4 @@ namespace detail {
 }  // namespace detail
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

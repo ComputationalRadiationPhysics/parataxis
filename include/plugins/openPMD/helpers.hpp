@@ -23,7 +23,7 @@
 #include <string>
 #include <cstdio>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -147,4 +147,4 @@ std::array<char, T_dims> getAxisLabels(T_SplashReader&& reader)
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

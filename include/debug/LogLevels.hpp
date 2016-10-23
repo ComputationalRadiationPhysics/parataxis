@@ -22,14 +22,14 @@
 #include <stdint.h>
 #include <debug/VerboseLogMakros.hpp>
 
-namespace xrt{
+namespace parataxis{
 
-    #ifndef XRT_VERBOSE_LVL
-    #   define XRT_VERBOSE_LVL 0
+    #ifndef PARATAXIS_VERBOSE_LVL
+    #   define PARATAXIS_VERBOSE_LVL 0
     #endif
 
     /*create verbose class*/
-    DEFINE_VERBOSE_CLASS(XRTLogLvl)
+    DEFINE_VERBOSE_CLASS(PARATAXISLogLvl)
     (
         /* define log lvl for later use
          * e.g. log<PMaccLogLvl::NOTHING>("TEXT");*/
@@ -43,7 +43,7 @@ namespace xrt{
         DEFINE_LOGLVL(64, DEBUG);
     )
     /*set default verbose lvl (integer number)*/
-    (NOTHING::lvl|XRT_VERBOSE_LVL);
+    (NOTHING::lvl|PARATAXIS_VERBOSE_LVL);
 
 
-} // namespace xrt
+} // namespace parataxis

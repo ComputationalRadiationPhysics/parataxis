@@ -19,12 +19,12 @@
  
 #pragma once
 
-#if (XRT_ENABLE_HDF5==1)
+#if (PARATAXIS_ENABLE_HDF5==1)
 #include <splash/splash.h>
 
 #include "simulation_defines.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace traits {
     template<>
     struct SplashToPIC<splash::ColTypeBool>
@@ -82,6 +82,6 @@ namespace traits {
     };
 
 } //namespace traits
-}// namespace xrt
+}// namespace parataxis
 
-#endif // (XRT_ENABLE_HDF5==1)
+#endif // (PARATAXIS_ENABLE_HDF5==1)

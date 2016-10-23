@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "particles/functors/IterateSpecies.hpp"
 #include "particles/functors/CopySpeciesToHost.hpp"
 #include "particles/filters/IndexFilter.hpp"
@@ -33,7 +33,7 @@
 #include <debug/VerboseLog.hpp>
 #include <string>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 
     namespace detail {
@@ -120,7 +120,7 @@ namespace plugins {
 
         void notify(uint32_t currentStep) override
         {
-            PMacc::log< XRTLogLvl::IN_OUT >("Printing particles at timestep %1% (%2%ns)") % currentStep % (currentStep * DELTA_T * UNIT_TIME * 1e9);
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Printing particles at timestep %1% (%2%ns)") % currentStep % (currentStep * DELTA_T * UNIT_TIME * 1e9);
             PMacc::DataConnector &dc = Environment::get().DataConnector();
 
             /* synchronizes the MallocMCBuffer to the host side */
@@ -141,7 +141,7 @@ namespace plugins {
 
             dc.releaseData(PIC_Photons::FrameType::getName());
             dc.releaseData(PMacc::MallocMCBuffer::getName());
-            PMacc::log< XRTLogLvl::IN_OUT >("%1% particles printed") % particlesCount;
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("%1% particles printed") % particlesCount;
         }
 
         void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override
@@ -177,9 +177,9 @@ namespace plugins {
                 idxOff[i] = (idxOffset[i] < totalSize[i]) ? idxOffset[i] : 0;
                 idxSz[i]  = (idxSize[i] > 0) ? idxSize[i] : totalSize[i];
             }
-            PMacc::log< XRTLogLvl::PLUGINS >("Printing particles in range %1% [%2%] every %3% timesteps") % idxOff % idxSz % notifyFrequency;
+            PMacc::log< PARATAXISLogLvl::PLUGINS >("Printing particles in range %1% [%2%] every %3% timesteps") % idxOff % idxSz % notifyFrequency;
         }
     };
 
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

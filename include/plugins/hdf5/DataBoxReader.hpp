@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <memory/boxes/DataBoxDim1Access.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -86,6 +86,6 @@ void readDataBox(T_SplashReader&& reader, const T_DataBox& dataBox,
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis
 
 #include "plugins/hdf5/ComplexBoxReader.hpp"

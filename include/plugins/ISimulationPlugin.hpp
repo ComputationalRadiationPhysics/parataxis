@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include <pluginSystem/IPlugin.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     class ISimulationPlugin: public PMacc::IPlugin
     {
@@ -39,4 +39,4 @@ namespace xrt {
         const MappingDesc* cellDescription_;
     };
 
-}  // namespace xrt
+}  // namespace parataxis

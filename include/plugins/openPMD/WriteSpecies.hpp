@@ -20,7 +20,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "plugins/hdf5/WriteParticleAttribute.hpp"
 #include "plugins/hdf5/splashUtils.hpp"
 #include "plugins/common/helpers.hpp"
@@ -36,7 +36,7 @@
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/pair.hpp>
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace openPMD {
 
@@ -72,32 +72,32 @@ struct WriteSpecies
     {
         using namespace PMacc::algorithms::forEach;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: (begin) write species: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: (begin) write species: %1%") % Hdf5FrameType::getName();
         auto& dc = Environment::get().DataConnector();
         const auto& subGrid = Environment::get().SubGrid();
         /* load particle without copy particle data to host */
         T_Species& speciesTmp = dc.getData<T_Species >(FrameType::getName());
 
         /* count number of particles for this species on the device */
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) count particles: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) count particles: %1%") % Hdf5FrameType::getName();
         uint64_t numParticles = PMacc::CountParticles::countOnDevice< PMacc::CORE + PMacc::BORDER >(
             speciesTmp,
             cellDescription,
             NoFilter()
         );
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) count particles: %1% = %2%") % Hdf5FrameType::getName() % numParticles;
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) count particles: %1% = %2%") % Hdf5FrameType::getName() % numParticles;
 
         Hdf5FrameType hostFrame;
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) malloc host memory: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) malloc host memory: %1%") % Hdf5FrameType::getName();
         /*malloc memory on host*/
         ForEach<typename Hdf5FrameType::ValueTypeSeq, AllocMemory<bmpl::_1, ArrayAllocator> > mallocMem;
         mallocMem(PMacc::forward(hostFrame), numParticles);
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) malloc host memory: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) malloc host memory: %1%") % Hdf5FrameType::getName();
 
         if (numParticles != 0)
         {
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
+            PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
                     % Hdf5FrameType::getName() % numParticles;
 
             PMacc::MallocMCBuffer& mallocMCBuffer = dc.getData<PMacc::MallocMCBuffer>(PMacc::MallocMCBuffer::getName());
@@ -119,7 +119,7 @@ struct WriteSpecies
             dc.releaseData(PMacc::MallocMCBuffer::getName());
 
             assert(globalParticleOffset == numParticles);
-            PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
+            PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) copy particle host (with hierarchy) to host (without hierarchy): %1% (%2%)")
                     % Hdf5FrameType::getName() % globalParticleOffset;
         }
 
@@ -127,7 +127,7 @@ struct WriteSpecies
          * do an allgather during write to find out the global number of
          * particles.
          */
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) collect particle sizes for %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) collect particle sizes for %1%") % Hdf5FrameType::getName();
 
         auto& gc = Environment::get().GridController();
 
@@ -168,10 +168,10 @@ struct WriteSpecies
             if( particleCounts.at(2 * r + 1) < myParticlePatch[ 1 ] )
                 numParticlesOffset += particleCounts.at(2 * r);
         }
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) collect particle sizes for %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) collect particle sizes for %1%") % Hdf5FrameType::getName();
 
         /* dump non-constant particle records to hdf5 file */
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) write particle records for %1% (%2%:%3%)")
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) write particle records for %1% (%2%:%3%)")
                 % Hdf5FrameType::getName() % numParticles % numParticlesOffset;
 
         writer.setCurrentDataset(std::string("particles/") + FrameType::getName());
@@ -211,10 +211,10 @@ struct WriteSpecies
         writeAttribute("particleInterpolation", "uniform");
         writeAttribute("particleSmoothing", "none");
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) write particle records for %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) write particle records for %1%") % Hdf5FrameType::getName();
 
         /* write species particle patch meta information */
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  (begin) writing particlePatches for %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  (begin) writing particlePatches for %1%") % Hdf5FrameType::getName();
 
         writer.setCurrentDataset(writer.getCurrentDataset() + "/particlePatches");
 
@@ -264,9 +264,9 @@ struct WriteSpecies
         extentWriter.getAttributeWriter()("unitDimension", unitDimensionCellIdx);
 
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:  ( end ) writing particlePatches for %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:  ( end ) writing particlePatches for %1%") % Hdf5FrameType::getName();
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5: ( end ) writing species: %1%") % Hdf5FrameType::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5: ( end ) writing species: %1%") % Hdf5FrameType::getName();
     }
 
 private:
@@ -312,4 +312,4 @@ private:
 
 }  // namespace openPMD
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

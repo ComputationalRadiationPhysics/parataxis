@@ -21,12 +21,12 @@
 
 #include "simulation_defines.hpp"
 #include "particles/Particles.hpp"
-#include "particles/XrtParticleDescription.hpp"
+#include "particles/ParataxisParticleDescription.hpp"
 #include <compileTime/conversion/MakeSeq.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/string.hpp>
 
-namespace xrt {
+namespace parataxis {
 
     /*########################### define particle attributes #####################*/
 
@@ -36,7 +36,7 @@ namespace xrt {
             direction,
             //particleId,
             //creationTime,
-#if XRT_FORCE_SINGLE_SCATTERING
+#if PARATAXIS_FORCE_SINGLE_SCATTERING
             wasScattered,
 #endif
             startPhase
@@ -72,7 +72,7 @@ namespace xrt {
 
     /*define species photons*/
     typedef Particles<
-        xrt::particles::ParticleDescription<
+        parataxis::particles::ParticleDescription<
             bmpl::string<'p'>,
             SuperCellSize,
             DefaultAttributesSeq,
@@ -80,4 +80,4 @@ namespace xrt {
         >
     > PIC_Photons;
 
-}  // namespace xrt
+}  // namespace parataxis

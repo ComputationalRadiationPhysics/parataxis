@@ -19,10 +19,10 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 #include "traits/PICToOpenPMD.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace plugins {
 namespace hdf5 {
 
@@ -51,7 +51,7 @@ struct WriteParticleAttribute
         typedef typename Resolve_t<T_Identifier>::type ValueType;
         constexpr uint32_t numComponents = PMacc::traits::GetNComponents<ValueType>::value;
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   (begin) write species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:   (begin) write species attribute: %1%") % T_Identifier::getName();
 
         T_SplashWriter writer = inWriter[traits::OpenPMDName<T_Identifier>::get()];
 
@@ -96,11 +96,11 @@ struct WriteParticleAttribute
         writeAttribute("macroWeighted", uint32_t(0));
         writeAttribute("weightingPower", float_64(1));
 
-        PMacc::log<XRTLogLvl::IN_OUT>("HDF5:   ( end ) write species attribute: %1%") % T_Identifier::getName();
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:   ( end ) write species attribute: %1%") % T_Identifier::getName();
     }
 
 };
 
 }  // namespace hdf5
 }  // namespace plugins
-}  // namespace xrt
+}  // namespace parataxis

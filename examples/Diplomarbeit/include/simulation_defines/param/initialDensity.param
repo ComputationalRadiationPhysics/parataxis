@@ -35,7 +35,7 @@
 #   define PARAM_SLIT_SPACING2 PARAM_SLIT_SPACING
 #endif
 
-namespace xrt {
+namespace parataxis {
 namespace initialDensity {
 
     namespace AvailableGenerators{
@@ -80,4 +80,4 @@ namespace initialDensity {
             AvailableGenerators::PARAM_GENERATOR;
 
 }  // namespace initialDensity
-}  // namespace xrt
+}  // namespace parataxis

@@ -20,7 +20,7 @@
  
 #pragma once
 
-namespace xrt {
+namespace parataxis {
 
     /** Unit of Speed */
     constexpr float_64 UNIT_SPEED = SI::SPEED_OF_LIGHT;
@@ -39,4 +39,4 @@ namespace xrt {
 
     constexpr float_64 PLANCK_CONSTANT = SI::PLANCK_CONSTANT / (UNIT_ENERGY * UNIT_TIME);
 
-}  // namespace xrt
+}  // namespace parataxis

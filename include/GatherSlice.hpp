@@ -19,7 +19,7 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
 #include <cuSTL/algorithm/mpi/Gather.hpp>
 #include <cuSTL/container/HostBuffer.hpp>
@@ -28,7 +28,7 @@
 
 #include <memory>
 
-namespace xrt
+namespace parataxis
 {
     template<class T_Field, uint32_t T_simDim>
     struct GatherSlice;
@@ -108,7 +108,7 @@ namespace xrt
             /* GPU idx (in the axis dimension) that has the slice */
             int localPlane = slicePlane / localSize[nAxis];
 
-            PMacc::log< XRTLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%")
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Init gather slice at point %1% of axis %2% with size %3%/%4%")
                     % slicePlane % nAxis % localSize % globalSize;
 
             PMacc::zone::SphericZone<3> gpuGatheringZone(env.GridController().getGpuNodes());
@@ -127,7 +127,7 @@ namespace xrt
             Space2D tmpSize(localSize[twistedAxes_[0]], localSize[twistedAxes_[1]]);
             Space2D masterSize(globalSize[twistedAxes_[0]], globalSize[twistedAxes_[1]]);
 
-            PMacc::log< XRTLogLvl::IN_OUT >("Participation in gather operation. Local offset: %1%. Rank: %2%. Is root: %3%")
+            PMacc::log< PARATAXISLogLvl::IN_OUT >("Participation in gather operation. Local offset: %1%. Rank: %2%. Is root: %3%")
                     % localOffset_ % gather_->rank() % gather_->root();
 
             tmpBuffer_.reset(new TmpBuffer(tmpSize));
@@ -177,6 +177,6 @@ namespace xrt
         std::unique_ptr<TmpBuffer> tmpBuffer_;
     };
 
-} //namespace xrt
+} //namespace parataxis
 
 

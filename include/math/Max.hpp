@@ -19,9 +19,9 @@
  
 #pragma once
 
-#include "xrtTypes.hpp"
+#include "parataxisTypes.hpp"
 
-namespace xrt {
+namespace parataxis {
 namespace math {
 
     struct Max
@@ -34,4 +34,4 @@ namespace math {
     };
 
 }  // namespace math
-}  // namespace xrt
+}  // namespace parataxis
