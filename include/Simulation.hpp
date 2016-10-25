@@ -24,8 +24,6 @@
 #include "convertToSpace.hpp"
 #include "particles/Particles.tpp"
 #include "particles/ParticleFillInfo.hpp"
-#include "particles/initPolicies/ConstDistribution.hpp"
-#include "particles/initPolicies/EvenDistPosition.hpp"
 #include "LaserSource.hpp"
 
 #include "fields/DensityField.hpp"

@@ -20,6 +20,7 @@
 #pragma once
 
 #include "parataxisTypes.hpp"
+#include "traits/stdRenamings.hpp"
 
 namespace parataxis {
 namespace particles {
@@ -27,23 +28,32 @@ namespace particles {
     /**
      * Collection of policies related to filling the grid with particles
      *
+     * \tparam T_PhotCount Returns the number of photons for a given cell and time
+     *                     CTor(uint32_t timeStep)
+     *                     init(Space2D localCellIdx)
+     *                     Functor: float_X()
      * \tparam T_Count     Returns the number of particles for a given cell and time
+     *                     CTor(uint32_t timeStep)
      *                     init(Space2D localCellIdx)
-     *                     Functor: int32_t(int32_t timeStep)
+     *                     Functor: uint32_t(float_X numPhotons)
      * \tparam T_Position  Returns the in-cell position for a given cell and particle number
+     *                     CTor(uint32_t timeStep)
      *                     init(Space2D localCellIdx)
-     *                     setCount(int32_t particleCount)
-     *                     Functor: float_D(int32_t numParticle), gets called for all particles
+     *                     setCount(uint32_t particleCount)
+     *                     Functor: float_D(uint32_t numParticle), gets called for all particles
      *                      with i in [0, particleCount)
      * \tparam T_Phase     Returns the phase of the particles in a given cell at a given time
+     *                     CTor(uint32_t timeStep, float_64 phi_0)
      *                     init(Space2D localCellIdx)
-     *                     Functor: float_X(int32_t timeStep)
+     *                     Functor: float_X()
      * \tparam T_Direction Returns the initial direction of the particles for a given cell and time
+     *                     CTor(uint32_t timeStep)
      *                     init(Space2D localCellIdx)
-     *                     Functor: float_D(int32_t timeStep)
+     *                     Functor: floatD_X()
      *
      */
     template<
+        class T_PhotCount,
         class T_Count,
         class T_Position,
         class T_Phase,
@@ -51,50 +61,55 @@ namespace particles {
     >
     struct ParticleFillInfo
     {
-        using Count    = T_Count;
-        using Position = T_Position;
-        using Phase    = T_Phase;
-        using Direction = T_Direction;
-
+        T_PhotCount getPhotonCount;
     private:
-        Count getCount_;
+        T_Count getCount_;
     public:
-        Position getPosition;
-        Phase getPhase;
-        Direction getDirection;
+        T_Position getPosition;
+        T_Phase getPhase;
+        T_Direction getDirection;
 
-        ParticleFillInfo(const Count& count, const Position& position, const Phase& phase, const Direction& direction):
-            getCount_(count), getPosition(position), getPhase(phase), getDirection(direction)
+        ParticleFillInfo(uint32_t timestep, float_64 phi_0):
+            getPhotonCount(timestep), getCount_(timestep), getPosition(timestep), getPhase(timestep, phi_0), getDirection(timestep)
+        {
+            static_assert(std::is_same<traits::result_of_t<T_PhotCount()>, float_X>::value, "PhotCount must return a float_X");
+            static_assert(std::is_same<traits::result_of_t<T_Count(float_X)>, uint32_t>::value, "Count must return an uint32_t");
+        }
+
+        ParticleFillInfo(const T_PhotCount& photCount, const T_Count& count, const T_Position& position, const T_Phase& phase, const T_Direction& direction):
+            getPhotonCount(photCount), getCount_(count), getPosition(position), getPhase(phase), getDirection(direction)
         {}
 
         HDINLINE void
         init(Space localCellIdx)
         {
+            getPhotonCount.init(localCellIdx);
             getCount_.init(localCellIdx);
             getPosition.init(localCellIdx);
             getPhase.init(localCellIdx);
             getDirection.init(localCellIdx);
         }
 
-        HDINLINE int32_t
-        getCount(int32_t timeStep)
+        HDINLINE uint32_t
+        getCount(float_X numPhotons)
         {
-            int32_t ct = getCount_(timeStep);
+            const uint32_t ct = getCount_(numPhotons);
             getPosition.setCount(ct);
             return ct;
         }
     };
 
     template<
+            class T_PhotCount,
             class T_Count,
             class T_Position,
             class T_Phase,
             class T_Direction
         >
-    ParticleFillInfo<T_Count, T_Position, T_Phase, T_Direction>
-    getParticleFillInfo(const T_Count& count, const T_Position& position, const T_Phase& phase, const T_Direction& direction)
+    ParticleFillInfo<T_PhotCount, T_Count, T_Position, T_Phase, T_Direction>
+    getParticleFillInfo(const T_PhotCount& photCount, const T_Count& count, const T_Position& position, const T_Phase& phase, const T_Direction& direction)
     {
-        return ParticleFillInfo<T_Count, T_Position, T_Phase, T_Direction>(count, position, phase, direction);
+        return ParticleFillInfo<T_PhotCount, T_Count, T_Position, T_Phase, T_Direction>(photCount, count, position, phase, direction);
     }
 
 }  // namespace particles

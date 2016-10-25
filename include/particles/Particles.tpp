@@ -148,7 +148,7 @@ namespace parataxis{
 
     template<typename T_ParticleDescription>
     template<typename T_InitFunctor>
-    void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor, uint32_t timeStep)
+    void Particles<T_ParticleDescription>::add(T_InitFunctor&& initFunctor)
     {
         const SubGrid& subGrid = Environment::get().SubGrid();
         Space localOffset = subGrid.getLocalDomain().offset;
@@ -165,7 +165,6 @@ namespace parataxis{
             ( initFunctor,
               localOffset,
               this->particlesBuffer->getDeviceParticleBox(),
-              timeStep,
               mapper
               );
 

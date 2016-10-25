@@ -20,6 +20,8 @@
 #pragma once
 
 #include "parataxisTypes.hpp"
+#include "particles/functors/GetAmplitude.hpp"
+#include <basicOperations.hpp>
 
 namespace parataxis {
 namespace detector {
@@ -34,14 +36,15 @@ namespace detector {
     class CountParticles
     {
     public:
-        using Type = PMacc::uint64_cu;
+        using Type = float_64;
 
         struct OutputTransformer
         {
-            HDINLINE Type
+            HDINLINE uint64_t
             operator()(const Type val) const
             {
-                return val;
+                // Round to nearest uint64_t
+                return static_cast<uint64_t>(val + 0.5);
             }
         };
 
@@ -50,10 +53,11 @@ namespace detector {
 
         template<typename T_DetectorBox, typename T_Particle >
         DINLINE void
-        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, T_Particle& particle, const Space& globalCellIdx) const
+        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, const T_Particle& particle, const Space& globalCellIdx) const
         {
             Type& oldVal = detectorBox(targetCellIdx);
-            atomicAdd(&oldVal, 1);
+            const auto amplitude = particles::functors::GetAmplitude<T_Particle>()(particle);
+            PMacc::atomicAddWrapper(&oldVal, amplitude);
         }
     };
 

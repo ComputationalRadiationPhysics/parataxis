@@ -38,7 +38,10 @@ namespace laserConfig {
 }  // namespace laserConfig
 }  // namespace parataxis
 
+#include "particles/initPolicies/ConstNumPhotons.hpp"
+
 #include "particles/initPolicies/ConstDistribution.hpp"
+#include "particles/initPolicies/EqualPhotonsDistribution.hpp"
 
 #include "particles/initPolicies/ConstPosition.hpp"
 #include "particles/initPolicies/EvenDistPosition.hpp"
@@ -53,23 +56,36 @@ namespace laserConfig {
 
 namespace parataxis {
 namespace laserConfig {
-namespace distribution {
 
-    struct Const;
+    namespace photonCount {
+        struct Const;
+    }  // namespace photonCount
 
-}  // namespace distribution
-namespace position {
+    namespace distribution {
+        struct Const;
+        struct EqualToPhotons;
+    }  // namespace distribution
 
-    struct Const;
-    struct EvenDistance;
-    struct Random;
+    namespace position {
+        struct Const;
+        struct EvenDistance;
+        struct Random;
+    }  // namespace position
 
-}  // namespace position
 }  // namespace laserConfig
 }  // namespace parataxis
 
 namespace PMacc {
 namespace traits {
+
+    /* NumPhotons */
+
+    template<>
+    struct Resolve<parataxis::laserConfig::photonCount::Const>
+    {
+        using Value = parataxis::laserConfig::photonCount::Const;
+        using type  = parataxis::particles::initPolicies::ConstNumPhotons<Value>;
+    };
 
     /* Distribution */
 
@@ -77,7 +93,12 @@ namespace traits {
     struct Resolve<parataxis::laserConfig::distribution::Const>
     {
         using Value = parataxis::laserConfig::distribution::Const;
-        using type  = parataxis::particles::initPolicies::ConstDistribution<Value::numParts>;
+        using type  = parataxis::particles::initPolicies::ConstDistribution<Value>;
+    };
+    template<>
+    struct Resolve<parataxis::laserConfig::distribution::EqualToPhotons>
+    {
+        using type  = parataxis::particles::initPolicies::EqualPhotonsDistribution;
     };
 
     /* Position */

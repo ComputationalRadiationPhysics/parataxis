@@ -34,12 +34,14 @@ namespace initPolicies {
     {
         using Config = T_Config;
 
+        ConstPosition(uint32_t /*timestep*/){}
+
         HDINLINE void
-        init(Space localCellIdx)
+        init(Space /*localCellIdx*/)
         {}
 
         HDINLINE void
-        setCount(int32_t particleCount)
+        setCount(uint32_t /*particleCount*/)
         {}
 
         DINLINE position_pic::type

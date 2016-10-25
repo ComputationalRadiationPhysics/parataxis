@@ -51,12 +51,11 @@ namespace fields {
         void init(fields::DensityField* densityField);
         /**
          * Adds particles to the grid
-         * \tparam T_DistributionFunctor Functor that returns number of particles for a given total GPU cell idx
-         * \tparam T_PositionFunctor     Functor that returns a position for a given particle idx
-         *                               Must also provide an init(totalGPUCellIdx, totalNumParToCreate) function
+         * \param initFunctor functor that initializes the particles
+         *                    (provides functions for getting number, phase, ...)
          */
         template<typename T_InitFunctor>
-        void add(T_InitFunctor&& initFunctor, uint32_t timeStep);
+        void add(T_InitFunctor&& initFunctor);
 
         void update(uint32_t currentStep);
 

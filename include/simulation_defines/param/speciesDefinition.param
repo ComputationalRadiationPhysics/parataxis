@@ -30,10 +30,15 @@ namespace parataxis {
 
     /*########################### define particle attributes #####################*/
 
+    value_identifier(float_X, amplitudePhotons, 1);
+
     /* describe attributes of a particle*/
     typedef PMacc::MakeSeq<
             position<position_pic>,
             direction,
+#if PARATAXIS_WEIGHTED_PHOTONS
+            amplitude<amplitudePhotons>,
+#endif
             //particleId,
             //creationTime,
 #if PARATAXIS_FORCE_SINGLE_SCATTERING
@@ -54,7 +59,6 @@ namespace parataxis {
     value_identifier(float_X, wavelengthPhotons, 0.1 * 1e-9);
     /* energy for photons in J */
     value_identifier(float_X, energyPhotons, 8 * UNITCONV_keV_to_Joule);
-    value_identifier(float_X, amplitudePhotons, 1);
     value_identifier(float_X, massPhotons, 0);
     value_identifier(float_X, chargePhotons, 0);
 
@@ -65,7 +69,9 @@ namespace parataxis {
             particleDetector<detector::PhotonDetector>,
             wavelength<wavelengthPhotons>,
             //energy<energyPhotons>,
+#if !PARATAXIS_WEIGHTED_PHOTONS
             amplitude<amplitudePhotons>,
+#endif
             mass<massPhotons>,
             charge<chargePhotons>
     > ParticleFlagsPhotons;

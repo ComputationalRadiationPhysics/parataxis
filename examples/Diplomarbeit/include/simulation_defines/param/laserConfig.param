@@ -31,16 +31,28 @@ namespace laserConfig {
     /* Initialization for the 'laser' */
 
     /** Specifies the distribution (number of particles at a given position and time) */
-    namespace distribution {
+    namespace photonCount {
         /* Possible values: */
         /** Same number of particles at all points */
         struct Const{
             /** Value to return */
-            static constexpr int32_t numParts = PARAM_NUM_PARTS;
+            static constexpr float_X numPhotons = PARAM_NUM_PARTS;
         };
 
         /** Value used in the simulation */
         using UsedValue = Const;
+
+    }  // namespace distribution
+
+    /** Specifies the distribution (number of particles at a given position and time) */
+    namespace distribution {
+        /* Possible values: */
+
+        /** Number of Particles equals number of photons (rounded) */
+        struct EqualToPhotons;
+
+        /** Value used in the simulation */
+        using UsedValue = EqualToPhotons;
 
     }  // namespace distribution
 

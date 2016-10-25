@@ -32,7 +32,7 @@ namespace parataxis {
 
         template<class T_CtBox, class T_ParticleFillInfo, class T_Mapper>
         __global__ void
-        countSpawnedPhotons(T_CtBox ctBox, T_ParticleFillInfo particleFillInfo, const Space localOffset, uint32_t numTimesteps, T_Mapper mapper)
+        countSpawnedPhotons(T_CtBox ctBox, T_ParticleFillInfo particleFillInfo, const Space localOffset, T_Mapper mapper)
         {
             static_assert(T_Mapper::AreaType == PMacc::BORDER, "Only borders should be filled");
             const Space superCellIdx(mapper.getSuperCellIndex(Space(blockIdx)));
@@ -44,11 +44,9 @@ namespace parataxis {
             if(simDim == 3 && totalCellIdx[laserConfig::DIRECTION] != 0)
                 return;
             particleFillInfo.init(localCellIndex);
-            for(uint32_t timeStep = 0; timeStep < numTimesteps; timeStep++)
-            {
-                const uint32_t numParts = particleFillInfo.getCount(timeStep);
-                atomicAdd(&ctBox(timeStep), numParts);
-            }
+            const float_X numPhotons = particleFillInfo.getPhotonCount();
+            const uint32_t numParts = particleFillInfo.getCount(numPhotons);
+            atomicAdd(&ctBox(0),  numParts);
         }
 
     }  // namespace kernel
@@ -61,10 +59,17 @@ namespace parataxis {
     {
         using Species   = T_Species;
         using FrameType = typename Species::FrameType;
+        using PhotonCount  = Resolve_t<laserConfig::photonCount::UsedValue>;
         using Distribution = Resolve_t<laserConfig::distribution::UsedValue>;
         using Position     = Resolve_t<laserConfig::position::UsedValue>;
         using Phase        = Resolve_t<laserConfig::phase::UsedValue>;
         using Direction    = Resolve_t<laserConfig::direction::UsedValue>;
+
+// Consistency check
+#if !PARATAXIS_WEIGHTED_PHOTONS
+        static_assert(std::is_same<Distribution, particles::initPolicies::EqualPhotonsDistribution>::value,
+                "Number of particles not equal to number of photons, define PARATAXIS_WEIGHTED_PHOTONS=1 to enable this");
+#endif
 
         // Calculate the number of timesteps the laser is active. It is rounded to the nearest timestep (so error is at most half a timestep)
         static constexpr uint32_t numTimeStepsLaserPulse = math::floatToIntRound(laserConfig::PULSE_LENGTH / UNIT_TIME / DELTA_T);
@@ -73,6 +78,7 @@ namespace parataxis {
         static_assert(laserConfig::DIRECTION >= 0 && laserConfig::DIRECTION <= 2, "Invalid laser direction");
 
     public:
+        using ParticleFillInfo = particles::ParticleFillInfo<PhotonCount, Distribution, Position, Phase, Direction>;
 
         void init()
         {
@@ -94,30 +100,33 @@ namespace parataxis {
 
         void checkPhotonCt(uint32_t numTimesteps, MappingDesc cellDescription)
         {
-            if(numTimeStepsLaserPulse < numTimesteps)
-                numTimesteps = numTimeStepsLaserPulse;
-            PMacc::DeviceBufferIntern<PMacc::uint64_cu, 1> ctPerTimestep(numTimesteps);
             const SubGrid& subGrid = Environment::get().SubGrid();
             const Space localOffset = subGrid.getLocalDomain().offset;
             /* Add only to first cells */
             if(simDim == 3 && localOffset[laserConfig::DIRECTION] > 0)
                 return;
 
+            PMacc::DeviceBufferIntern<PMacc::uint64_cu, 1> ctPerTimestep(numTimesteps);
+
             const PMacc::BorderMapping<MappingDesc> mapper(cellDescription, laserConfig::EXCHANGE_DIR);
-            Space block = MappingDesc::SuperCellSize::toRT();
+            Space blockSize = MappingDesc::SuperCellSize::toRT();
             if(simDim == 3)
-                block[laserConfig::DIRECTION] = 1;
-            auto initFunctor = getInitFunctor(0);
-            __cudaKernel(kernel::countSpawnedPhotons)
-                (mapper.getGridDim(), block.toDim3())
-                ( ctPerTimestep.getDataBox(),
-                  initFunctor,
-                  localOffset,
-                  numTimesteps,
-                  mapper
-                  );
+                blockSize[laserConfig::DIRECTION] = 1;
+            if(numTimeStepsLaserPulse < numTimesteps)
+                numTimesteps = numTimeStepsLaserPulse;
+            for(uint32_t timestep = 0; timestep < numTimesteps; ++timestep)
+            {
+                auto initFunctor = getInitFunctor(timestep);
+                __cudaKernel(kernel::countSpawnedPhotons)
+                    (mapper.getGridDim(), blockSize.toDim3())
+                    ( ctPerTimestep.getDataBox().shift(timestep),
+                      initFunctor,
+                      localOffset,
+                      mapper
+                      );
+            }
             PMacc::nvidia::reduce::Reduce reduce(1024);
-            const uint64_t maxPartPerTs = reduce(math::Max(), ctPerTimestep.getBasePointer(), ctPerTimestep.getCurrentSize());
+            const uint64_t maxPartPerTs = reduce(math::Max(), ctPerTimestep.getBasePointer(), ctPerTimestep.getDataSpace().productOfComponents());
             float_64 sizeStraight, sizeDiagonal;
             if(simDim == 3)
                 sizeStraight = precisionCast<float_64>(subGrid.getLocalDomain().size[laserConfig::DIRECTION]) * cellSize[laserConfig::DIRECTION];
@@ -147,15 +156,10 @@ namespace parataxis {
         }
 
     private:
-        particles::ParticleFillInfo<Distribution, Position, Phase, Direction>
+        ParticleFillInfo
         getInitFunctor(uint32_t timeStep) const
         {
-           return particles::getParticleFillInfo(
-                    Distribution(),
-                    Position(),
-                    Phase(phi_0, timeStep),
-                    Direction()
-                    );
+           return ParticleFillInfo(timeStep, phi_0);
         }
 
         void addParticles(uint32_t timeStep)
@@ -163,7 +167,7 @@ namespace parataxis {
             auto initFunctor = getInitFunctor(timeStep);
             auto& dc = Environment::get().DataConnector();
             Species& particles = dc.getData<Species>(FrameType::getName(), true);
-            particles.add(initFunctor, timeStep);
+            particles.add(initFunctor);
             dc.releaseData(FrameType::getName());
         }
     };

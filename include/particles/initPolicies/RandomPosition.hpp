@@ -36,7 +36,7 @@ namespace initPolicies {
         using Random = typename RNGProvider::GetRandomType<Distribution>::type;
 #endif
 
-        HINLINE RandomPosition()
+        HINLINE RandomPosition(uint32_t /*timestep*/)
 #if !PARATAXIS_USE_SLOW_RNG
                 :rand(RNGProvider::createRandom<Distribution>())
 #endif
@@ -49,11 +49,11 @@ namespace initPolicies {
         }
 
         HDINLINE void
-        setCount(int32_t particleCount)
+        setCount(uint32_t /*particleCount*/)
         {}
 
         DINLINE position_pic::type
-        operator()(uint32_t numPart)
+        operator()(uint32_t /*numPart*/)
         {
             position_pic::type result;
             result.x() = 0;

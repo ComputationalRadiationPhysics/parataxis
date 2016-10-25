@@ -31,6 +31,25 @@
 namespace parataxis{
 namespace kernel{
 
+    template<
+        class T_Particle,
+        bool T_hasAmplitude = HasIdentifier_t<T_Particle, amplitude<> >::value
+    >
+    struct SetAmplitude
+    {
+        DINLINE static void set(T_Particle& particle, float_X amplitude)
+        {
+            particle[amplitude_] = amplitude;
+        }
+    };
+
+    template<class T_Particle>
+    struct SetAmplitude<T_Particle, false>
+    {
+        DINLINE static void set(T_Particle& /*particle*/, float_X /*amplitude*/)
+        {}
+    };
+
 #define isMaster (linearThreadIdx == 0)
     /**
      * Fills the grid with particles of T_Species
@@ -52,7 +71,6 @@ namespace kernel{
     __global__ void fillGridWithParticles(T_ParticleFillInfo particleFillInfo,
                                           const Space localOffset,
                                           T_ParBox particleBox,
-                                          const uint32_t timeStep,
                                           const T_Mapper mapper)
     {
         static_assert(T_Mapper::AreaType == PMacc::BORDER, "Only borders should be filled");
@@ -106,8 +124,10 @@ namespace kernel{
          * OR frameCounter == lastFrameSize (when there is a last frame)
          */
 
-        /* remaining number of particles to create for this time step */
-        uint32_t numParsToCreate = particleFillInfo.getCount(timeStep);
+        /* number of particles to create for this time step */
+        const float_X numPhotons = particleFillInfo.getPhotonCount();
+        uint32_t numParsToCreate = particleFillInfo.getCount(numPhotons);
+        const float_X photonAmplitude = numPhotons / numParsToCreate;
         if (numParsToCreate > 0)
             PMacc::nvidia::atomicAllExch(&blockCreatesParticles, 1); //one or more cells have particles to create
 
@@ -187,7 +207,7 @@ namespace kernel{
                     /* Initialize the attributes to their default values but exclude the ones we set manually afterwards (\see AttrToIgnore) */
                     {
                         using ParticleAttrList = typename T_ParBox::FrameType::ValueTypeSeq;
-                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, direction, creationTime>;
+                        using AttrToIgnore = bmpl::vector<PMacc::multiMask, PMacc::localCellIdx, position<>, direction, creationTime, amplitude<>>;
                         using ParticleCleanedAttrList = typename PMacc::ResolveAndRemoveFromSeq<ParticleAttrList, AttrToIgnore>::type;
 
                         PMacc::algorithms::forEach::ForEach<ParticleCleanedAttrList, PMacc::SetAttributeToDefault<bmpl::_1> > setToDefault;
@@ -196,8 +216,9 @@ namespace kernel{
                     particle[PMacc::multiMask_] = 1;
                     particle[PMacc::localCellIdx_] = linearThreadIdx;
                     particle[position_]     = particleFillInfo.getPosition(numParsToCreate);
-                    particle[startPhase_]   = particleFillInfo.getPhase(timeStep);
-                    particle[direction_]    = particleFillInfo.getDirection(timeStep);
+                    particle[startPhase_]   = particleFillInfo.getPhase();
+                    particle[direction_]    = particleFillInfo.getDirection();
+                    SetAmplitude<decltype(particle)>::set(particle, photonAmplitude);
                     //particle[creationTime_] = timeStep;
 
                     if (numParsToCreate > 0)

@@ -35,18 +35,18 @@ namespace laserConfig {
     /* Initialization for the 'laser' */
 
     /** Specifies the distribution (number of particles at a given position and time) */
-    namespace distribution {
+    namespace photonCount {
         /* Possible values: */
         /** Same number of particles at all points */
         struct Const{
             /** Value to return */
-            static constexpr int32_t numParts = 10;
+            static constexpr float_X numPhotons = 10;
         };
-        
+
         struct PtOnly{
             Space2D localOffset2D;
-            int32_t numParts;
-            HINLINE PtOnly()
+            float_X numParts;
+            HINLINE PtOnly(uint32_t /*timestep*/): numParts(0)
             {
                 const Space localOffset = Environment::get().SubGrid().getLocalDomain().offset;
                 localOffset2D = Space2D(localOffset.y(), localOffset.z());
@@ -60,8 +60,8 @@ namespace laserConfig {
                     numParts = 0;
             }
             
-            DINLINE int32_t
-            operator()(uint32_t timeStep) const
+            DINLINE float_X
+            operator()() const
             {
                 return numParts;
             }
@@ -69,6 +69,18 @@ namespace laserConfig {
 
         /** Value used in the simulation */
         using UsedValue = PARAM_LASER_DISTRIBUTION;
+
+    }  // namespace distribution
+
+    /** Specifies the distribution (number of particles at a given position and time) */
+    namespace distribution {
+        /* Possible values: */
+
+        /** Number of Particles equals number of photons (rounded) */
+        struct EqualToPhotons;
+
+        /** Value used in the simulation */
+        using UsedValue = EqualToPhotons;
 
     }  // namespace distribution
 

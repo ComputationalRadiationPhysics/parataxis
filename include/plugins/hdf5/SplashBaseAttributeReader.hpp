@@ -48,6 +48,9 @@ namespace detail {
         template<typename T, size_t T_size>
         void operator()(const std::string& name, std::array<T, T_size>& value);
         /// Read a 1D array
+        template<typename T, int T_size>
+        void operator()(const std::string& name, PMacc::math::Vector<T, T_size>& value);
+        /// Read a 1D array
         template<typename T>
         void operator()(const std::string& name, std::vector<T>& value);
 
@@ -120,6 +123,17 @@ namespace detail {
             throw std::runtime_error("Wrong attribute array size");
         // TODO: Implement possible type conversion by using CollectionType
         attr->read(&value.front(), sizeof(value));
+    }
+
+    template<class T_Reader>
+    template<typename T, int T_size>
+    void SplashBaseAttributeReader<T_Reader>::operator()(const std::string& name, PMacc::math::Vector<T, T_size>& value)
+    {
+        static_assert(T_size > 0, "Invalid size");
+        std::array<T, T_size> tmp;
+        (*this)(name, tmp);
+        for(int i=0; i<T_size; ++i)
+            value[i] = tmp[i];
     }
 
     template<class T_Reader>

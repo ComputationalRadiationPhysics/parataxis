@@ -23,6 +23,7 @@
 #include "particles/functors/GetPhaseByTimestep.hpp"
 #include "particles/functors/GetWavelength.hpp"
 #include "particles/functors/GetAngFrequency.hpp"
+#include "particles/functors/GetAmplitude.hpp"
 #include "detector/DetectorConfig.hpp"
 #include <math/Complex.hpp>
 #include <algorithms/math.hpp>
@@ -40,8 +41,6 @@ namespace detector {
     {
         using Species = T_Species;
         using FrameType = typename Species::FrameType;
-        static_assert(HasFlag_t<FrameType, amplitude<> >::value, "Species has no amplitude set");
-        using Amplitude = GetResolvedFlag_t<FrameType, amplitude<> >;
 
         const float_X curPhase_; // Phase contribution at current timestep [0, 2*PI)
         const DetectorConfig detector_;
@@ -76,9 +75,9 @@ namespace detector {
             // Also: 2*alpha_max * MaxExtendOfVolume < 10³ * lambda is assumed (about 1000 maxima are far more than enough)
         }
 
-        template<typename T_DetectorBox, typename T_Particle >
+        template<typename T_DetectorBox, typename T_Particle>
         DINLINE void
-        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, T_Particle& particle, const Space& globalCellIdx) const
+        operator()(T_DetectorBox detectorBox, const Space2D& targetCellIdx, const T_Particle& particle, const Space& globalCellIdx) const
         {
             Type& oldVal = detectorBox(targetCellIdx);
 
@@ -130,8 +129,9 @@ namespace detector {
 
             trigo_X sinPhase, cosPhase;
             PMaccMath::sincos<trigo_X>(phase, sinPhase, cosPhase);
-            PMacc::atomicAddWrapper(&oldVal.get_real(), FloatType(Amplitude::getValue() * cosPhase));
-            PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(Amplitude::getValue() * sinPhase));
+            const trigo_X amplitude = particles::functors::GetAmplitude<T_Particle>()(particle);
+            PMacc::atomicAddWrapper(&oldVal.get_real(), FloatType(amplitude * cosPhase));
+            PMacc::atomicAddWrapper(&oldVal.get_imag(), FloatType(amplitude * sinPhase));
         }
     };
 

@@ -20,6 +20,7 @@
 #pragma once
 
 #include <traits/Resolve.hpp>
+#include <traits/HasIdentifier.hpp>
 #include <traits/HasFlag.hpp>
 #include <traits/GetFlagType.hpp>
 #include <algorithms/TypeCast.hpp>
@@ -43,6 +44,9 @@ namespace parataxis {
 
     template<typename T>
     using Resolve_t = typename PMacc::traits::Resolve<T>::type;
+
+    template<typename T_Object, typename T_Identifier>
+    using HasIdentifier_t = typename PMacc::traits::HasIdentifier<T_Object, T_Identifier>::type;
 
     template<typename T_Object, typename T_Flag>
     using HasFlag_t = typename PMacc::traits::HasFlag<T_Object, T_Flag>::type;

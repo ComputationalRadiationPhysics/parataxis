@@ -20,32 +20,26 @@
 #pragma once
 
 #include "parataxisTypes.hpp"
-#include "ToVector.hpp"
 
 namespace parataxis {
 namespace particles {
 namespace initPolicies {
 
     /**
-     * Same direction for all particles
+     * Functor that returns a constant value as the distribution for any param
      */
-    template<class T_Config>
-    struct ConstDirection
+    struct EqualPhotonsDistribution
     {
-        using Config = T_Config;
+        EqualPhotonsDistribution(uint32_t /*timestep*/){}
 
-        ConstDirection(uint32_t  /*timestep*/){}
-
-        HDINLINE void
-        init(Space /*localCellIdx*/)
+        DINLINE void
+        init(Space /*localCellIdx*/) const
         {}
 
-        DINLINE direction::type
-        operator()()
+        DINLINE uint32_t
+        operator()(float_X numPhotons) const
         {
-            const direction::type dir =  ToVector<Config, direction::type::dim>()();
-            // We need unit vectors!
-            return dir / PMaccMath::sqrt<sqrt_X>(PMaccMath::abs2(dir));
+            return PMaccMath::float2int_rn(numPhotons);
         }
     };
 

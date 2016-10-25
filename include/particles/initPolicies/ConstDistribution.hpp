@@ -28,21 +28,19 @@ namespace initPolicies {
     /**
      * Functor that returns a constant value as the distribution for any param
      */
-    template<int32_t T_numParts>
+    template<class T_Cfg>
     struct ConstDistribution
     {
-        static constexpr int32_t numParts = T_numParts;
-
-        ConstDistribution(){}
+        ConstDistribution(uint32_t /*timestep*/){}
 
         DINLINE void
-        init(Space localCellIdx) const
+        init(Space /*localCellIdx*/) const
         {}
 
-        DINLINE int32_t
-        operator()(uint32_t timeStep) const
+        DINLINE uint32_t
+        operator()(float_X numPhotons) const
         {
-            return numParts;
+            return numPhotons > 0 ? T_Cfg::numParts : 0;
         }
     };
 

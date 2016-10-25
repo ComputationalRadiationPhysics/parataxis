@@ -108,7 +108,7 @@ namespace kernel {
     }
 
     namespace detail{
-        template<class T_Particle, bool T_hasScatteredFlag = PMacc::traits::HasIdentifier<T_Particle, wasScattered>::value>
+        template<class T_Particle, bool T_hasScatteredFlag = HasIdentifier_t<T_Particle, wasScattered>::value>
         struct ScatterSwitch
         {
             static HDINLINE bool
