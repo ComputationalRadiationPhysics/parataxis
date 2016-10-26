@@ -277,15 +277,16 @@ namespace plugins {
                     )
                 );
 
+        PMacc::log<PARATAXISLogLvl::IN_OUT>("HDF5:   writing meta data");
         /* attributes */
         // Is type integral? Otherwise it is assumed to be complex
-        const bool isIntegral = std::is_integral<Type>::value;
+        constexpr bool isArithmetik = std::is_arithmetic<Type>::value;
         std::array<float_X, simDim> positions;
         positions.fill(0.5);
-        auto writeAttribute = (isIntegral ? writer : writer["real"]).getAttributeWriter();
+        auto writeAttribute = (isArithmetik ? writer : writer["real"]).getAttributeWriter();
         writeAttribute("position", positions);
         writeAttribute("unitSI", float_64(1));
-        if(!isIntegral)
+        if(!isArithmetik)
         {
             writeAttribute = writer["imag"].getAttributeWriter();
             writeAttribute("position", positions);
