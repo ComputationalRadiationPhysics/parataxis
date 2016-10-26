@@ -138,7 +138,9 @@ class RuntimeTest:
                 for line in inF:
                     if 'full simulation time' in line:
                         simulationFinished = True
-                        break
+                    elif 'Unhandled exception occurred' in line:
+                        cprint("Test " + self.name + " has thrown an exception. Info: " + line, "red")
+                        return 2
             if(not simulationFinished):
                 cprint("Test " + self.name + " does not seem to have finished successfully!", "red")
                 return 2
