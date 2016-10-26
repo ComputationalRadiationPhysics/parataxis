@@ -67,7 +67,8 @@ class TestInterference(unittest.TestCase):
                                             [params.GetNumber("SI::CELL_WIDTH"), params.GetNumber("SI::CELL_HEIGHT"), params.GetNumber("SI::CELL_DEPTH")])
 
         pulseLen = np.floor(params.GetNumber("laserConfig::PULSE_LENGTH") / params.GetNumber("SI::DELTA_T"))
-        numPartsPerTsPerCell = params.GetNumber("laserConfig::distribution::Const::numParts")
+        self.assertEqual(params.GetValue("laserConfig::distribution::UsedValue"), "EqualToPhotons")
+        numPartsPerTsPerCell = params.GetNumber("laserConfig::photonCount::Const::numPhotons")
         waveLen = params.GetNumber("wavelengthPhotons", getFromValueIdentifier = True)
         #print("Wavelen=", waveLen)
 

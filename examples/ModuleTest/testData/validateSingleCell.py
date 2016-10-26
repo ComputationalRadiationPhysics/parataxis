@@ -68,7 +68,8 @@ class TestSingleCell(unittest.TestCase):
         
  
         PulseLen = np.floor(params.GetNumber("laserConfig::PULSE_LENGTH") / params.GetNumber("SI::DELTA_T"))
-        NumPartsPerTsPerCell = params.GetNumber("laserConfig::distribution::Const::numParts")
+        self.assertEqual(params.GetValue("laserConfig::distribution::UsedValue"), "EqualToPhotons")
+        NumPartsPerTsPerCell = params.GetNumber("laserConfig::photonCount::Const::numPhotons")
 
         with open(os.environ["TEST_BASE_BUILD_PATH"] + "/" + os.environ["TEST_NAME"] + "_detector.tif", 'rb') as imFile:
             im = Image.open(imFile)
