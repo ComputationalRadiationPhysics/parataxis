@@ -61,7 +61,11 @@ tests:
     cfgFile:   0001gpusHDF5Field.cfg
     pre-run: &createHDF5Field
         - mkdir "${TEST_INSTALL_PATH}/testData/$TEST_NAME"
-        - python3 "${TEST_INSTALL_PATH}/testData/createHDF5Filesets.py" --folder "${TEST_INSTALL_PATH}/testData/$TEST_NAME" --size ${TEST_GRID_SIZE} --dt "2e-16" --time "1.5e-15"
+        - python3 "${TEST_INSTALL_PATH}/testData/createHDF5Filesets.py" --createDensity --folder "${TEST_INSTALL_PATH}/testData/$TEST_NAME" --size ${TEST_GRID_SIZE} --dt "2e-16" --time "1.5e-15"
+        # CellSize is multiplied with 4 and dt with 8, 130 timesteps long
+        - python3 "${TEST_INSTALL_PATH}/testData/createHDF5Filesets.py" --createLaser --folder "${TEST_INSTALL_PATH}/testData/$TEST_NAME" --size ${TEST_GRID_SIZE} --cellSize "16e-9" "16e-9" "16e-9" --dt "10.64e-17" --time "1.5e-15"
+        # Check for openPMD conformance
+        - find "${TEST_INSTALL_PATH}/testData/$TEST_NAME" -type f -name "*.h5" -print0 | xargs -0 -n 1 -r python "${TEST_INSTALL_PATH}/buildSystem/checkOpenPMD_h5.py" -i 
     post-run: &validateHDF5Field
         - *validateOpenPMD
         - python3 "${TEST_INSTALL_PATH}/testData/validateCheckpoint.py"

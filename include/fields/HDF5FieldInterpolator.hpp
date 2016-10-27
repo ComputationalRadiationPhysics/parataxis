@@ -120,6 +120,8 @@ void HDF5FieldInterpolator<T_Field>::reinitFields(Type curTime, bool force)
 {
     namespace openPMD = plugins::openPMD;
     uint32_t newHDF5Timestep = plugins::hdf5::findTimestep(*dataCollector, curTime, &maxHDF5Timestep, curHDF5Timestep);
+    if(maxHDF5Timestep < 2)
+        throw std::runtime_error("Found less than 2 files for electron density. Cannot interpolate!");
     // No new step
     if(!force && newHDF5Timestep != curHDF5Timestep)
         return;
@@ -128,12 +130,40 @@ void HDF5FieldInterpolator<T_Field>::reinitFields(Type curTime, bool force)
     auto reader = plugins::hdf5::makeSplashWriter(*dataCollector, newHDF5Timestep);
     lastTime = openPMD::getTime(reader);
     reader = reader(openPMD::getMeshesPath(reader))["electron_density"];
+
+    // Attribute validation
     const auto axisLabels = openPMD::getAxisLabels<simDim>(reader);
     for(uint32_t i=0; i<simDim; i++)
     {
         if(axisLabels[i] != 'x'+i)
             throw std::runtime_error("Invalid axis labels");
     }
+    auto getAttribute = reader.getAttributeReader();
+    if(getAttribute.readString("dataOrder") != "C")
+        throw std::runtime_error("Unsupported data order");
+    if(getAttribute.readString("geometry") != "cartesian")
+        throw std::runtime_error("Unsupported geometry");
+    floatD_X gridGlobalOffset, gridSpacing;
+    float_64 gridUnitSI;
+    getAttribute("gridGlobalOffset", gridGlobalOffset);
+    getAttribute("gridSpacing", gridSpacing);
+    getAttribute("gridUnitSI", gridUnitSI);
+    gridGlobalOffset *= gridUnitSI / UNIT_LENGTH;
+    gridSpacing *= gridUnitSI / UNIT_LENGTH;
+    for(uint32_t i=0; i<simDim; i++)
+    {
+        if(gridGlobalOffset[i] != float_X(0))
+            throw std::runtime_error("GridGlobalOffset greater than zero not yet supported");
+        if(PMaccMath::abs(gridSpacing[i] - cellSize[i]) > cellSize[i] * 1e5)
+            throw std::runtime_error("Grid spacing does not match the simulation cell sizes");
+    }
+    // Check time offset. Cannot handle that yet, as time must be added to lastTime/nextTime
+    // which could (currently) violate lastTime<=curTime<=nextTime
+    float_X timeOffset;
+    getAttribute("timeOffset", timeOffset);
+    if(timeOffset != 0.)
+        throw std::runtime_error("Time offset not yet supported");
+
     reader.getFieldReader()(lastField->getDataPointer(),
             simDim,
             plugins::hdf5::makeSplashSize(subGrid.getGlobalDomain().size),
@@ -144,6 +174,11 @@ void HDF5FieldInterpolator<T_Field>::reinitFields(Type curTime, bool force)
         reader.setId(curHDF5Timestep);
         nextTime = openPMD::getTime(reader);
         reader = reader(openPMD::getMeshesPath(reader))["electron_density"];
+        // Check time offset
+        reader.getAttributeReader()("timeOffset", timeOffset);
+        if(timeOffset != 0.)
+            throw std::runtime_error("Time offset not yet supported");
+
         reader.getFieldReader()(nextField->getDataPointer(),
                 simDim,
                 plugins::hdf5::makeSplashSize(subGrid.getGlobalDomain().size),
@@ -182,6 +217,10 @@ void HDF5FieldInterpolator<T_Field>::loadField(Type curTime)
             // regular case
             const auto& subGrid = Environment::get().SubGrid();
             reader = reader(openPMD::getMeshesPath(reader))["electron_density"];
+            float_X timeOffset;
+            reader.getAttributeReader()("timeOffset", timeOffset);
+            if(timeOffset != 0.)
+                throw std::runtime_error("Time offset not yet supported");
             reader.getFieldReader()(nextField->getDataPointer(),
                     simDim,
                     plugins::hdf5::makeSplashSize(subGrid.getGlobalDomain().size),
