@@ -74,11 +74,13 @@ class SBatchMonitor(BaseMonitor):
             raise Exception("Expected '"+ jobRegExp +"' from sbatch command. : " + stdout[0])
         self.jobId = resJobId.group(1)        
         self.update()
+        self.timeoutCt = 0
     
     def update(self):
         if(self.jobId != None):
             res = execCmd("squeue -o \"JobState=%T\" -j " + self.jobId, True)
             if(res.result == 0):
+                self.timeoutCt = 0
                 if(len(res.stdout) != 2):
                     if len(res.stdout) == 1 and res.stdout[0] == "JobState=STATE":
                         self.isWaiting = False
@@ -105,8 +107,12 @@ class SBatchMonitor(BaseMonitor):
             elif("Invalid job id specified" in res.stderr[-1]):
                 self.isWaiting = False
                 self.isFinished = True
+            elif("Socket timed out" in res.stderr[-1]):
+                self.timeoutCt += 1
+                if(self.timeoutCt > 50):
+                    raise Exception("Timeout for squeue: " + str(res.stdout) + "\n" + str(res.stderr))
             else:
-                raise Exception("Failed to execute squeue: " + str(res.stdout) + "\n" + str(res.stderr))
+                raise Exception("Failed to execute squeue(" + str(res.result) + "): " + str(res.stdout) + "\n" + str(res.stderr))
                 
 def GetMonitor(submitCmd, stdout, stderr):
     if(submitCmd == "bash"):
