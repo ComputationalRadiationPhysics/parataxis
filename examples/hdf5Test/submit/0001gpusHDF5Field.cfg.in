@@ -35,8 +35,8 @@ TBG_gpu_x=1
 TBG_gpu_y=1
 TBG_gpu_z=1
 
-TBG_gridSize="-g 32 64 64"
-TBG_steps="-s 100"
+TBG_gridSize="-g 32 64 96"
+TBG_steps="-s 150"
 
 TBG_program="@PROJECT_NAME@"
 
