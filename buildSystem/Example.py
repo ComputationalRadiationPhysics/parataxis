@@ -22,7 +22,7 @@ import traceback
 import re
 from execHelpers import execCmd
 from Compilation import Compilation, mergeCompilations
-from RuntimeTest import RuntimeTest
+import RuntimeTest
 
 def expandList(lst):
     """Expand a list with range specifiers
@@ -240,10 +240,11 @@ class Example:
         result = []
         names = []
         for testEntry in docu['tests']:
-            test = RuntimeTest(self, testEntry, self.profileFile)
-            if test.name in names:
-                raise Exception("Duplicate test '" + test.name + "'")
-            names.append(test.name)
-            result.append(test)
+            tests = RuntimeTest.createRuntimeTests(self, testEntry, self.profileFile)
+            for test in tests:
+                if test.name in names:
+                    raise Exception("Duplicate test '" + test.name + "'")
+                names.append(test.name)
+                result.append(test)
         return result
     

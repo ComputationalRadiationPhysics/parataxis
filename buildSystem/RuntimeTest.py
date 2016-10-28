@@ -34,6 +34,23 @@ def flattenList(lst):
         else:
             yield x
 
+def createRuntimeTests(example, testDocu, profileFile = None):
+    if "cfgFiles" in testDocu:
+        if "cfgFile" in testDocu:
+            raise Exception("Only cfgFile or cfgFiles is allowed in runtime test '" + testDocu.get('name', '<noName>') + "' (" + example.getMetaData()["name"] + ")")
+        cfgFiles = flattenList(testDocu["cfgFiles"])
+        result = []
+        for cfgFile in cfgFiles:
+            testDocu["cfgFile"] = cfgFile
+            test = RuntimeTest(example, testDocu, profileFile)
+            # Append cfg name w/o extension to test name
+            test.name += "_" + os.path.splitext(os.path.basename(cfgFile))[0]
+            result.append(test)
+    else:
+        result = [RuntimeTest(example, testDocu, profileFile)]
+    return result
+   
+
 class RuntimeTest:
     """Represents a specific configuration of an example that is executed and potentially validated
     
@@ -57,6 +74,8 @@ class RuntimeTest:
         self.description = testDocu.get('description')
         self.cmakeFlag = testDocu['cmakeFlag']
         self.cfgFile = testDocu['cfgFile']
+        if hasattr(self.cfgFile, '__iter__') and not isinstance(self.cfgFile, str):
+            raise Exception("cfgFile cannot be a list for runtime test '" + testDocu.get('name', '<noName>') + "' (" + example.getMetaData()["name"] + ")")
         self.dependency = testDocu.get('dependency', None)
         self.preRunCmds = list(flattenList(testDocu.get('pre-run', [])))
         self.postRunCmds = list(flattenList(testDocu.get('post-run', [])))
