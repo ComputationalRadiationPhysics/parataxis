@@ -23,8 +23,8 @@
 #   - start with zero index
 #   - increase by 1, no gaps
 
-flags[0]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=256;-DPARAM_PRECISION=precision64Bit"
-flags[1]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=256;-DPARAM_PRECISION=precision32Bit"
+flags[0]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=256;-DPARAM_PRECISION=precision32Bit"
+flags[1]="-DPARAM_OVERWRITES:LIST=-DPARAM_NUM_CELLS=256;-DPARAM_PRECISION=precision64Bit"
 
 
 ################################################################################
