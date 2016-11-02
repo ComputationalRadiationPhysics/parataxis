@@ -16,6 +16,21 @@
 # You should have received a copy of the GNU General Public License
 # along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
 
+# PIConGPU batch script for hypnos PBS batch system
+
+#PBS -q !TBG_queue
+#PBS -l walltime=!TBG_wallTime
+# Sets batch job's name
+#PBS -N !TBG_jobName
+#PBS -l nodes=!TBG_nodes:ppn=!TBG_coresPerNode
+# send me a mail on (b)egin, (e)nd, (a)bortion
+#PBS -m !TBG_mailSettings -M !TBG_mailAddress
+#PBS -d !TBG_dstPath
+#PBS -n
+
+#PBS -o stdout
+#PBS -e stderr
+
 ## calculation are done by tbg ##
 TBG_queue="k80"
 TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
@@ -31,21 +46,6 @@ TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
 # use ceil to caculate nodes
 TBG_nodes="$(( ( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 ## end calculations ##
-
-# PIConGPU batch script for hypnos PBS batch system
-
-#PBS -q !TBG_queue
-#PBS -l walltime=!TBG_wallTime
-# Sets batch job's name
-#PBS -N !TBG_jobName
-#PBS -l nodes=!TBG_nodes:ppn=!TBG_coresPerNode
-# send me a mail on (b)egin, (e)nd, (a)bortion
-#PBS -m !TBG_mailSettings -M !TBG_mailAddress
-#PBS -d !TBG_dstPath
-#PBS -n
-
-#PBS -o stdout
-#PBS -e stderr
 
 # overwrite .profile (next 2 lines set to TBG var or nothing)
 TBG_profileFile=$TBG_profileFile

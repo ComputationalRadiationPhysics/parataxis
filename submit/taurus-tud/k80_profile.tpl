@@ -18,6 +18,27 @@
 # If not, see <http://www.gnu.org/licenses/>.
 #
 
+# PIConGPU batch script for taurus' SLURM batch system
+
+#SBATCH --partition=!TBG_queue
+#SBATCH --time=!TBG_wallTime
+# Sets batch job's name
+#SBATCH --job-name=!TBG_jobName
+#SBATCH --nodes=!TBG_nodes
+#SBATCH --ntasks=!TBG_tasks
+#SBATCH --mincpus=!TBG_mpiTasksPerNode
+#SBATCH --cpus-per-task=!TBG_coresPerGPU
+#SBATCH --mem-per-cpu=2583
+#SBATCH --gres=gpu:!TBG_gpusPerNode
+# send me mails on BEGIN, END, FAIL, REQUEUE, ALL,
+# TIME_LIMIT, TIME_LIMIT_90, TIME_LIMIT_80 and/or TIME_LIMIT_50
+#SBATCH --mail-type=!TBG_mailSettings
+#SBATCH --mail-user=!TBG_mailAddress
+#SBATCH --workdir=!TBG_dstPath
+
+#SBATCH -o stdout
+#SBATCH -e stderr
+
 ## calculations will be performed by tbg ##
 TBG_queue="gpu2"
 
@@ -40,27 +61,6 @@ TBG_mpiTasksPerNode="$(( TBG_gpusPerNode * 1 ))"
 TBG_nodes="$((( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 
 ## end calculations ##
-
-# PIConGPU batch script for taurus' SLURM batch system
-
-#SBATCH --partition=!TBG_queue
-#SBATCH --time=!TBG_wallTime
-# Sets batch job's name
-#SBATCH --job-name=!TBG_jobName
-#SBATCH --nodes=!TBG_nodes
-#SBATCH --ntasks=!TBG_tasks
-#SBATCH --mincpus=!TBG_mpiTasksPerNode
-#SBATCH --cpus-per-task=!TBG_coresPerGPU
-#SBATCH --mem-per-cpu=2583
-#SBATCH --gres=gpu:!TBG_gpusPerNode
-# send me mails on BEGIN, END, FAIL, REQUEUE, ALL,
-# TIME_LIMIT, TIME_LIMIT_90, TIME_LIMIT_80 and/or TIME_LIMIT_50
-#SBATCH --mail-type=!TBG_mailSettings
-#SBATCH --mail-user=!TBG_mailAddress
-#SBATCH --workdir=!TBG_dstPath
-
-#SBATCH -o stdout
-#SBATCH -e stderr
 
 # overwrite .profile (next 2 lines set to TBG var or nothing)
 TBG_profileFile=$TBG_profileFile
