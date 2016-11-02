@@ -36,10 +36,11 @@ namespace hdf5 {
     template<class T_LaserSrc>
     struct GetDistribution
     {
-        GetDistribution(): numPhotons(0)
+        GetDistribution(uint32_t timeStep): numPhotons(0)
         {
             auto& dc = Environment::get().DataConnector();
             T_LaserSrc& laser = dc.getData(T_LaserSrc::getName(), true);
+            laser.update(timeStep);
             dataBox = laser.getBuffer().getDeviceBuffer().getDataBox();
             size = laser.getBuffer().getGridLayout().getDataspaceWithoutGuarding();
             // Skip guards. This means idx "-1" is valid
@@ -88,7 +89,7 @@ namespace hdf5 {
         }
 
         DINLINE float_X
-        operator()(uint32_t timeStep) const
+        operator()() const
         {
             return numPhotons;
         }
@@ -108,7 +109,7 @@ namespace hdf5 {
     public:
         using DeviceDataBox = typename GridBuffer::DeviceBufferType::DataBoxType;
 
-        LaserSource(): lastHDF5Timestep(0), swapAxis(false)
+        LaserSource(): lastHDF5Timestep(-1), currentValidTimestep(-1), swapAxis(false)
         {
             Environment::get().PluginConnector().registerPlugin(this);
             Environment::get().DataConnector().registerData(*this);
@@ -129,8 +130,10 @@ namespace hdf5 {
         void checkpoint(uint32_t currentStep, const std::string checkpointDirectory) override {}
         void restart(uint32_t restartStep, const std::string restartDirectory) override
         {
-            cuBuffer->getDeviceBuffer().reset(false);
+            if(cuBuffer)
+                cuBuffer->getDeviceBuffer().reset(false);
             lastHDF5Timestep = -1;
+            currentValidTimestep = -1;
         }
 
         void pluginRegisterHelp(po::options_description& desc) override {
@@ -150,9 +153,13 @@ namespace hdf5 {
             return getName();
         }
 
-        void update(uint32_t currentStep) override
+        void update(uint32_t currentStep)
         {
-            loadBuffer(currentStep * DELTA_T);
+            if(static_cast<int32_t>(currentStep) != currentValidTimestep)
+            {
+                loadBuffer(currentStep * DELTA_T);
+                currentValidTimestep = static_cast<int32_t>(currentStep);
+            }
         }
 
         void pluginLoad() override;
@@ -160,6 +167,8 @@ namespace hdf5 {
 
         PMacc::GridBuffer<float_X, 2>& getBuffer()
         {
+            if(!cuBuffer)
+                throw std::runtime_error(std::string("Plugin '") + getName() + "'not active!");
             return *cuBuffer;
         }
 
@@ -181,6 +190,8 @@ namespace hdf5 {
         std::string yAxisName, zAxisName;
         /** last used timestep */
         int32_t lastHDF5Timestep;
+        /** The timestep for which the current data is valid */
+        int32_t currentValidTimestep;
         std::unique_ptr<HostBuffer> tmpBuffer;
         /** Size of HDF5 cells, offset of the global HDF5 grid (posGrid - simOrigin), offset of local grid in buffers (posGrid - localOrigin) */
         float2_X hdf5CellSize, gridGlobalOffset, gridLocalOffset;
@@ -194,10 +205,15 @@ namespace hdf5 {
     template<class T_Species>
     void LaserSource<T_Species>::pluginLoad()
     {
+        // Disabled
+        if(baseFilename.empty())
+            return;
+
         namespace openPMD = plugins::openPMD;
 
         plugins::hdf5::BasePlugin::pluginLoad();
         lastHDF5Timestep = -1;
+        currentValidTimestep = -1;
         openH5File(baseFilename, true);
         auto reader = plugins::hdf5::makeSplashWriter(*dataCollector, 0);
         openPMD::validate(reader, false);
@@ -420,6 +436,9 @@ namespace hdf5 {
     template<class T_Species>
     void LaserSource<T_Species>::loadBuffer(float_X curTime)
     {
+        if(baseFilename.empty())
+            throw std::runtime_error(std::string("Plugin '") + getName() + "'not active!");
+
         // No elements -> Nothing to do
         if(cuBuffer->getHostBuffer().getDataSpace().productOfComponents() == 0)
             return;
