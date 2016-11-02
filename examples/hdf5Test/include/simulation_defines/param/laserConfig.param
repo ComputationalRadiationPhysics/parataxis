@@ -1,0 +1,118 @@
+/**
+ * Copyright 2015-2016 Alexander Grund
+ *
+ * This file is part of ParaTAXIS.
+ *
+ * ParaTAXIS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * ParaTAXIS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with ParaTAXIS.  If not, see <http://www.gnu.org/licenses/>.
+ */
+ 
+#pragma once
+
+#include <math/vector/Float.hpp>
+
+namespace parataxis {
+namespace laserConfig {
+
+    /* Initialization for the 'laser' */
+
+    /** Specifies the intensity of the laser (number of photons at a given position and time) */
+    namespace photonCount {
+        /* Possible values: */
+        /** Same number of particles at all points */
+        struct Const{
+            /** Value to return */
+            static constexpr float_X numPhotons = 10;
+        };
+        /** Load from HDF5 file in OpenPMD format. Requires runtime parameters */
+        struct HDF5Profile;
+
+        /** Value used in the simulation */
+        using UsedValue = PARAM_LASER_PHOTON_CT;
+
+    }  // namespace distribution
+
+    /** Specifies the distribution (number of particles at a given position and time) */
+    namespace distribution {
+        /* Possible values: */
+        /** Same number of particles at all points */
+        struct Const{
+            /** Value to return */
+            static constexpr uint32_t numParts = 10;
+        };
+
+        /** Number of Particles equals number of photons (rounded) */
+        struct EqualToPhotons;
+
+        /** Value used in the simulation */
+        using UsedValue = EqualToPhotons;
+
+    }  // namespace distribution
+
+    /** Specifies the in-cell position of the particles */
+    namespace position {
+
+        /* Possible values: */
+        /** Same position at all points */
+        struct Const{
+            /** In-Cell position [0,1) in x-direction */
+            static constexpr float_X X = 0.001;
+            /** In-Cell position [0,1) in y-direction */
+            static constexpr float_X Y = 0.5;
+            /** In-Cell position [0,1) in z-direction */
+            static constexpr float_X Z = 0.5;
+        };
+        /** Positions the particles evenly in the whole (possible) cell area) */
+        struct EvenDistance;
+        /** Positions the particles randomly */
+        struct Random;
+
+        /** Value used in the simulation */
+        using UsedValue = Random;
+
+    }  // namespace position
+
+    namespace phase {
+        /* Possible values: */
+        /** Wave front perpendicular to propagation, place-invariant phase */
+        struct PlaneWave;
+
+        /** Value used in the simulation */
+        using UsedValue = PlaneWave;
+    }  // namespace phase
+
+    namespace direction {
+        /* Possible values: */
+        /** Same direction at all points */
+        struct Const{
+            /** direction in x-direction */
+            static constexpr float_X X = 1;
+            /** direction in y-direction */
+            static constexpr float_X Y = 0;
+            /** direction in z-direction */
+            static constexpr float_X Z = 0;
+        };
+
+        /** Value used in the simulation */
+        using UsedValue = Const;
+    }  // namespace direction
+
+
+    /** Laser pulse length in s */
+    constexpr float_X PULSE_LENGTH = 100e-15;
+    /** Entry-Direction of the laser pulse: 0=Left->Right, 1=Top->Bottom, 2=Front->Back
+     *  Ignored for 2D, there it is always Left->Right */
+    constexpr int32_t DIRECTION = 0;
+
+}  // namespace laserConfig
+}  // namespace parataxis
