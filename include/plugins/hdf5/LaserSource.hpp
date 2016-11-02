@@ -307,10 +307,12 @@ namespace hdf5 {
         std::array<char, 2> axisLabels = openPMD::getAxisLabels<2>(reader);
         if(tmpSwapAxis)
             std::swap(axisLabels[0], axisLabels[1]);
-        if(axisLabels[0] != zAxisName[0] || axisLabels[1] == yAxisName[0])
+        if(axisLabels[0] != zAxisName[0] || axisLabels[1] != yAxisName[0])
         {
             throw std::runtime_error(std::string("Invalid axis labels: ") +
                     std::string(1, axisLabels[0]) + ", " + std::string(1, axisLabels[1]) +
+                    " instead of " +
+                    zAxisName + ", " + yAxisName +
                     " at HDF5-ID: " + std::to_string(reader.getId()));
         }
         if(getAttribute.readString("geometry") != "cartesian")
