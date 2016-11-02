@@ -51,6 +51,10 @@ namespace laserConfig {
 
 #include "particles/initPolicies/ConstDirection.hpp"
 
+#if (PARATAXIS_ENABLE_HDF5 == 1)
+#   include "plugins/hdf5/LaserSource.hpp"
+#endif
+
 #include <traits/Resolve.hpp>
 #include <math/ConstVector.hpp>
 
@@ -59,6 +63,7 @@ namespace laserConfig {
 
     namespace photonCount {
         struct Const;
+        struct HDF5Profile;
     }  // namespace photonCount
 
     namespace distribution {
@@ -85,6 +90,13 @@ namespace traits {
     {
         using Value = parataxis::laserConfig::photonCount::Const;
         using type  = parataxis::particles::initPolicies::ConstNumPhotons<Value>;
+    };
+    template<>
+    struct Resolve<parataxis::laserConfig::photonCount::HDF5Profile>
+    {
+        using type  = parataxis::plugins::hdf5::GetDistribution<
+                parataxis::plugins::hdf5::LaserSource<parataxis::PIC_Photons>
+                >;
     };
 
     /* Distribution */

@@ -26,7 +26,7 @@ namespace laserConfig {
 
     /* Initialization for the 'laser' */
 
-    /** Specifies the distribution (number of particles at a given position and time) */
+    /** Specifies the intensity of the laser (number of photons at a given position and time) */
     namespace photonCount {
         /* Possible values: */
         /** Same number of particles at all points */
@@ -34,6 +34,8 @@ namespace laserConfig {
             /** Value to return */
             static constexpr float_X numPhotons = 10;
         };
+        /** Load from HDF5 file in OpenPMD format. Requires runtime parameters */
+        struct HDF5Profile;
 
         /** Value used in the simulation */
         using UsedValue = Const;

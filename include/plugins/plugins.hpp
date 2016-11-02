@@ -34,6 +34,7 @@
 #endif
 #if (PARATAXIS_ENABLE_HDF5 == 1)
 #   include "plugins/hdf5/HDF5Output.hpp"
+#   include "plugins/hdf5/LaserSource.hpp"
 #endif
 #include <boost/mpl/vector.hpp>
 
@@ -54,6 +55,9 @@ namespace parataxis {
 
     /* species plugins (with placeholder replaced by species) */
     typedef bmpl::vector<
+#if (PARATAXIS_ENABLE_HDF5 == 1)
+            plugins::hdf5::LaserSource<bmpl::_1>,
+#endif
 #if ENABLE_PRINT_PARTICLES
             plugins::PrintParticles<bmpl::_1>,
 #endif
