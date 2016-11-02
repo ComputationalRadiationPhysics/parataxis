@@ -254,6 +254,8 @@ namespace hdf5 {
         // Read where the values are defined in the cell
         float2_X incellPosition;
         reader["x"].getAttributeReader()("position", incellPosition);
+        if(swapAxis)
+            std::swap(incellPosition.x(), incellPosition.y());
         // For now just add it to the global offset
         gridGlobalOffset += incellPosition * hdf5CellSize;
         float2_X hdf5GlobalSize = hdf5CellSize * float2_X(hdf5GridSize) - gridGlobalOffset;
@@ -327,35 +329,52 @@ namespace hdf5 {
         if(PMaccMath::abs(hdf5CellSize[0] - gridSpacing[0]) >= hdf5CellSize[0] * 1e-5 ||
                 PMaccMath::abs(hdf5CellSize[1] - gridSpacing[1]) >= hdf5CellSize[1] * 1e-5)
         {
-            throw std::runtime_error(std::string("Changed gridSpacing at HDF5-ID: ") +
-                    std::to_string(reader.getId()));
+            throw std::runtime_error(
+                    (boost::format("Changed gridSpacing at HDF5-ID %1%. Is: %2%x%3%\nExpected:%4%x%5%") %
+                            std::to_string(reader.getId()) %
+                            gridSpacing[0] % gridSpacing[1] %
+                            hdf5CellSize[0] % hdf5CellSize[1]
+                    ).str()
+                  );
         }
 
         splash::Dimensions hdf5FieldSize = reader["x"].getFieldReader().getGlobalSize();
         if(tmpSwapAxis)
             std::swap(hdf5FieldSize[0], hdf5FieldSize[1]);
-        if(hdf5FieldSize[0] != hdf5GridSize[0] || hdf5FieldSize[1] == hdf5GridSize[1])
+        if(hdf5FieldSize[0] != hdf5GridSize[0] || hdf5FieldSize[1] != hdf5GridSize[1])
         {
-            throw std::runtime_error(std::string("Changed HDF5 field size at HDF5-ID: ") +
-                    std::to_string(reader.getId()));
+            throw std::runtime_error(
+                    (boost::format("Changed HDF5 field size at HDF5-ID %1%. Is: %2%x%3%\nExpected:%4%x%5%") %
+                            std::to_string(reader.getId()) %
+                            hdf5FieldSize[0] % hdf5FieldSize[1] %
+                            hdf5GridSize[0] % hdf5GridSize[1]
+                    ).str()
+                  );
         }
 
         float2_X hdf5GridGlobalOffset;
         getAttribute("gridGlobalOffset", hdf5GridGlobalOffset);
-        if(swapAxis)
+        if(tmpSwapAxis)
             std::swap(hdf5GridGlobalOffset.x(), hdf5GridGlobalOffset.y());
         hdf5GridGlobalOffset *= gridUnitSI / UNIT_LENGTH;
         // Read where the values are defined in the cell
         float2_X incellPosition;
         reader["x"].getAttributeReader()("position", incellPosition);
+        if(tmpSwapAxis)
+            std::swap(incellPosition.x(), incellPosition.y());
         // For now just add it to the global offset
         hdf5GridGlobalOffset += incellPosition * hdf5CellSize;
 
         if(PMaccMath::abs(gridGlobalOffset[0] - hdf5GridGlobalOffset[0]) >= gridGlobalOffset[0] * 1e-5 ||
                 PMaccMath::abs(gridGlobalOffset[1] - hdf5GridGlobalOffset[1]) >= gridGlobalOffset[1] * 1e-5)
         {
-            throw std::runtime_error(std::string("IChanged gridGlobalOffset or (incell-)position at HDF5-ID: ") +
-                    std::to_string(reader.getId()));
+            throw std::runtime_error(
+                    (boost::format("Changed gridGlobalOffset or (incell-)position at HDF5-ID %1%. Is: %2%x%3%\nExpected:%4%x%5%") %
+                            std::to_string(reader.getId()) %
+                            hdf5GridGlobalOffset[0] % hdf5GridGlobalOffset[1] %
+                            gridGlobalOffset[0] % gridGlobalOffset[1]
+                    ).str()
+                  );
         }
     }
 
