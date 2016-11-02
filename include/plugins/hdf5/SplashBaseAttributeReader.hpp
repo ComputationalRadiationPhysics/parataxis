@@ -121,8 +121,8 @@ namespace detail {
         std::unique_ptr<splash::DCAttributeInfo> attr = getAttribute(name);
         if(attr->getNDims() != 1 || attr->getDims()[0] != T_size)
             throw std::runtime_error("Wrong attribute array size");
-        // TODO: Implement possible type conversion by using CollectionType
-        attr->read(&value.front(), sizeof(value));
+        typename traits::PICToSplash<T>::type splashType;
+        attr->read(splashType, &value.front());
     }
 
     template<class T_Reader>
