@@ -39,17 +39,17 @@ namespace hdf5 {
         GetDistribution(uint32_t timeStep): numPhotons(0)
         {
             auto& dc = Environment::get().DataConnector();
-            T_LaserSrc& laser = dc.getData(T_LaserSrc::getName(), true);
+            T_LaserSrc& laser = dc.getData<T_LaserSrc>(T_LaserSrc::getName(), true);
             laser.update(timeStep);
             dataBox = laser.getBuffer().getDeviceBuffer().getDataBox();
-            size = laser.getBuffer().getGridLayout().getDataspaceWithoutGuarding();
+            size = laser.getBuffer().getGridLayout().getDataSpaceWithoutGuarding();
             // Skip guards. This means idx "-1" is valid
             dataBox.shift(laser.getBuffer().getGridLayout().getGuard());
             dc.releaseData(T_LaserSrc::getName());
         }
 
         DINLINE void
-        init(Space localCellIdx) const
+        init(Space localCellIdx)
         {
             // Calculate the float (cell) index on the (HDF5) grid
             float2_X idx = float2_X(localCellIdx.z(), localCellIdx.y()) * float2_X(cellSize.z(), cellSize.y()) - gridLocalOffset;
@@ -78,7 +78,7 @@ namespace hdf5 {
                 {
                     // Regular case "idxHigh.x - idxLow.x == 1": interpolate
                     interpolatedX[0] = (idxHigh.x() - idx.x()) * dataBox(idxLow) + (idx.x() - idxLow.x()) * dataBox(Space2D(idxHigh.x(), idxLow.y()));
-                    interpolatedX[1] = (idxHigh.x() - idx.x()) * dataBox(Space2D(idxLow.x(), idxHigh.y()) + (idx.x() - idxLow.x()) * dataBox(idxHigh.x()));
+                    interpolatedX[1] = (idxHigh.x() - idx.x()) * dataBox(Space2D(idxLow.x(), idxHigh.y())) + (idx.x() - idxLow.x()) * dataBox(idxHigh);
                 }
                 // Interpolate in Y
                 if(idxLow.y() == idxHigh.y())
@@ -107,7 +107,7 @@ namespace hdf5 {
         using HostBuffer = PMacc::HostBufferIntern<float_X, 2>;
         using GridBuffer = PMacc::GridBuffer<float_X, 2>;
     public:
-        using DeviceDataBox = typename GridBuffer::DeviceBufferType::DataBoxType;
+        using DeviceDataBox = typename GridBuffer::DataBoxType;
 
         LaserSource(): lastHDF5Timestep(-1), currentValidTimestep(-1), swapAxis(false)
         {
@@ -118,7 +118,7 @@ namespace hdf5 {
         void synchronize() override{}
         static std::string getName()
         {
-            return std::string("laserSrc.") + T_Species::getName();
+            return std::string("laserSrc.") + T_Species::FrameType::getName();
         }
         PMacc::SimulationDataId getUniqueId()
         {
@@ -146,7 +146,7 @@ namespace hdf5 {
         }
 
         std::string pluginGetName() const override {
-            return std::string("Laser Source - ") + T_Species::getName();
+            return std::string("Laser Source - ") + T_Species::FrameType::getName();
         }
 
         std::string getPrefix() const override {
@@ -168,7 +168,7 @@ namespace hdf5 {
         PMacc::GridBuffer<float_X, 2>& getBuffer()
         {
             if(!cuBuffer)
-                throw std::runtime_error(std::string("Plugin '") + getName() + "'not active!");
+                throw std::runtime_error(std::string("Plugin '") + getName() + "' not active!");
             return *cuBuffer;
         }
 
@@ -208,6 +208,8 @@ namespace hdf5 {
         // Disabled
         if(baseFilename.empty())
             return;
+        if(yAxisName.length() != 1 || zAxisName.length() != 1)
+            throw std::runtime_error("Missing or from y or z axis name!");
 
         namespace openPMD = plugins::openPMD;
 
@@ -220,14 +222,14 @@ namespace hdf5 {
 
         reader = reader(openPMD::getMeshesPath(reader))["Nph"];
         const std::array<char, 2> axisLabels = openPMD::getAxisLabels<2>(reader);
-        if(axisLabels[0] == yAxisName && axisLabels[1] == zAxisName)
+        if(axisLabels[0] == yAxisName[0] && axisLabels[1] == zAxisName[0])
             swapAxis = true;
-        else if(axisLabels[0] == zAxisName && axisLabels[1] == yAxisName)
+        else if(axisLabels[0] == zAxisName[0] && axisLabels[1] == yAxisName[0])
             swapAxis = false;
         else
         {
             throw std::runtime_error(std::string("Invalid axis labels: ") +
-                    std::string(axisLabels[0]) + ", " + std::string(axisLabels[1]));
+                    std::string(1, axisLabels[0]) + ", " + std::string(1, axisLabels[1]));
         }
         auto getAttribute = reader.getAttributeReader();
         if(getAttribute.readString("geometry") != "cartesian")
@@ -256,7 +258,7 @@ namespace hdf5 {
         gridGlobalOffset += incellPosition * hdf5CellSize;
         float2_X hdf5GlobalSize = hdf5CellSize * float2_X(hdf5GridSize) - gridGlobalOffset;
         const SubGrid& subGrid = Environment::get().SubGrid();
-        floatD_X globalSize = subGrid.getGlobalDomain().size() * cellSize;
+        floatD_X globalSize = precisionCast<float_X>(subGrid.getGlobalDomain().size) * cellSize;
         if(gridGlobalOffset.x() > 0 || gridGlobalOffset.y() > 0 || hdf5GlobalSize.x() < globalSize.z() || hdf5GlobalSize.y())
             PMacc::log<PARATAXISLogLvl::DOMAINS>("WARNING: Gridsize for %1% in HDF5 file is to small. Will pad with zeroes!") % pluginGetName();
 
@@ -266,9 +268,9 @@ namespace hdf5 {
 
         const Space localSize = subGrid.getLocalDomain().size;
         Space2D bufferSize;
-        bufferSize.x() = PMaccMath::min(PMaccMath::Float2int_rd(localSize.z() * cellSize.z() / hdf5CellSize.x()), hdf5GridSize.x());
-        bufferSize.y() = PMaccMath::min(PMaccMath::Float2int_rd(localSize.y() * cellSize.y() / hdf5CellSize.y()), hdf5GridSize.y());
-        floatD_X localDomainOffset = subGrid.getLocalDomain().offset * cellSize;
+        bufferSize.x() = ::min(PMaccMath::float2int_rd(localSize.z() * cellSize.z() / hdf5CellSize.x()), hdf5GridSize.x());
+        bufferSize.y() = ::min(PMaccMath::float2int_rd(localSize.y() * cellSize.y() / hdf5CellSize.y()), hdf5GridSize.y());
+        floatD_X localDomainOffset = precisionCast<float_X>(subGrid.getLocalDomain().offset) * cellSize;
         float2_X localDomainOffset2D = float2_X(localDomainOffset.z(), localDomainOffset.y());
         gridLocalOffset = localDomainOffset2D - gridGlobalOffset;
         hdf5LocalCellOffset = Space2D(PMaccMath::floor(gridLocalOffset.x() / hdf5CellSize.x()), PMaccMath::floor(gridLocalOffset.y() / hdf5CellSize.y()));
@@ -276,10 +278,10 @@ namespace hdf5 {
             hdf5LocalCellOffset.x() = 0;
         if(hdf5LocalCellOffset.y() < 0)
             hdf5LocalCellOffset.y() = 0;
-        localDomainOffset2D -= hdf5LocalCellOffset * hdf5CellSize;
+        localDomainOffset2D -= precisionCast<float_X>(hdf5LocalCellOffset) * hdf5CellSize;
         // Restrict buffer size to maximum available size
-        bufferSize.x() = PMaccMath::max(0, PMaccMath::min(bufferSize.x(), hdf5GridSize.x() - hdf5LocalCellOffset.x()));
-        bufferSize.y() = PMaccMath::max(0, PMaccMath::min(bufferSize.y(), hdf5GridSize.y() - hdf5LocalCellOffset.y()));
+        bufferSize.x() = ::max(0, ::min(bufferSize.x(), hdf5GridSize.x() - hdf5LocalCellOffset.x()));
+        bufferSize.y() = ::max(0, ::min(bufferSize.y(), hdf5GridSize.y() - hdf5LocalCellOffset.y()));
         if(swapAxis)
             tmpBuffer.reset(new HostBuffer(bufferSize.revert()));
         // Keep one guard cell (zeroed) to avoid to many cases in kernel
@@ -302,13 +304,13 @@ namespace hdf5 {
         if(getAttribute.readString("dataOrder") != "C")
             tmpSwapAxis = !tmpSwapAxis;
 
-        const std::array<char, 2> axisLabels = openPMD::getAxisLabels<2>(reader);
+        std::array<char, 2> axisLabels = openPMD::getAxisLabels<2>(reader);
         if(tmpSwapAxis)
             std::swap(axisLabels[0], axisLabels[1]);
-        if(axisLabels[0] != zAxisName || axisLabels[1] == yAxisName)
+        if(axisLabels[0] != zAxisName[0] || axisLabels[1] == yAxisName[0])
         {
             throw std::runtime_error(std::string("Invalid axis labels: ") +
-                    std::string(axisLabels[0]) + ", " + std::string(axisLabels[1]) +
+                    std::string(1, axisLabels[0]) + ", " + std::string(1, axisLabels[1]) +
                     " at HDF5-ID: " + std::to_string(reader.getId()));
         }
         if(getAttribute.readString("geometry") != "cartesian")
@@ -437,7 +439,7 @@ namespace hdf5 {
     void LaserSource<T_Species>::loadBuffer(float_X curTime)
     {
         if(baseFilename.empty())
-            throw std::runtime_error(std::string("Plugin '") + getName() + "'not active!");
+            throw std::runtime_error(std::string("Plugin '") + getName() + "' not active!");
 
         // No elements -> Nothing to do
         if(cuBuffer->getHostBuffer().getDataSpace().productOfComponents() == 0)
@@ -455,7 +457,6 @@ namespace hdf5 {
         }
         // We interpolate fields for curTime in [lastTime, nextTime)
         lastHDF5Timestep = buffers.findTimestep(curTime, lastHDF5Timestep);
-        assert(lastHDF5Timestep <= nextIdx);
         assert(lastHDF5Timestep >= 0 && lastHDF5Timestep + 1 < buffers.size());
         const float_X lastTime = buffers[lastHDF5Timestep].time;
         const float_X nextTime = buffers[lastHDF5Timestep + 1].time;
