@@ -28,12 +28,14 @@ TBG_program="@PROJECT_NAME@"
 #################################
 
 TBG_HDF5_FILE="${TEST_INSTALL_PATH}/testData/$TEST_NAME/field"
+TBG_LASER_FILE="${TEST_INSTALL_PATH}/testData/$TEST_NAME/laserProfile"
 
 TBG_plugins="--detSize 1400 900                           \
              !TBG_globalSeed                              \
              --p_position.period 0                        \
              --DensityField_printSlice.period 0           \
              --DensityField.hdf5File \"!TBG_HDF5_FILE\"   \
+             --laserSrc.p.hdf5File \"!TBG_LASER_FILE\"    \
              --PhotonDetector_print.period 0              \
              --checkpoints 50                             \
              "
