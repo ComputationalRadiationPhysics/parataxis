@@ -28,7 +28,7 @@ def writeOpenPMDHeader(f, basePath):
     attr = f.attrs
     # Required attributes
     attr["openPMD"] = np.string_("1.0.0")
-    attr["openPMDextension"] = 0
+    attr["openPMDextension"] = np.uint32(0)
     attr["basePath"] = np.string_("/data/%T/")
     attr["meshesPath"] = np.string_("meshes/")
     attr["particlesPath"] = np.string_("particles/")
@@ -50,7 +50,7 @@ def createBaseGroup(f, timestep, dt):
     baseGroup.attrs["timeUnitSI"] = 1.0
     return baseGroup
 
-def createDensityFileset(basePath, shape, numTimesteps, dt, func):
+def createDensityFileset(basePath, shape, cellSizes, numTimesteps, dt, func):
     """Create a set of HDF5 files containing an electron_density field of the given 3D shape for the 
        period of numTimesteps of length dt with values of func(x, y, z, t)"""
     for timestep in range(numTimesteps):
@@ -63,6 +63,16 @@ def createDensityFileset(basePath, shape, numTimesteps, dt, func):
             ds = meshes.create_dataset("electron_density", data = data)
             ds.attrs["axisLabels"] = np.array([np.string_("z"), np.string_("y"), np.string_("x")])
             ds.attrs["dataOrder"] = np.string_("C")
+            ds.attrs["geometry"] = np.string_("cartesian")
+            ds.attrs["unitDimension"] = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+            ds.attrs["gridGlobalOffset"] = np.array([0.0, 0.0, 0.0])
+            gridUnitSI = 1.
+            ds.attrs["gridSpacing"] = cellSizes / gridUnitSI
+            ds.attrs["gridUnitSI"] = gridUnitSI
+            ds.attrs["timeOffset"] = 0.0
+            ds.attrs["position"] = np.array([0.0, 0.0, 0.0])
+            ds.attrs["unitSI"] = 1.0
+            
             
 def createPhotonFileset(basePath, shape, cellSizes, numTimesteps, dt, func):
     """Create a set of HDF5 files containing the photon count in the given 2D shape for the 
@@ -128,7 +138,7 @@ def getPhotonCount(idxX, idxY, timestep):
 
 if options.createDensity:
     # Create time varying circle
-    createDensityFileset(os.path.join(options.folder, "field"), size, numTimesteps, options.dt,
+    createDensityFileset(os.path.join(options.folder, "field"), size, cellSize, numTimesteps, options.dt,
                          lambda x,y,z,t: calcDensityField(x, y, z, t, options.dt) )
 
 if options.createLaser:
