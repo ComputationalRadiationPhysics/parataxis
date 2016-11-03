@@ -134,7 +134,7 @@ def calcDensityField(x, y, z, t, dt):
 def getPhotonCount(idxX, idxY, timestep):
     """Return the number of photons expected in the given cell and timestep"""
     result = (idxX - 4) + (idxY - 2) * 2 + (timestep - 4)
-    return max(0, result)
+    return float(max(0, result))
 
 if options.createDensity:
     # Create time varying circle
