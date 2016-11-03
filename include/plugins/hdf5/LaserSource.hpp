@@ -240,12 +240,16 @@ namespace hdf5 {
         if(swapAxis)
             std::swap(hdf5CellSize[0], hdf5CellSize[1]);
         hdf5CellSize *= gridUnitSI / UNIT_LENGTH;
+        if(hdf5CellSize.x() * hdf5CellSize.y() == 0)
+            throw std::runtime_error("HDF5 cell size is zero!");
 
         splash::Dimensions hdf5FieldSize = reader["x"].getFieldReader().getGlobalSize();
         hdf5GridSize.x() = hdf5FieldSize[0];
         hdf5GridSize.y() = hdf5FieldSize[1];
         if(swapAxis)
             std::swap(hdf5GridSize.x(), hdf5GridSize.y());
+        if(hdf5GridSize.x() * hdf5GridSize.y() == 0)
+            throw std::runtime_error("HDF5 grid size is zero!");
 
         getAttribute("gridGlobalOffset", gridGlobalOffset);
         if(swapAxis)
@@ -365,8 +369,8 @@ namespace hdf5 {
         // For now just add it to the global offset
         hdf5GridGlobalOffset += incellPosition * hdf5CellSize;
 
-        if(PMaccMath::abs(gridGlobalOffset[0] - hdf5GridGlobalOffset[0]) >= gridGlobalOffset[0] * 1e-5 ||
-                PMaccMath::abs(gridGlobalOffset[1] - hdf5GridGlobalOffset[1]) >= gridGlobalOffset[1] * 1e-5)
+        if(PMaccMath::abs(gridGlobalOffset[0] - hdf5GridGlobalOffset[0]) > gridGlobalOffset[0] * 1e-5 ||
+                PMaccMath::abs(gridGlobalOffset[1] - hdf5GridGlobalOffset[1]) > gridGlobalOffset[1] * 1e-5)
         {
             throw std::runtime_error(
                     (boost::format("Changed gridGlobalOffset or (incell-)position at HDF5-ID %1%. Is: %2%x%3%\nExpected:%4%x%5%") %
