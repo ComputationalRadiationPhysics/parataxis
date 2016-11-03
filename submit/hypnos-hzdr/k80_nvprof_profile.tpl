@@ -32,25 +32,25 @@
 #PBS -e stderr
 
 ## calculation are done by tbg ##
-TBG_queue="k80"
-TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
-TBG_mailSettings=${MY_MAILNOTIFY:-"n"}
-TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
+.TBG_queue="k80"
+.TBG_mailAddress=${MY_MAIL:-"someone@example.com"}
+.TBG_mailSettings=${MY_MAILNOTIFY:-"n"}
+.TBG_author=${MY_NAME:+--author \"${MY_NAME}\"}
 
 # 8 gpus per node if we need more than 8 gpus else same count as TBG_tasks
-TBG_gpusPerNode=`if [ $TBG_tasks -gt 8 ] ; then echo 8; else echo $TBG_tasks; fi`
+.TBG_gpusPerNode=`if [ $TBG_tasks -gt 8 ] ; then echo 8; else echo $TBG_tasks; fi`
 
 #number of cores per parallel node / default is 2 cores per gpu on k80 queue
-TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
+.TBG_coresPerNode="$(( TBG_gpusPerNode * 2 ))"
 
 # use ceil to caculate nodes
-TBG_nodes="$(( ( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
+.TBG_nodes="$(( ( TBG_tasks + TBG_gpusPerNode -1 ) / TBG_gpusPerNode))"
 ## end calculations ##
 
-# overwrite .profile (next 2 lines set to TBG var or nothing)
-TBG_profileFile=$TBG_profileFile
- profileFile=!TBG_profileFile
- profileFile=${profileFile:-"$HOME/picongpu.profile"}
+# overwrite .profile
+.TBG_profileFile=$TBG_profileFile
+profileFile=!TBG_profileFile
+profileFile=${profileFile:-"$HOME/picongpu.profile"}
 
 set -o pipefail
 echo 'Running program...'
