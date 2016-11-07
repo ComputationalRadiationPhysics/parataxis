@@ -133,8 +133,8 @@ def calcDensityField(x, y, z, t, dt):
 
 def getPhotonCount(idxX, idxY, timestep):
     """Return the number of photons expected in the given cell and timestep"""
-    result = (idxX - 4) + (idxY - 2) * 2 + (timestep - 4)
-    return float(max(0, result))
+    result = max(idxX - 4, 0) + max(idxY - 2, 0) * 3 + max(timestep - 4, 0)
+    return float(result)
 
 if options.createDensity:
     # Create time varying circle
@@ -142,8 +142,11 @@ if options.createDensity:
                          lambda x,y,z,t: calcDensityField(x, y, z, t, options.dt) )
 
 if options.createLaser:
-    # We assume 4 times bigger cells and 8 times bigger timestep than in simulation
+    # Here we can make the hdf5 cells bigger than the sim cells
+    xRatio = 1
+    yRatio = 1
+    tRatio = 1
     # the function is defined in terms of simulation units, so multiply our cells and timestep and then scale with area and time ratio
-    photonFunc = lambda x,y,t: getPhotonCount(x*4, y*4, int(t/options.dt)*8) * 4*4*8
-    createPhotonFileset(os.path.join(options.folder, "laserProfile"), size2D, cellSize2D, numTimesteps, options.dt, photonFunc)
+    photonFunc = lambda x,y,t: getPhotonCount(x*xRatio, y*yRatio, int(t/options.dt)*tRatio) * xRatio*yRatio*tRatio
+    createPhotonFileset(os.path.join(options.folder, "laserProfile"), size2D, cellSize2D * np.array([yRatio, xRatio]), numTimesteps, options.dt * tRatio, photonFunc)
 
