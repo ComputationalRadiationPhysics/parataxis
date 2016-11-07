@@ -55,7 +55,7 @@ namespace laserConfig {
         struct EqualToPhotons;
 
         /** Value used in the simulation */
-        using UsedValue = EqualToPhotons;
+        using UsedValue = PARAM_LASER_DISTRIBUTION;
 
     }  // namespace distribution
 

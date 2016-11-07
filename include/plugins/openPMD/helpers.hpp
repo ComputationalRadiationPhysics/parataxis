@@ -105,16 +105,34 @@ std::string getParticlesPath(T_SplashReader&& reader)
     return getBasePath(reader) + reader.getGlobalAttributeReader().readString("particlesPath");
 }
 
+/** Converts the time from HDF5 in simulation units */
+template<class T_SplashReader, typename T_Type>
+T_Type convertTime(T_SplashReader&& reader, const T_Type time)
+{
+    auto readAttr = reader(getBasePath(reader)).getAttributeReader();
+    float_64 timeUnitSI;
+    readAttr("timeUnitSI", timeUnitSI);
+    return time * timeUnitSI / UNIT_TIME;
+}
+
 /** Return the time at which the current timestep is set */
 template<class T_SplashReader>
 float_X getTime(T_SplashReader&& reader)
 {
     auto readAttr = reader(getBasePath(reader)).getAttributeReader();
-    float_64 timeUnitSI;
     float_X time;
     readAttr("time", time);
-    readAttr("timeUnitSI", timeUnitSI);
-    return time * timeUnitSI / UNIT_TIME;
+    return convertTime(reader, time);
+}
+
+/** Return the length of the timestep */
+template<class T_SplashReader>
+float_X getTimestepLength(T_SplashReader&& reader)
+{
+    auto readAttr = reader(getBasePath(reader)).getAttributeReader();
+    float_X dt;
+    readAttr("dt", dt);
+    return convertTime(reader, dt);
 }
 
 /** Returns the axis labels (fastest varying dimension first) of a record */
