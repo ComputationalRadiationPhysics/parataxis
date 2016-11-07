@@ -63,6 +63,7 @@
 ## end calculations ##
 
 # overwrite .profile
+.TBG_profileFile=$TBG_profileFile
 profileFile=!TBG_profileFile
 profileFile=${profileFile:-"$HOME/picongpu.profile"}
 
