@@ -25,6 +25,8 @@ class TestRestart(unittest.TestCase):
     def testCheckpoint(self):
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
         hdf5Path = checkpointPath + "/hdf5_checkpoint_100.h5"
+        if not os.path.isfile(hdf5Path):
+            hdf5Path = checkpointPath + "/hdf5_checkpoint_90.h5"
         
         with h5py.File(hdf5Path) as f:
             data = list(f["data"].values())[0]

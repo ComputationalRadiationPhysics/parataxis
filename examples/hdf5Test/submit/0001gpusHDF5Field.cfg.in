@@ -36,7 +36,7 @@ TBG_gpu_y=1
 TBG_gpu_z=1
 
 TBG_gridSize="-g 32 64 96"
-TBG_steps="-s 150"
+TBG_steps="-s 90"
 
 TBG_program="@PROJECT_NAME@"
 
@@ -54,7 +54,7 @@ TBG_plugins="--detSize 1400 900                           \
              --DensityField.hdf5File \"!TBG_HDF5_FILE\"   \
              --laserSrc.p.hdf5File \"!TBG_LASER_FILE\"    \
              --PhotonDetector_print.period 0              \
-             --checkpoints 50                             \
+             --checkpoints 30                             \
              "
 
 #################################
