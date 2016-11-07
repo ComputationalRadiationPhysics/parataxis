@@ -20,6 +20,7 @@ import numpy as np
 import numpy.testing as npt
 import unittest
 import h5py
+import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "buildSystem"))
 from ParamParser import ParamParser
 
@@ -51,7 +52,7 @@ class TestFieldInterpolator(unittest.TestCase):
 
     def testFieldInterpolator(self):
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
-        hdf5Path = checkpointPath + "/hdf5_checkpoint_50.h5"
+        hdf5Path = checkpointPath + "/hdf5_checkpoint_30.h5"
         inputPath = os.environ["TEST_INSTALL_PATH"] + "/testData/" + os.environ["TEST_NAME"]
         inputFieldsPath = inputPath + "/field"
         
@@ -76,8 +77,8 @@ class TestFieldInterpolator(unittest.TestCase):
  
 def getPhotonCount(idxX, idxY, timestep):
     """Return the number of photons expected in the given cell and timestep"""
-    result = (idxX - 4) + (idxY - 2) * 2 + (timestep - 4)
-    return max(0, result)
+    result = max(idxX - 4, 0) + max(idxY - 2, 0) * 3 + max(timestep - 4, 0)
+    return result
 
 class TestPhotonInterpolator(unittest.TestCase):
     def testPhotonInterpolator(self):
@@ -85,22 +86,21 @@ class TestPhotonInterpolator(unittest.TestCase):
         params.SetCurNamespace("parataxis::SI")
         dt = params.GetNumber("DELTA_T")
         cellSize = np.array([params.GetNumber("CELL_WIDTH"), params.GetNumber("CELL_HEIGHT"), params.GetNumber("CELL_DEPTH")])
-        simSize = os.environ["TEST_GRID_SIZE"].split(" ")
+        simSize = np.array(os.environ["TEST_GRID_SIZE"].split(" ")).astype(int)
         
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
-        for timestep in [50, 100]:
+        for timestep in [30]:
             hdf5Path = checkpointPath + "/hdf5_checkpoint_" + str(timestep) + ".h5"
             
             with h5py.File(hdf5Path) as f:
                 data = list(f["data"].values())[0]
                 curTime = data.attrs["time"] * data.attrs["timeUnitSI"]
-                # Time is from AFTER the timestep
-                npt.assert_almost_equal(curTime, dt * (timestep + 1))
+                npt.assert_almost_equal(curTime, dt * timestep)
                 
                 hdf5Photons = data["particles/p"]
     
                 photonWeighting = hdf5Photons["weighting"]
-                constWeighting = photonWeighting.attrs["value"]
+                constWeighting = photonWeighting.attrs.get("value")
                 
                 # Probably cell index
                 photonPosOffset = hdf5Photons["positionOffset"]
@@ -123,7 +123,7 @@ class TestPhotonInterpolator(unittest.TestCase):
                                 photonPos["y"].attrs["unitSI"],
                                 photonPos["z"].attrs["unitSI"]
                           ])
-                # Make it an array of positions (each row has x,yz)
+                # Make it an array of positions (each row has x,y,z)
                 photonPos = np.transpose([np.array(photonPos["x"]), np.array(photonPos["y"]), np.array(photonPos["z"])])
                 
                 # Combine to full positions in cells
@@ -143,7 +143,9 @@ class TestPhotonInterpolator(unittest.TestCase):
                 numPhotonsPerCell = np.round(numPhotonsPerCell).astype(int)
                 for idxX in range(simSize[1]):
                     for idxY in range(simSize[2]):
-                        self.assertEqual(numPhotonsPerCell[idxX, idxY], getPhotonCount(idxY, idxX, timestep))
+                        # Output is from previous timestep
+                        print(idxX, idxY, numPhotonsPerCell[idxX, idxY], getPhotonCount(idxY, idxX, timestep - 1))
+                        self.assertEqual(numPhotonsPerCell[idxX, idxY], getPhotonCount(idxY, idxX, timestep - 1))
  
 if __name__ == '__main__':
     unittest.main()
