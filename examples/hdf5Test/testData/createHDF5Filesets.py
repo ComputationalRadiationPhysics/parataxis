@@ -118,9 +118,9 @@ options = parser.parse_args()
 
 numTimesteps = int(math.ceil(options.time / options.dt))
 size = np.flipud(np.array(options.size)) # z y x (fastest varying index last)
-size2D = np.array([size[1], size[0]])
+size2D = np.array([options.size[1], options.size[2]]) # Y=Y Z=X
 cellSize = np.flipud(np.array(options.cellSize)) # z y x (fastest varying index last)
-cellSize2D = np.array([cellSize[1], cellSize[0]])
+cellSize2D = np.array([options.cellSize[1], options.cellSize[2]]) # Y=Y Z=X
 
 def calcDensityField(x, y, z, t, dt):
     # Don't scatter in first few cells to allow laser test

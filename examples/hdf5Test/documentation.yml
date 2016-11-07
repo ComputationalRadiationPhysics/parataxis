@@ -65,7 +65,6 @@ tests:
             TESTDATA_OUT_PATH="${TESTDATA_PATH}/$TEST_NAME"
             mkdir "${TESTDATA_OUT_PATH}"
             python3 "${TESTDATA_PATH}/createHDF5Filesets.py" --createDensity --folder "${TESTDATA_OUT_PATH}" --size ${TEST_GRID_SIZE} --cellSize "4e-9" "4e-9" "4e-9" --dt "2e-16" --time "1.5e-15"
-            # For laser: CellSize is multiplied with 4 and dt with 8, 130 timesteps long
             python3 "${TESTDATA_PATH}/createHDF5Filesets.py" --createLaser --folder "${TESTDATA_OUT_PATH}" --size ${TEST_GRID_SIZE} --cellSize "4e-9" "4e-9" "4e-9" --dt "1.33e-17" --time "1.5e-15"
             # Check for openPMD conformance
             echo "Validating generated test files"
