@@ -34,3 +34,10 @@ buildSystem/__pycache__
 *.pyc
 testBuilds
 
+# NetBeans original backup files
+*.orig
+
+# NetBeans project files
+/nbproject/
+
+
