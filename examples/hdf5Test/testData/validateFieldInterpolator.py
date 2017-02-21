@@ -20,6 +20,26 @@ import numpy as np
 import numpy.testing as npt
 import unittest
 import h5py
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "buildSystem"))
+from ParamParser import ParamParser
+
+def initParamParser():
+    cmakeFlags = os.environ["TEST_CMAKE_FLAGS"].split(" ")
+    paramOverwrites = None
+    for flag in cmakeFlags:
+        if flag.startswith("-DPARAM_OVERWRITES:LIST"):
+            paramOverwrites = flag.split("=", 1)[1].split(";")
+
+    params = ParamParser()
+    if paramOverwrites:
+        for param in paramOverwrites:
+            if param.startswith("-D"):
+                param = param[2:].split("=")
+                params.AddDefine(param[0], param[1])
+    params.ParseFolder(os.environ["TEST_OUTPUT_PATH"] + "/simulation_defines/param")
+    return params
+
 
 class TestFieldInterpolator(unittest.TestCase):
     def getHDF5Timestep(self, inputFieldsPath, time):
@@ -32,7 +52,7 @@ class TestFieldInterpolator(unittest.TestCase):
 
     def testFieldInterpolator(self):
         checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
-        hdf5Path = checkpointPath + "/hdf5_checkpoint_50.h5"
+        hdf5Path = checkpointPath + "/hdf5_checkpoint_30.h5"
         inputPath = os.environ["TEST_INSTALL_PATH"] + "/testData/" + os.environ["TEST_NAME"]
         inputFieldsPath = inputPath + "/field"
         
@@ -54,6 +74,78 @@ class TestFieldInterpolator(unittest.TestCase):
                 expectedCurField = lastField + (nextField - lastField) * (curTime - lastTime) / (nextTime - lastTime)
                 curField = (data.get("fields") or data["meshes"])["electron_density"]
                 npt.assert_array_almost_equal(curField, expectedCurField)
+ 
+def getPhotonCount(idxX, idxY, timestep):
+    """Return the number of photons expected in the given cell and timestep"""
+    result = max(idxX - 4, 0) + max(idxY - 2, 0) * 3 + max(timestep - 4, 0)
+    return result
+
+class TestPhotonInterpolator(unittest.TestCase):
+    def testPhotonInterpolator(self):
+        params = initParamParser()
+        params.SetCurNamespace("parataxis::SI")
+        dt = params.GetNumber("DELTA_T")
+        cellSize = np.array([params.GetNumber("CELL_WIDTH"), params.GetNumber("CELL_HEIGHT"), params.GetNumber("CELL_DEPTH")])
+        simSize = np.array(os.environ["TEST_GRID_SIZE"].split(" ")).astype(int)
+        
+        checkpointPath = os.environ["TEST_SIMOUTPUT_PATH"] + "/checkpoints"
+        for timestep in [30]:
+            hdf5Path = checkpointPath + "/hdf5_checkpoint_" + str(timestep) + ".h5"
+            
+            with h5py.File(hdf5Path) as f:
+                data = list(f["data"].values())[0]
+                curTime = data.attrs["time"] * data.attrs["timeUnitSI"]
+                npt.assert_almost_equal(curTime, dt * timestep)
+                
+                hdf5Photons = data["particles/p"]
+    
+                photonWeighting = hdf5Photons["weighting"]
+                constWeighting = photonWeighting.attrs.get("value")
+                
+                # Probably cell index
+                photonPosOffset = hdf5Photons["positionOffset"]
+                offsetUnit = np.array([
+                                photonPosOffset["x"].attrs["unitSI"],
+                                photonPosOffset["y"].attrs["unitSI"],
+                                photonPosOffset["z"].attrs["unitSI"]
+                            ])
+                # Make it an array of positions (each row has x,yz)
+                photonPosOffset = np.transpose([
+                                    np.array(photonPosOffset["x"]),
+                                    np.array(photonPosOffset["y"]),
+                                    np.array(photonPosOffset["z"])
+                                  ])
+                
+                # Probably incell position
+                photonPos = hdf5Photons["position"]
+                posUnit = np.array([
+                                photonPos["x"].attrs["unitSI"],
+                                photonPos["y"].attrs["unitSI"],
+                                photonPos["z"].attrs["unitSI"]
+                          ])
+                # Make it an array of positions (each row has x,y,z)
+                photonPos = np.transpose([np.array(photonPos["x"]), np.array(photonPos["y"]), np.array(photonPos["z"])])
+                
+                # Combine to full positions in cells
+                photonPos = photonPosOffset * (offsetUnit / cellSize) + photonPos * (posUnit / cellSize)
+
+                # Use only photons just spawned and moved once
+                photonMask = photonPos[:, 0] <= 1
+                photonPosInFirstSlice = photonPos[photonMask][:,1:3].astype(int)
+                if constWeighting:
+                    weightings = np.full(len(photonPosInFirstSlice), constWeighting)
+                else:
+                    weightings = np.array(photonWeighting)[photonMask]
+
+                # Accumulate number of photons/cell
+                numPhotonsPerCell, edgesX, edgesY = np.histogram2d(photonPosInFirstSlice[:,0], photonPosInFirstSlice[:,1],
+                                                                   weights=weightings, bins=simSize[1:3])
+                numPhotonsPerCell = np.round(numPhotonsPerCell).astype(int)
+                for idxX in range(simSize[1]):
+                    for idxY in range(simSize[2]):
+                        # Output is from previous timestep
+                        print(idxX, idxY, numPhotonsPerCell[idxX, idxY], getPhotonCount(idxY, idxX, timestep - 1))
+                        self.assertEqual(numPhotonsPerCell[idxX, idxY], getPhotonCount(idxY, idxX, timestep - 1))
  
 if __name__ == '__main__':
     unittest.main()

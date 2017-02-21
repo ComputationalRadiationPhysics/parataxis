@@ -38,7 +38,7 @@ namespace laserConfig {
         struct HDF5Profile;
 
         /** Value used in the simulation */
-        using UsedValue = Const;
+        using UsedValue = PARAM_LASER_PHOTON_CT;
 
     }  // namespace distribution
 
@@ -55,7 +55,7 @@ namespace laserConfig {
         struct EqualToPhotons;
 
         /** Value used in the simulation */
-        using UsedValue = EqualToPhotons;
+        using UsedValue = PARAM_LASER_DISTRIBUTION;
 
     }  // namespace distribution
 

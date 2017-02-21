@@ -150,5 +150,30 @@ struct OpenPMDUnit<wasScattered, T_Frame>
     }
 };
 
+template<typename T_Type>
+struct OpenPMDName<amplitude<T_Type> >
+{
+    static std::string get()
+    {
+        return "weighting";
+    }
+};
+
+template<typename T_Type, typename T_Frame>
+struct OpenPMDUnit<amplitude<T_Type>, T_Frame>
+{
+    static std::vector<float_64> get()
+    {
+        std::vector<float_64> unit( 1, 1.0 );
+        return unit;
+    }
+
+    static std::vector<float_64> getDimension()
+    {
+        // unitless
+        return std::vector<float_64>( NUnitDimension, 0.0 );
+    }
+};
+
 } // namespace traits
 } // namespace parataxis

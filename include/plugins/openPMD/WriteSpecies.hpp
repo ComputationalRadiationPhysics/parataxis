@@ -190,8 +190,11 @@ struct WriteSpecies
         freeMem(PMacc::forward(hostFrame));
 
         /* write constant particle records to hdf5 file */
-        // No macro particles -> weighting = 1
-        writeConstantRecord(writer["weighting"], numParticlesGlobal, 1, 1, std::vector<float_64>(traits::NUnitDimension, 0));
+        if(!HasIdentifier_t<Hdf5FrameType, amplitude<> >::value)
+        {
+            // No macro particles -> weighting = 1
+            writeConstantRecord(writer["weighting"], numParticlesGlobal, 1, 1, std::vector<float_64>(traits::NUnitDimension, 0));
+        }
 
         const float_64 chargeVal = GetResolvedFlag_t<FrameType, charge<>>::getValue();
         std::vector<float_64> chargeUnitDimension(traits::NUnitDimension, 0);
